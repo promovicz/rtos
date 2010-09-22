@@ -18,7 +18,7 @@ LDSCRIPT=bike.lds
 
 LIBS=lpcusb-trunk/target/usbstack.a dietlibc/bin-arm/dietlibc.a
 
-OBJS=start.o halsys.o main.o serial_fifo.o armVIC.o console.o printf.o
+OBJS=start.o halsys.o main.o serial_fifo.o armVIC.o console.o printf.o uart.o
 INCLUDEFLAGS=-Ilpcusb-trunk/target -Idietlibc/include
 DEFINE=-DLPC214x -DDEBUG
 
@@ -27,7 +27,7 @@ LSTS=$(OBJS:.o=.lst)
 
 .DELETE_ON_ERROR:
 
-default: depend bike.elf bike.hex bike.bin bike.size bike.lst
+all: depend bike.elf bike.hex bike.bin bike.size bike.lst
 
 depend: $(DEPS)
 

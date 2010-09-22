@@ -27,7 +27,6 @@
 
 #define EOF (-1)
 
-void ConsoleInit(int iDivider);
 int putchar(int c);
 int puts(const char *s);
 

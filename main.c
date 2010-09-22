@@ -64,6 +64,8 @@ int errno;
 #include "console.h"
 #include "usbapi.h"
 
+#include "uart.h"
+
 #include "serial_fifo.h"
 
 
@@ -443,13 +445,9 @@ int main(void)
 	// PLL and MAM
 	HalSysInit();
 
-#ifdef LPC214x
-	// init DBG
-	ConsoleInit(60000000 / (16 * BAUD_RATE));
-#else
-	// init DBG
-	ConsoleInit(72000000 / (16 * BAUD_RATE));
-#endif
+	PINSEL0 = (PINSEL0 & ~0x0000000F) | 0x00000005;
+
+	uart_init(0);
 
 	DBG("Initialising USB stack\n");
 
@@ -505,8 +503,12 @@ int main(void)
 		c = VCOM_getchar();
 		if (c != EOF) {
 			// show on console
-			DBG("%x\n", c);
+			DBG("u%x\n", c);
 			VCOM_putchar(c);
+		}
+		uint8_t chr;
+		if(uart_rx_nonblocking(0, &chr)) {
+			DBG("s%x\n", chr);
 		}
 	}
 
