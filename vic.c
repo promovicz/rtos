@@ -23,14 +23,11 @@ struct vic_regs {
 #define VIC_BASE (0xFFFFF000)
 #define VIC ((struct vic_regs *)VIC_BASE)
 
-
 #define INT_BIT(n) ((uint32_t)(1<<(n)))
-
 
 void vic_enable(int src)
 {
 	VIC->IntEnable |= INT_BIT(src);
-	printf("ie @%x now %x, set %x\n", &VIC->IntEnable, VIC->IntEnable, INT_BIT(src));
 }
 
 void vic_disable(int src)
