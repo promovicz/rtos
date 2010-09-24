@@ -50,6 +50,10 @@ clean:
 	rm -f $(DEPS) $(OBJS) $(LSTS) bike.elf bike.map bike.bin bike.hex bike.lst bike.size
 .PHONY: clean
 
+cleanlibs:
+	rm -f dietlibc/bin-arm/dietlibc.a dietlibc/bin-arm/libm.a
+	rm -f lpcusb-trunk/target/usbstack.a
+.PHONY: cleanlibs
 
 ##### GENERIC RULES #####
 
