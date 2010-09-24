@@ -70,6 +70,7 @@ int errno;
 
 #include "serial_fifo.h"
 
+#include "nmea.h"
 
 #define BAUD_RATE	115200
 
@@ -525,6 +526,8 @@ int main(void)
 	// connect to bus
 	USBHwConnect(TRUE);
 
+	nmea_init();
+
 	// echo any character received (do USB stuff in interrupt)
 	while (1) {
 		c = VCOM_getchar();
@@ -534,18 +537,19 @@ int main(void)
 			VCOM_putchar(c);
 		}
 		uint8_t chr;
+		uint32_t m;
 		if(uart_rx_fifo(0, &chr)) {
-			uart_tx_blocking(0, chr);
-			DBG("s%x\n", chr);
 			if(chr == 'x') {
-				printf("ic0 %x ic1 %x\n", icount[0], icount[1]);
+				m = disableIRQ();
+				printf("\n\nic0 %x ic1 %x\n\n", icount[0], icount[1]);
 				printf("ier %x\n", *((unsigned int*)0xE000C004));
 				printf("iir %x\n", *((unsigned int*)0xE000C008));
 				printf("ier %x\n", *((unsigned int*)0xE0010004));
 				printf("iir %x\n", *((unsigned int*)0xE0010008));
 				printf("vri %x\n", VICRawIntr);
 				printf("vis %x\n", VICIrqStatus);
-				printf("vfs %x\n", VICFiqStatus);
+				printf("vfs %x\n\n\n", VICFiqStatus);
+				restoreIRQ(m);
 			}
 			if(chr == 'y') {
 				uart_tx_fifo(0, '!');
@@ -554,6 +558,8 @@ int main(void)
 			}
 		}
 		if(uart_rx_fifo(1, &chr)) {
+			//uart_tx_fifo(0, chr);
+			nmea_process(&chr, 1);
 		}
 	}
 

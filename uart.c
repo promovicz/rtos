@@ -3,6 +3,8 @@
 
 #include "memory.h"
 
+#include "armVIC.h"
+
 #include "serial_fifo.h"
 
 /* XXX find some better method for dealing with DLAB bullpoo */
@@ -184,11 +186,11 @@ void uart_irq(uart_t uart)
 	if(ind&IIR_II_THRE) {
 		while (uart_reg_read(uart, LSR) & LSR_THRE) {
 			if(!fifo_get(&uart_tx_fifos[uart], &w)) {
-				uart_reg_write(uart, IER,
-							   uart_reg_read(uart, IER) & ~IER_THRE);
+				uint8_t m = uart_reg_read(uart, IER);
+				m &= ~IER_THRE;
+				uart_reg_write(uart, IER, m);
 				break;
 			}
-
 			uart_reg_write(uart, THR, w);
 		}
 	}
@@ -204,7 +206,15 @@ void uart_irq(uart_t uart)
 
 bool_t uart_rx_fifo(uart_t uart, uint8_t *c)
 {
-	return fifo_get(&uart_rx_fifos[uart], c);
+	uint32_t m;
+
+	m = disableIRQ();
+
+	bool_t r = fifo_get(&uart_rx_fifos[uart], c);
+
+	restoreIRQ(m);
+
+	return r;
 }
 
 void uart_tx_blocking(uart_t uart, uint8_t c)
@@ -224,9 +234,28 @@ bool_t uart_tx_nonblocking(uart_t uart, uint8_t c)
 
 bool_t uart_tx_fifo(uart_t uart, uint8_t c)
 {
-	if(fifo_put(&uart_tx_fifos[uart], c)) {
-		uart_reg_write(uart, IER, uart_reg_read(uart, IER) | IER_THRE);
+	bool_t r;
+
+	uint32_t m;
+	m = disableIRQ();
+
+	r = readb(UART_REG(uart, LSR)) & LSR_TEMT;
+
+	if(r) {
+		writeb(c, UART_REG(uart, THR));
+	} else {
+		r = fifo_put(&uart_tx_fifos[uart], c);
+
+		if(r) {
+			uint8_t m = uart_reg_read(uart, IER);
+			m |= IER_THRE;
+			uart_reg_write(uart, IER, m);
+		}
 	}
+
+	restoreIRQ(m);
+
+	return r;
 }
 
 void uart_rx_blocking(uart_t uart, uint8_t *c)
