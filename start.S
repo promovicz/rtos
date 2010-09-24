@@ -11,8 +11,8 @@
 /* Stack Sizes */
 .set  UND_STACK_SIZE, 0x00000040		/* stack for "undefined instruction" interrupts				*/
 .set  ABT_STACK_SIZE, 0x00000040		/* stack for "abort" interrupts								*/
-.set  FIQ_STACK_SIZE, 0x00000040		/* stack for "FIQ" interrupts								*/
-.set  IRQ_STACK_SIZE, 0X00000100		/* stack for "IRQ" normal interrupts						*/
+.set  FIQ_STACK_SIZE, 0x00000200		/* stack for "FIQ" interrupts								*/
+.set  IRQ_STACK_SIZE, 0X00000200		/* stack for "IRQ" normal interrupts						*/
 .set  SVC_STACK_SIZE, 0x00000400		/* stack for "SVC" supervisor mode							*/
 
 
