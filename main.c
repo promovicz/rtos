@@ -462,6 +462,8 @@ static void USBDevIntHandler(U8 bDevStatus)
 
 int icount[2];
 
+int consirq = 0;
+
 /*************************************************************************
 	main
 	====
@@ -517,6 +519,7 @@ int main(void)
 
 	DBG("enableIrqGlobal\n");
 	enableIRQ();
+	consirq = 1;
 
 	DBG("hwConnect\n");
 	// connect to bus
@@ -543,6 +546,11 @@ int main(void)
 				printf("vri %x\n", VICRawIntr);
 				printf("vis %x\n", VICIrqStatus);
 				printf("vfs %x\n", VICFiqStatus);
+			}
+			if(chr == 'y') {
+				uart_tx_fifo(0, '!');
+				uart_tx_fifo(0, '!');
+				uart_tx_fifo(0, '!');
 			}
 		}
 		if(uart_rx_fifo(1, &chr)) {

@@ -35,12 +35,22 @@
 
 #include "uart.h"
 
+extern int consirq;
+
 int putchar(int c)
 {
 	if(c == '\n') {
-		uart_tx_blocking(0, '\r');
+		if(consirq) {
+			uart_tx_fifo(0, '\r');
+		} else {
+			uart_tx_blocking(0, '\r');
+		}
 	}
-	uart_tx_blocking(0, c);
+	if(consirq) {
+		uart_tx_fifo(0, c);
+	} else {
+		uart_tx_blocking(0, c);
+	}
 	return c;
 }
 

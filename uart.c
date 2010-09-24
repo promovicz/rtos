@@ -135,6 +135,9 @@ static inline uint8_t uart_reg_read(uart_t uart, enum uart_reg r)
 fifo_t uart_rx_fifos[2];
 char uart_rx_fifo_buf[128][2];
 
+fifo_t uart_tx_fifos[2];
+char uart_tx_fifo_buf[128][2];
+
 extern int icount[2];
 
 void uart_init(uart_t uart, uart_baud_t baudrate)
@@ -155,6 +158,7 @@ void uart_init(uart_t uart, uart_baud_t baudrate)
 	uart_reg_write(uart, FCR, FCR_ENABLE|FCR_RX_TRIG_1);
 
 	fifo_init(&uart_rx_fifos[uart], &uart_rx_fifo_buf[uart]);
+	fifo_init(&uart_tx_fifos[uart], &uart_tx_fifo_buf[uart]);
 
 	uart_reg_write(uart, IER, IER_RBR);
 }
@@ -162,23 +166,37 @@ void uart_init(uart_t uart, uart_baud_t baudrate)
 void uart_irq(uart_t uart)
 {
 	uint8_t ind = readb(UART_REG(uart, IIR));
+	uint8_t w;
+
+	icount[uart]++;
+
 	if(ind&IIR_II_CTI) {
 	}
+
 	if(ind&IIR_II_RDA) {
-		icount[uart]++;
-		uint8_t w;
 		while(uart_rx_nonblocking(uart, &w)) {
 			if(!fifo_put(&uart_rx_fifos[uart], w)) {
 				break;
 			}
 		}
 	}
-	if(ind&IIR_II_THRE) {
 
+	if(ind&IIR_II_THRE) {
+		while (uart_reg_read(uart, LSR) & LSR_THRE) {
+			if(!fifo_get(&uart_tx_fifos[uart], &w)) {
+				uart_reg_write(uart, IER,
+							   uart_reg_read(uart, IER) & ~IER_THRE);
+				break;
+			}
+
+			uart_reg_write(uart, THR, w);
+		}
 	}
+
 	if(ind&IIR_II_RLS) {
 
 	}
+
 	if(ind&IIR_II_MODEM) {
 
 	}
@@ -202,6 +220,13 @@ bool_t uart_tx_nonblocking(uart_t uart, uint8_t c)
 		writeb(c, UART_REG(uart, THR));
 	}
 	return res;
+}
+
+bool_t uart_tx_fifo(uart_t uart, uint8_t c)
+{
+	if(fifo_put(&uart_tx_fifos[uart], c)) {
+		uart_reg_write(uart, IER, uart_reg_read(uart, IER) | IER_THRE);
+	}
 }
 
 void uart_rx_blocking(uart_t uart, uint8_t *c)
