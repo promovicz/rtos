@@ -492,10 +492,10 @@ int main(void)
 	USBHwRegisterEPIntHandler(INT_IN_EP, NULL);
 	USBHwRegisterEPIntHandler(BULK_IN_EP, BulkIn);
 	USBHwRegisterEPIntHandler(BULK_OUT_EP, BulkOut);
-	
+
 	// register frame handler
 	USBHwRegisterFrameHandler(USBFrameHandler);
-	
+
 	// register device event handler
 	USBHwRegisterDevIntHandler(USBDevIntHandler);
 
