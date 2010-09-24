@@ -64,6 +64,8 @@ int errno;
 #include "console.h"
 #include "usbapi.h"
 
+#include "vic.h"
+
 #include "uart.h"
 
 #include "serial_fifo.h"
@@ -87,7 +89,9 @@ int errno;
 #define	GET_LINE_CODING			0x21
 #define	SET_CONTROL_LINE_STATE	0x22
 
-#define	INT_VECT_NUM	0
+#define	USB_INT_VECT_NUM	0
+#define UART0_INT_VECT_NUM  1
+#define UART1_INT_VECT_NUM  2
 
 #define IRQ_MASK 0x00000080
 
@@ -113,6 +117,9 @@ static fifo_t rxfifo;
 
 // forward declaration of interrupt handler
 static void USBIntHandler(void) __attribute__ ((interrupt("IRQ")));
+static void UART0IntHandler(void) __attribute__ ((interrupt("IRQ")));
+static void UART1IntHandler(void) __attribute__ ((interrupt("IRQ")));
+static void DefIntHandler(void) __attribute__ ((interrupt("IRQ")));
 
 
 static const U8 abDescriptors[] = {
@@ -389,6 +396,26 @@ int VCOM_getchar(void)
 	return fifo_get(&rxfifo, &c) ? c : EOF;
 }
 
+int default_irq_count = 0;
+
+static void DefIntHandler(void)
+{
+	default_irq_count++;
+	VICVectAddr = 0x00;
+}
+
+static void UART0IntHandler(void)
+{
+	uart_irq(UART0);
+	VICVectAddr = 0x00;
+}
+
+static void UART1IntHandler(void)
+{
+	uart_irq(UART1);
+	VICVectAddr = 0x00;
+}
+
 
 /**
 	Interrupt handler
@@ -433,6 +460,7 @@ static void USBDevIntHandler(U8 bDevStatus)
 	}
 }
 
+int icount[2];
 
 /*************************************************************************
 	main
@@ -441,13 +469,13 @@ static void USBDevIntHandler(U8 bDevStatus)
 int main(void)
 {
 	int c;
-	
-	// PLL and MAM
+
 	HalSysInit();
 
-	PINSEL0 = (PINSEL0 & ~0x0000000F) | 0x00000005;
+	PINSEL0 = (PINSEL0 & ~0x000F000F) | 0x00050005;
 
-	uart_init(0);
+	uart_init(UART0, 115200);
+	uart_init(UART1, 9600);
 
 	DBG("Initialising USB stack\n");
 
@@ -478,19 +506,15 @@ int main(void)
 
 
 	DBG("setHandler\n");
-#ifdef LPC214x
-	(*(&VICVectCntl0+INT_VECT_NUM)) = 0x20 | 22; // choose highest priority ISR slot 	
-	(*(&VICVectAddr0+INT_VECT_NUM)) = (int)USBIntHandler;
-#else
-  VICVectCntl22 = 0x01;
-  VICVectAddr22 = (int)USBIntHandler;
-#endif
-  
+	vic_configure(USB_INT_VECT_NUM, INT_USB, &USBIntHandler);
+	vic_configure(UART0_INT_VECT_NUM, INT_UART0, &UART0IntHandler);
+	vic_configure(UART1_INT_VECT_NUM, INT_UART1, &UART1IntHandler);
+
 	DBG("enableInt\n");
-	// set up USB interrupt
-	VICIntSelect &= ~(1<<22);               // select IRQ for USB
-	VICIntEnable |= (1<<22);
-	
+	vic_enable(INT_USB);
+	vic_enable(INT_UART0);
+	vic_enable(INT_UART1);
+
 	DBG("enableIrqGlobal\n");
 	enableIRQ();
 
@@ -507,8 +531,21 @@ int main(void)
 			VCOM_putchar(c);
 		}
 		uint8_t chr;
-		if(uart_rx_nonblocking(0, &chr)) {
+		if(uart_rx_fifo(0, &chr)) {
+			uart_tx_blocking(0, chr);
 			DBG("s%x\n", chr);
+			if(chr == 'x') {
+				printf("ic0 %x ic1 %x\n", icount[0], icount[1]);
+				printf("ier %x\n", *((unsigned int*)0xE000C004));
+				printf("iir %x\n", *((unsigned int*)0xE000C008));
+				printf("ier %x\n", *((unsigned int*)0xE0010004));
+				printf("iir %x\n", *((unsigned int*)0xE0010008));
+				printf("vri %x\n", VICRawIntr);
+				printf("vis %x\n", VICIrqStatus);
+				printf("vfs %x\n", VICFiqStatus);
+			}
+		}
+		if(uart_rx_fifo(1, &chr)) {
 		}
 	}
 
