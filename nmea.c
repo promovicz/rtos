@@ -30,7 +30,6 @@ struct {
 
 	char *type;
 	char *arguments[NMEA_MAX_ARGS];
-
 } nmea;
 
 void
@@ -60,7 +59,26 @@ nmea_push(char c)
 	}
 }
 
-enum gps_fixtype_t {
+struct gps_sat {
+	int satid;
+	int satelev;
+	int satazim;
+	int satsnr;
+};
+
+struct {
+	int fixtype;
+	int fixhour;
+	int fixminute;
+	int fixsecond;
+	int fixmilisecond;
+
+	int numvissats;
+	struct gps_sat vissats[12];
+} gps;
+
+
+enum gps_fixtype {
 	FIX_NONE = 0,
 	FIX_GPS_SPS,
 	FIX_GPS_DGPS,
@@ -85,10 +103,6 @@ char *gps_fixtype_str[] = {
 	"Simulator",
 };
 
-struct {
-	bool_t satvisible[12];
-} gps;
-
 bool_t
 getargstr(int num, int min, int max, int *v)
 {
@@ -106,67 +120,102 @@ getargstr(int num, int min, int max, int *v)
 	return BOOL_FALSE;
 }
 
+void nmea_report()
+{
+	printf("fixtype %d - %s\n", gps.fixtype, gps_fixtype_str[gps.fixtype]);
+	printf("time %d:%d:%d.%d\n", gps.fixhour, gps.fixminute, gps.fixsecond, gps.fixmilisecond);
+	if(gps.numvissats) {
+		printf("%d sats visible\n", gps.numvissats);
+		int i;
+		for(i = 0; i < 12; i++) {
+			struct gps_sat *sat = &gps.vissats[i];
+			if(sat->satid) {
+				printf("  id %d elev %d azim %d snr %d\n",
+					   sat->satid, sat->satelev, sat->satazim, sat->satsnr);
+			} else {
+				break;
+			}
+		}
+	}
+}
+
+void nmea_process_gpgga()
+{
+	int r;
+	char *e;
+	int hour, minute, second, milisecond;
+
+	r = sscanf(nmea.arguments[0], "%2d%2d%2d.%3d", &hour, &minute, &second, &milisecond);
+	if(r != 4) {
+		return;
+	}
+
+	int fixtype;
+	if(!getargstr(5, 0, _FIX_COUNT-1, &fixtype)) {
+		return;
+	}
+
+	gps.fixtype = fixtype;
+	gps.fixhour = hour;
+	gps.fixminute = minute;
+	gps.fixsecond = second;
+	gps.fixmilisecond = milisecond;
+}
+
+void nmea_process_gpgsv()
+{
+	int num_msg, cur_msg, num_sats;
+
+	static int numsats;
+	static struct gps_sat sats[12];
+
+	if(getargstr(0, 1, 3, &num_msg)
+	   && getargstr(1, 1, 3, &cur_msg)
+	   && getargstr(2, 0, 12, &num_sats)) {
+
+		if(cur_msg == 1) {
+			numsats = 0;
+			memset(&sats, 0, sizeof(sats));
+		}
+
+		int i;
+		int arg = 3;
+		for(i = 0; i < 4; i++) {
+			int sid, elv, azi, snr;
+
+			if(getargstr(arg + 0, 1, 64, &sid)
+			   && getargstr(arg + 1, 0, 90, &elv)
+			   && getargstr(arg + 2, 0, 359, &azi)
+			   && getargstr(arg + 3, 0, 99, &snr)) {
+
+				sats[numsats].satid   = sid;
+				sats[numsats].satelev = elv;
+				sats[numsats].satazim = azi;
+				sats[numsats].satsnr  = snr;
+
+				numsats++;
+			}
+
+			arg += 4;
+		}
+
+		if(cur_msg == num_msg) {
+			gps.numvissats = numsats;
+			memset(&gps.vissats, 0, sizeof(gps.vissats));
+			memcpy(&gps.vissats, sats, sizeof(struct gps_sat)*numsats);
+		}
+	}
+}
+
 void
 nmea_process_sentence()
 {
-	int r;
-
-	int fixtype;
-	char *e;
 	if(!strcmp(nmea.type, "GPGGA")) {
-
-		int hour, minute, second, milisecond;
-		r = sscanf(nmea.arguments[0], "%2d%2d%2d.%3d", &hour, &minute, &second, &milisecond);
-		if(r == 4) {
-			printf("time %d:%d:%d.%d\n", hour, minute, second, milisecond);
-		}
-
-		if(getargstr(5, 0, _FIX_COUNT-1, &fixtype)) {
-			printf("fixtype %d - %s\n", fixtype, gps_fixtype_str[fixtype]);
-		}
-
+		nmea_process_gpgga();
 	}
 
 	if(!strcmp(nmea.type, "GPGSV")) {
-		int num_msg, cur_msg, num_sats;
-
-		static int sats[12];
-		static int sat_elev[12];
-		static int sat_azim[12];
-		static int sat_snr[12];
-
-		if(getargstr(0, 1, 3, &num_msg)
-		   && getargstr(1, 1, 3, &cur_msg)
-		   && getargstr(2, 0, 12, &num_sats)) {
-
-			printf("gsv %d/%d\n", cur_msg, num_msg);
-
-			if(cur_msg == 1) {
-				memset(&sats, 0, sizeof(sats));
-			}
-
-			int i;
-			int arg = 3;
-			int sat = (cur_msg - 1) * 4;
-			for(i = 0; i < 4; i++) {
-				int sid, elv, azi, snr;
-
-				if(getargstr(arg + 0, 1, 64, &sid)
-				   && getargstr(arg + 1, 0, 90, &elv)
-				   && getargstr(arg + 2, 0, 359, &azi)
-				   && getargstr(arg + 3, 0, 99, &snr)) {
-
-					sats[sat+i] = sid;
-					sat_elev[sat+i] = elv;
-					sat_azim[sat+i] = azi;
-					sat_snr[sat+i] = snr;
-
-					printf("sat %d at %d/%d with snr %d\n", sid, elv, azi, snr);
-				}
-
-				arg += 4;
-			}
-		}
+		nmea_process_gpgsv();
 	}
 }
 
@@ -179,8 +228,6 @@ nmea_process(const char *buf, size_t nbytes)
 
 	for(p = 0; p < nbytes; p++) {
 		char c = buf[p];
-
-		//printf("chr %c\n", c);
 
 		switch(nmea.state) {
 		case STATE_IDLE:
@@ -200,8 +247,6 @@ nmea_process(const char *buf, size_t nbytes)
 
 				nmea.type = &nmea.sentence[1];
 
-				//printf("sentence %s\n", nmea.type);
-
 				nmea.state = STATE_ARGS;
 				nmea.argstart = nmea.fill;
 				nmea.argfill = 0;
@@ -217,8 +262,6 @@ nmea_process(const char *buf, size_t nbytes)
 
 				nmea_pusharg();
 
-				//printf("arg %s\n", nmea.arguments[nmea.argfill-1]);
-
 				if(c == '*') {
 					nmea.state = STATE_CSUM;
 				}
@@ -230,13 +273,6 @@ nmea_process(const char *buf, size_t nbytes)
 			if(isxdigit(c)) {
 				nmea_push(c);
 			} else if (c=='\r') {
-#if 0
-				printf("NMEA %s", nmea.type);
-				for(x = 0; x < nmea.argfill; x++) {
-					printf(" -%s-", nmea.arguments[x]);
-				}
-				printf("\n");
-#endif
 				nmea_process_sentence();
 				nmea.state = STATE_IDLE;
 			} else {

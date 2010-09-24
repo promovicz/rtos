@@ -34,6 +34,9 @@
 #include "console.h"
 
 #include "uart.h"
+#include "vcom.h"
+
+#include "cli.h"
 
 extern int consirq;
 
@@ -41,15 +44,15 @@ int putchar(int c)
 {
 	if(c == '\n') {
 		if(consirq) {
-			uart_tx_fifo(0, '\r');
+			vcom_tx_nonblocking('\r');
 		} else {
-			uart_tx_blocking(0, '\r');
+			uart_tx_fifo(0, '\r');
 		}
 	}
 	if(consirq) {
-		uart_tx_fifo(0, c);
+		vcom_tx_nonblocking(c);
 	} else {
-		uart_tx_blocking(0, c);
+		uart_tx_fifo(0, c);
 	}
 	return c;
 }
@@ -60,6 +63,7 @@ int getchar (void)  {
 	return c;
 }
 
+extern struct tty tser;
 
 int puts(const char *s)
 {

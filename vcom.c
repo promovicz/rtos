@@ -350,3 +350,8 @@ void vcom_init(void)
 	fBulkInBusy = FALSE;
 	fChainDone = TRUE;
 }
+
+void vcom_connect(bool_t connect)
+{
+	USBHwConnect(connect?TRUE:FALSE);
+}

@@ -68,6 +68,8 @@ int errno;
 
 #include "nmea.h"
 
+#include "cli.h"
+
 #define BAUD_RATE	115200
 
 #define	USB_INT_VECT_NUM	0
@@ -115,6 +117,8 @@ int icount[2];
 
 int consirq = 0;
 
+struct tty tser;
+
 /*************************************************************************
 	main
 	====
@@ -141,46 +145,29 @@ int main(void)
 	vic_enable(INT_UART1);
 
 	enableIRQ();
-	consirq = 1;
 
-	USBHwConnect(TRUE);
+	vcom_connect(BOOL_TRUE);
+
+	consirq = 1;
 
 	nmea_init();
 
+	tty_init(&tser);
+
 	uint8_t chr;
-	// echo any character received (do USB stuff in interrupt)
+
 	while (1) {
 		if(vcom_rx_nonblocking(&chr)) {
-			DBG("u%x\n", chr);
-			vcom_tx_nonblocking(chr);
+			tty_feed(&tser, chr);
 		}
 
-		uint32_t m;
 		if(uart_rx_fifo(0, &chr)) {
-			if(chr == 'x') {
-				m = disableIRQ();
-				printf("\n\nic0 %x ic1 %x\n\n", icount[0], icount[1]);
-				printf("ier %x\n", *((unsigned int*)0xE000C004));
-				printf("iir %x\n", *((unsigned int*)0xE000C008));
-				printf("ier %x\n", *((unsigned int*)0xE0010004));
-				printf("iir %x\n", *((unsigned int*)0xE0010008));
-				printf("vri %x\n", VICRawIntr);
-				printf("vis %x\n", VICIrqStatus);
-				printf("vfs %x\n\n\n", VICFiqStatus);
-				restoreIRQ(m);
-			}
-			if(chr == 'y') {
-				uart_tx_fifo(0, '!');
-				uart_tx_fifo(0, '!');
-				uart_tx_fifo(0, '!');
-			}
 		}
+
 		if(uart_rx_fifo(1, &chr)) {
-			//uart_tx_fifo(0, chr);
 			nmea_process(&chr, 1);
 		}
 	}
 
 	return 0;
 }
-
