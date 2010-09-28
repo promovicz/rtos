@@ -23,7 +23,7 @@ tty_write(struct tty *t, const char *buf, size_t len)
 	*/
 	off_t i;
 	for(i = 0; i < len; i++) {
-		vcom_tx_nonblocking(buf[i]);
+		vcom_tx_fifo(buf[i]);
 	}
 	return len;
 }
@@ -171,14 +171,25 @@ docmd(const char *cmd)
 				*pos = 0;
 				pos++;
 			}
+		} else {
+			break;
 		}
 	}
 
+	printf("\n");
+
 	if(toknum) {
-		if(!strcmp("nmea", tok[0])) {
+		if(!strcmp("gps", tok[0])) {
 			if(toknum > 1) {
 				if(!strcmp("report", tok[1])) {
 					nmea_report();
+				}
+			}
+		}
+		if(!strcmp("vic", tok[0])) {
+			if(toknum > 1) {
+				if(!strcmp("report", tok[1])) {
+					vic_report();
 				}
 			}
 		}

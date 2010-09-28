@@ -25,6 +25,34 @@ struct vic_regs {
 
 #define INT_BIT(n) ((uint32_t)(1<<(n)))
 
+
+// XXX: LPC2148 specific
+char *vic_int_names[INT_COUNT] = {
+	"WDT",
+	"SWI",
+	"DbgCommRx",
+	"DbgCommTx",
+	"TIMER0",
+	"TIMER1",
+	"UART0",
+	"UART1",
+	"PWM0",
+	"I2C0",
+	"SPI0",
+	"SPI1",
+	"PLL",
+	"RTC",
+	"EINT0",
+	"EINT1",
+	"EINT2",
+	"EINT3",
+	"ADC0",
+	"I2C1",
+	"BOD",
+	"ADC1",
+	"USB"
+};
+
 void vic_enable(int src)
 {
 	VIC->IntEnable |= INT_BIT(src);
@@ -49,8 +77,12 @@ void vic_default(vic_handler_t handler)
 	VIC->DefVectAddr = handler;
 }
 
+#define VIC_VECT_ENABLE (1<<5)
+#define VIC_VECT_SOURCE(v) ((v)&0x1f)
+
 #define VIC_VECT_CNTL(src, enable) \
-	((uint32_t)((src)|((enable)?(1<<5):0)))
+	((uint32_t)((src)|((enable)?VIC_VECT_ENABLE:0)))
+
 
 void vic_configure(int vector, int src, vic_handler_t handler)
 {
@@ -64,30 +96,21 @@ void vic_deconfigure(int vector)
 	VIC->VectAddr[vector] = 0;
 }
 
-
-
-#if 0
-#include <stdio.h>
-
-#define print_offsetof(st, m) \
-	printf("member %s is at offset 0x%lx\n", #m, __builtin_offsetof(st, m));
-
-int
-main(void) {
-	print_offsetof(struct vic_regs, IRQStatus);
-	print_offsetof(struct vic_regs, FIQStatus);
-	print_offsetof(struct vic_regs, RawIntr);
-	print_offsetof(struct vic_regs, IntSelect);
-	print_offsetof(struct vic_regs, IntEnable);
-	print_offsetof(struct vic_regs, IntEnableClear);
-	print_offsetof(struct vic_regs, SoftInt);
-	print_offsetof(struct vic_regs, SoftIntClear);
-	print_offsetof(struct vic_regs, Protection);
-	print_offsetof(struct vic_regs, Vector);
-	print_offsetof(struct vic_regs, DefVectAddr);
-	print_offsetof(struct vic_regs, VectAddr);
-	print_offsetof(struct vic_regs, VectCntl);
-	return 0;
+void vic_report(void)
+{
+	int i;
+	for(i = 0; i < INT_COUNT; i++) {
+		uint32_t mask = (1<<i);
+		if(VIC->IntEnable&mask) {
+			printf("src %s enabled %s\n", vic_int_names[i],
+					(VIC->IntSelect&mask)?"fiq":"");
+		}
+	}
+	for(i = 0; i < 16; i++) {
+		uint32_t cntl = VIC->VectCntl[i];
+		if(cntl&VIC_VECT_ENABLE) {
+			int src = VIC_VECT_SOURCE(cntl);
+			printf("vec %d enabled src %s\n", i, vic_int_names[src]);
+		}
+	}
 }
-
-#endif

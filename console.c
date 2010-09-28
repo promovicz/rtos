@@ -44,13 +44,13 @@ int putchar(int c)
 {
 	if(c == '\n') {
 		if(consirq) {
-			vcom_tx_nonblocking('\r');
+			vcom_tx_fifo('\r');
 		} else {
 			uart_tx_fifo(0, '\r');
 		}
 	}
 	if(consirq) {
-		vcom_tx_nonblocking(c);
+		vcom_tx_fifo(c);
 	} else {
 		uart_tx_fifo(0, c);
 	}

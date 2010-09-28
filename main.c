@@ -72,9 +72,9 @@ int errno;
 
 #define BAUD_RATE	115200
 
-#define	USB_INT_VECT_NUM	0
-#define UART0_INT_VECT_NUM  1
-#define UART1_INT_VECT_NUM  2
+#define	INTV_USB	0
+#define INTV_UART0  1
+#define INTV_UART1  2
 
 #define IRQ_MASK 0x00000080
 
@@ -119,14 +119,9 @@ int consirq = 0;
 
 struct tty tser;
 
-/*************************************************************************
-	main
-	====
-**************************************************************************/
-int main(void)
-{
-	int c;
 
+int main (void)
+{
 	HalSysInit();
 
 	PINSEL0 = (PINSEL0 & ~0x000F000F) | 0x00050005;
@@ -136,9 +131,9 @@ int main(void)
 
 	vcom_init();
 
-	vic_configure(USB_INT_VECT_NUM, INT_USB, &USBIntHandler);
-	vic_configure(UART0_INT_VECT_NUM, INT_UART0, &UART0IntHandler);
-	vic_configure(UART1_INT_VECT_NUM, INT_UART1, &UART1IntHandler);
+	vic_configure(INTV_USB, INT_USB, &USBIntHandler);
+	vic_configure(INTV_UART0, INT_UART0, &UART0IntHandler);
+	vic_configure(INTV_UART1, INT_UART1, &UART1IntHandler);
 
 	vic_enable(INT_USB);
 	vic_enable(INT_UART0);
@@ -157,7 +152,7 @@ int main(void)
 	uint8_t chr;
 
 	while (1) {
-		if(vcom_rx_nonblocking(&chr)) {
+		if(vcom_rx_fifo(&chr)) {
 			tty_feed(&tser, chr);
 		}
 

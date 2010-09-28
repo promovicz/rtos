@@ -192,7 +192,6 @@ void nmea_process_gpgsv()
 				sats[numsats].satelev = elv;
 				sats[numsats].satazim = azi;
 				sats[numsats].satsnr  = snr;
-
 				numsats++;
 			}
 

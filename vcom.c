@@ -312,13 +312,13 @@ static void USBDevIntHandler(U8 bDevStatus)
 	}
 }
 
-bool_t vcom_tx_nonblocking(uint8_t c)
+bool_t vcom_tx_fifo(uint8_t c)
 {
 	return fifo_put(&txfifo, c);
 }
 
 
-bool_t vcom_rx_nonblocking(uint8_t *c)
+bool_t vcom_rx_fifo(uint8_t *c)
 {
 	return fifo_get(&rxfifo, c);
 }

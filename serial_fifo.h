@@ -27,7 +27,7 @@
 
 #include "type.h"
 
-#define VCOM_FIFO_SIZE	128
+#define VCOM_FIFO_SIZE	2048
 
 typedef struct {
 	int		head;

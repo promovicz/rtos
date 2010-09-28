@@ -135,10 +135,10 @@ static inline uint8_t uart_reg_read(uart_t uart, enum uart_reg r)
 }
 
 fifo_t uart_rx_fifos[2];
-char uart_rx_fifo_buf[128][2];
+char uart_rx_fifo_buf[VCOM_FIFO_SIZE][2];
 
 fifo_t uart_tx_fifos[2];
-char uart_tx_fifo_buf[128][2];
+char uart_tx_fifo_buf[VCOM_FIFO_SIZE][2];
 
 extern int icount[2];
 
