@@ -68,6 +68,8 @@ int errno;
 
 #include "nmea.h"
 
+#include "gpio.h"
+
 #include "cli.h"
 
 #define BAUD_RATE	115200
@@ -150,6 +152,14 @@ int main (void)
 	tty_init(&tser);
 
 	uint8_t chr;
+
+#define LED_STAT0 2
+#define LED_STAT1 11
+
+	gpio_direction(0, LED_STAT0, TRUE);
+	gpio_direction(0, LED_STAT1, TRUE);
+	gpio_set(0, LED_STAT0);
+	gpio_clear(0, LED_STAT1);
 
 	while (1) {
 		if(vcom_rx_fifo(&chr)) {

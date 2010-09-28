@@ -29,5 +29,5 @@ void	HalSysInit(void);
 int		HalSysGetCCLK(void);
 int		HalSysGetPCLK(void);
 
-void	HalPinSelect(U8 bPin, U8 bFunc);
+//void	HalPinSelect(U8 bPin, U8 bFunc);
 
