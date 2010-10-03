@@ -148,7 +148,7 @@ void ssp_clock(uint32_t f)
 	uint32_t div = HalSysGetPCLK() / f;
 
 	if(div < 2) {
-		div = 2; // XXx
+		div = 2; // XXX
 	}
 	if(div > 254) {
 		div = 254; // XXX

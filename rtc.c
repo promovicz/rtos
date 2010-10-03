@@ -129,3 +129,6 @@ typedef uint16_t rtc_doy_t;
 typedef uint8_t  rtc_month_t;
 typedef uint16_t rtc_year_t;
 
+void rtc_init()
+{
+}

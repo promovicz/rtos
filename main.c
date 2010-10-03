@@ -70,6 +70,10 @@ int errno;
 
 #include "gpio.h"
 
+#include "timer.h"
+
+#include "ssp.h"
+
 #include "cli.h"
 
 #define BAUD_RATE	115200
@@ -77,6 +81,13 @@ int errno;
 #define	INTV_USB	0
 #define INTV_UART0  1
 #define INTV_UART1  2
+#define INTV_TIMER0 3
+#define INTV_TIMER1 4
+
+#define LED_STAT0 2
+#define LED_STAT1 11
+
+
 
 #define IRQ_MASK 0x00000080
 
@@ -85,14 +96,12 @@ int errno;
 static void USBIntHandler(void) __attribute__ ((interrupt("IRQ")));
 static void UART0IntHandler(void) __attribute__ ((interrupt("IRQ")));
 static void UART1IntHandler(void) __attribute__ ((interrupt("IRQ")));
+static void Timer0IntHandler(void) __attribute__ ((interrupt("IRQ")));
+static void Timer1IntHandler(void) __attribute__ ((interrupt("IRQ")));
 static void DefIntHandler(void) __attribute__ ((interrupt("IRQ")));
-
-
-int default_irq_count = 0;
 
 static void DefIntHandler(void)
 {
-	default_irq_count++;
 	VICVectAddr = 0x00;
 }
 
@@ -114,6 +123,18 @@ static void USBIntHandler(void)
 	VICVectAddr = 0x00;
 }
 
+static void Timer0IntHandler(void)
+{
+	timer_irq(0);
+	VICVectAddr = 0x00;
+}
+
+static void Timer1IntHandler(void)
+{
+	timer_irq(1);
+	VICVectAddr = 0x00;
+}
+
 
 int icount[2];
 
@@ -121,25 +142,90 @@ int consirq = 0;
 
 struct tty tser;
 
+volatile uint32_t systime = 0;
+
+void t0match(timer_t t, timer_match_t m)
+{
+	systime++;
+	if(!(systime%1000)) {
+		if((systime/1000)&1) {
+			gpio_set(0, LED_STAT1);
+		} else {
+			gpio_clear(0, LED_STAT1);
+		}
+	}
+}
+
+void mdelay(uint32_t msec)
+{
+	uint32_t start = systime;
+	uint32_t end = start + msec;
+	while(systime <= end) { }
+	return;
+}
+
+void command_handler(struct tty *t, int argc, char **argv)
+{
+	if(argc) {
+		if(!strcmp("gps", argv[0])) {
+			if(argc > 1) {
+				if(!strcmp("report", argv[1])) {
+					nmea_report();
+				}
+			}
+		}
+		if(!strcmp("vic", argv[0])) {
+			if(argc > 1) {
+				if(!strcmp("report", argv[1])) {
+					vic_report();
+				}
+			}
+		}
+		if(!strcmp("ssp", argv[0])) {
+			uint8_t r = ssp_transfer(0xAA);
+			printf("sent 0xAA, recv 0x%x\n", r);
+		}
+		if(!strcmp("time", argv[0])) {
+			uint32_t t = systime;
+			printf("time %d.%d\n", t/1000, t%1000);
+		}
+	}
+}
 
 int main (void)
 {
 	HalSysInit();
 
-	PINSEL0 = (PINSEL0 & ~0x000F000F) | 0x00050005;
+	PINSEL0 = (PINSEL0 & ~0x000FFF0F) | 0x00055505; // UART0, UART1, SPI
+	PINSEL1 = (PINSEL1 & ~0x000003FC) | 0x000002A8; // SSP
 
 	uart_init(UART0, 115200);
 	uart_init(UART1, 9600);
+
+	ssp_init();
+	ssp_clock(400000);
+	ssp_enable(TRUE);
 
 	vcom_init();
 
 	vic_configure(INTV_USB, INT_USB, &USBIntHandler);
 	vic_configure(INTV_UART0, INT_UART0, &UART0IntHandler);
 	vic_configure(INTV_UART1, INT_UART1, &UART1IntHandler);
+	vic_configure(INTV_TIMER0, INT_TIMER0, &Timer0IntHandler);
+	vic_configure(INTV_TIMER1, INT_TIMER1, &Timer1IntHandler);
 
 	vic_enable(INT_USB);
 	vic_enable(INT_UART0);
 	vic_enable(INT_UART1);
+	vic_enable(INT_TIMER0);
+
+	timer_init(TIMER0);
+	timer_prescale(TIMER0, 60);
+
+	timer_match_configure(TIMER0, MR0, 1000, TIMER_MATCH_INTERRUPT|TIMER_MATCH_RESET);
+	timer_match_handler(TIMER0, MR0, &t0match);
+
+	timer_enable(TIMER0, TRUE);
 
 	enableIRQ();
 
@@ -150,11 +236,9 @@ int main (void)
 	nmea_init();
 
 	tty_init(&tser);
+	tty_command_handler(&tser, &command_handler);
 
 	uint8_t chr;
-
-#define LED_STAT0 2
-#define LED_STAT1 11
 
 	gpio_direction(0, LED_STAT0, TRUE);
 	gpio_direction(0, LED_STAT1, TRUE);

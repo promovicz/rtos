@@ -15,12 +15,6 @@
 void
 tty_write(struct tty *t, const char *buf, size_t len)
 {
-	/*
-	size_t r = fwrite(buf, 1, len, stdout);
-	if(r != len) {
-		abort();
-	}
-	*/
 	off_t i;
 	for(i = 0; i < len; i++) {
 		vcom_tx_fifo(buf[i]);
@@ -149,8 +143,10 @@ tty_remove_at(struct tty *t, off_t p)
 	return 0;
 }
 
+extern uint32_t systime;
+
 void
-docmd(const char *cmd)
+docmd(struct tty *t, const char *cmd)
 {
 	char *tok[512];
 	char buf[512];
@@ -178,21 +174,8 @@ docmd(const char *cmd)
 
 	printf("\n");
 
-	if(toknum) {
-		if(!strcmp("gps", tok[0])) {
-			if(toknum > 1) {
-				if(!strcmp("report", tok[1])) {
-					nmea_report();
-				}
-			}
-		}
-		if(!strcmp("vic", tok[0])) {
-			if(toknum > 1) {
-				if(!strcmp("report", tok[1])) {
-					vic_report();
-				}
-			}
-		}
+	if(t->t_command_handler) {
+		t->t_command_handler(t, toknum, tok);
 	}
 }
 
@@ -240,7 +223,7 @@ tty_feed(struct tty *t, int c)
 			break;
 		case CTRL('m'):
 			if(strlen(&t->t_line[t->t_start])) {
-				docmd(&t->t_line[t->t_start]);
+				docmd(t, &t->t_line[t->t_start]);
 			} else {
 				tty_writestr(t, "\r\n");
 			}
@@ -256,6 +239,12 @@ void
 tty_finish(struct tty *t)
 {
 	tty_writestr(t, "\r\n");
+}
+
+void
+tty_command_handler(struct tty *t, tty_command_handler_t handler)
+{
+	t->t_command_handler = handler;
 }
 
 #if 0
