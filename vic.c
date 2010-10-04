@@ -102,8 +102,8 @@ void vic_report(void)
 	for(i = 0; i < INT_COUNT; i++) {
 		uint32_t mask = (1<<i);
 		if(VIC->IntEnable&mask) {
-			printf("src %s enabled %s\n", vic_int_names[i],
-					(VIC->IntSelect&mask)?"fiq":"");
+			printf("src %s enabled type %s\n", vic_int_names[i],
+					(VIC->IntSelect&mask)?"fiq":"irq");
 		}
 	}
 	for(i = 0; i < 16; i++) {

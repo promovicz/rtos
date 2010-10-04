@@ -184,9 +184,18 @@ void command_handler(struct tty *t, int argc, char **argv)
 				}
 			}
 		}
-		if(!strcmp("ssp", argv[0])) {
-			scp_init();
-			scp_measure_once();
+		if(!strcmp("scp", argv[0])) {
+			if(argc > 1) {
+				if(!strcmp("reset", argv[1])) {
+					scp_init();
+				}
+				if(!strcmp("measure", argv[1])) {
+					scp_measure();
+				}
+				if(!strcmp("selftest", argv[1])) {
+					scp_selftest();
+				}
+			}
 		}
 		if(!strcmp("time", argv[0])) {
 			uint32_t t = systime;
@@ -259,6 +268,8 @@ int main (void)
 
 	gpio_direction(0, CSEL_SCP1000, TRUE);
 	gpio_set(0, CSEL_SCP1000);
+
+	scp_init();
 
 	while (1) {
 		if(vcom_rx_fifo(&chr)) {

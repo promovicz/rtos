@@ -93,6 +93,11 @@ void scp_init(void)
 {
 	uint8_t r;
 
+	r = scp_read_r8(STATUS);
+	if(!(r&STATUS_STARTING)) {
+		scp_write_r8(RSTR, 0x01);
+	}
+
 	mdelay(50);
 
 	int i = 0;
@@ -100,22 +105,16 @@ void scp_init(void)
 		mdelay(10);
 		r = scp_read_r8(STATUS);
 		if(i++ > 10) {
-			printf("SCP INIT FAILED\n");
+			printf("SCP init failed\n");
 		}
 	} while(r&STATUS_STARTING);
 
 	r = scp_read_r8(DATARD8);
-	printf("SCP DATARD8 %x\n", r);
-	if(r&1) {
-		printf("SCP READY\n");
-	} else {
-		printf("SCP EEP CSUM ERR\n");
+	if(!(r&1)) {
+		printf("SCP EEPROM checksum error\n");
 	}
-	
-	printf("SCP rev %d\n", scp_read_r8(REVID));
 
-	printf("dta %x opr %x ops %x sta %x\n", r, scp_read_r8(OPERATION), scp_read_r8(OPSTATUS), scp_read_r8(STATUS));
-
+	printf("SCP revision %d\n", scp_read_r8(REVID));
 }
 
 void scp_waitidle(void)
@@ -125,6 +124,15 @@ void scp_waitidle(void)
 		mdelay(10);
 		r = scp_read_r8(OPERATION);
 	} while(r != OPERATION_IDLE);
+}
+
+void scp_waitdata(void)
+{
+	uint8_t r;
+	do {
+		mdelay(10);
+		r = scp_read_r8(STATUS);
+	} while (!(r&STATUS_DATAREADY));
 }
 
 void scp_selftest(void)
@@ -145,7 +153,7 @@ void scp_selftest(void)
 	}
 }
 
-void scp_measure_once(void)
+void scp_measure(void)
 {
 	uint32_t pres = 0;
 	uint16_t temp = 0;
@@ -154,19 +162,14 @@ void scp_measure_once(void)
 
 	scp_write_r8(OPERATION, OPERATION_MEASURE_LOWPOWER);
 
-	uint8_t r;
-
-	uint32_t i = 0;
-	do {
-		mdelay(10);
-		r = scp_read_r8(STATUS);
-		i++;
-	} while (!(r&STATUS_DATAREADY));
+	scp_waitdata();
 
 	temp = scp_read_r16(TEMPOUT);
 
 	pres = scp_read_r8(DATARD8) << 16;
 	pres |= scp_read_r16(DATARD16);
 
-	printf("pressure %d temperature %d cycles %d\n", pres, temp, i);
+	printf("scp pressure %d.%02d pascals\n", pres/4, (pres%4)*25);
+	printf("scp temperature %d.%02d degrees celsius\n", temp/20, (temp%20)*5);
+
 }
