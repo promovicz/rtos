@@ -74,6 +74,8 @@ int errno;
 
 #include "ssp.h"
 
+#include "scp.h"
+
 #include "cli.h"
 
 #define BAUD_RATE	115200
@@ -87,6 +89,7 @@ int errno;
 #define LED_STAT0 2
 #define LED_STAT1 11
 
+#define CSEL_SCP1000 20
 
 
 #define IRQ_MASK 0x00000080
@@ -182,8 +185,8 @@ void command_handler(struct tty *t, int argc, char **argv)
 			}
 		}
 		if(!strcmp("ssp", argv[0])) {
-			uint8_t r = ssp_transfer(0xAA);
-			printf("sent 0xAA, recv 0x%x\n", r);
+			scp_init();
+			scp_measure_once();
 		}
 		if(!strcmp("time", argv[0])) {
 			uint32_t t = systime;
@@ -192,18 +195,27 @@ void command_handler(struct tty *t, int argc, char **argv)
 	}
 }
 
+void csel_scp(bool_t yeah)
+{
+	if(yeah) {
+		gpio_clear(0, CSEL_SCP1000);
+	} else {
+		gpio_set(0, CSEL_SCP1000);
+	}
+}
+
 int main (void)
 {
 	HalSysInit();
 
 	PINSEL0 = (PINSEL0 & ~0x000FFF0F) | 0x00055505; // UART0, UART1, SPI
-	PINSEL1 = (PINSEL1 & ~0x000003FC) | 0x000002A8; // SSP
+	PINSEL1 = (PINSEL1 & ~0x000003FC) | 0x000000A8; // SSP with SSEL as GPIO
 
 	uart_init(UART0, 115200);
 	uart_init(UART1, 9600);
 
 	ssp_init();
-	ssp_clock(400000);
+	ssp_clock(100000);
 	ssp_enable(TRUE);
 
 	vcom_init();
@@ -244,6 +256,9 @@ int main (void)
 	gpio_direction(0, LED_STAT1, TRUE);
 	gpio_set(0, LED_STAT0);
 	gpio_clear(0, LED_STAT1);
+
+	gpio_direction(0, CSEL_SCP1000, TRUE);
+	gpio_set(0, CSEL_SCP1000);
 
 	while (1) {
 		if(vcom_rx_fifo(&chr)) {

@@ -4,6 +4,7 @@
 #include "hal.h"
 
 #define WAIT_TXF_NOTFULL() do { while (!(SSP->SR & SR_TNF)); } while (0)
+#define WAIT_TXF_EMPTY() do { while(!(SSP->SR & SR_TFE)); } while (0)
 #define WAIT_RXF_NOTEMPTY() do { while (!(SSP->SR & SR_RNE)); } while (0)
 #define WAIT_IDLE() do { while (SSP->SR & SR_BSY); } while (0)
 
@@ -29,7 +30,7 @@ struct ssp_regs {
 };
 
 #define SSP_BASE (0xE0068000)
-#define SSP ((struct ssp_regs *)SSP_BASE)
+#define SSP ((volatile struct ssp_regs *)SSP_BASE)
 
 enum ssp_cr0_bits {
 	CR0_DSS_4BIT  = 0x0003,
@@ -48,7 +49,7 @@ enum ssp_cr0_bits {
 
 	CR0_FRF_SPI   = 0x0000,
 	CR0_FRF_SSI   = 0x0010,
-	CR0_FRF_MICROWIRE = 0x0020,
+	CR0_FRF_UWIRE = 0x0020,
 
 	CR0_CPOL_AWAY = (0<<6),
 	CR0_CPOL_BACK = (1<<6),
@@ -169,4 +170,9 @@ uint8_t ssp_transfer(uint8_t d)
 	WAIT_RXF_NOTEMPTY();
 
 	return SSP->DR;
+}
+
+void ssp_flush(void)
+{
+	WAIT_IDLE();
 }

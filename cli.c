@@ -143,8 +143,6 @@ tty_remove_at(struct tty *t, off_t p)
 	return 0;
 }
 
-extern uint32_t systime;
-
 void
 docmd(struct tty *t, const char *cmd)
 {
