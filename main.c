@@ -199,7 +199,7 @@ void command_handler(struct tty *t, int argc, char **argv)
 		}
 		if(!strcmp("time", argv[0])) {
 			uint32_t t = systime;
-			printf("time %d.%d\n", t/1000, t%1000);
+			printf("sys time %07d.%03d\n", t/1000, t%1000);
 		}
 	}
 }
