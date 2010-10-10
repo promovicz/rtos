@@ -1,7 +1,7 @@
 #ifndef GPIO_H
 #define GPIO_H
 
-#include "types.h"
+#include <core/types.h>
 
 void gpio_direction(int port, int pin, bool_t output);
 

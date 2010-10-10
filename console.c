@@ -36,7 +36,7 @@
 #include <lpc/uart.h>
 
 #include "vcom.h"
-#include "cli.h"
+#include <core/tty.h>
 
 extern int consirq;
 

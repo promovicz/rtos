@@ -2,7 +2,7 @@
 #ifndef BIKE_UART_H
 #define BIKE_UART_H
 
-#include "types.h"
+#include <core/types.h>
 
 typedef enum {
 	UART0 = 0,

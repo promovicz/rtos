@@ -72,7 +72,7 @@ int errno;
 
 #include "scp.h"
 
-#include "cli.h"
+#include <core/tty.h>
 
 #define BAUD_RATE	115200
 
@@ -143,7 +143,7 @@ struct tty tser;
 
 volatile uint32_t systime = 0;
 
-void t0match(timer_t t, timer_match_t m)
+void t0match(int t, timer_match_t m)
 {
 	systime++;
 	if(!(systime%1000)) {

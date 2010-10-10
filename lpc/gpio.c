@@ -14,7 +14,7 @@ struct gpio_regs {
 #define PORT1_BASE (0xE0028010)
 #define PORT1 ((struct gpio_regs *)PORT1_BASE)
 
-struct gpio_regs *ports[] = {PORT0, PORT1};
+volatile struct gpio_regs *ports[] = {PORT0, PORT1};
 
 void gpio_direction(int port, int pin, bool_t output)
 {

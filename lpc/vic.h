@@ -1,7 +1,7 @@
 #ifndef VIC_H
 #define VIC_H
 
-#include "types.h"
+#include <core/types.h>
 
 typedef void (*vic_handler_t) (void);
 

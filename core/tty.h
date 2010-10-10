@@ -1,10 +1,12 @@
-#ifndef CLI_H
-#define CLI_H
+#ifndef CORE_TTY_H
+#define CORE_TTY_H
 
 #include <sys/types.h>
 
 #define TTY_WIDTH  80
 #define TTY_HEIGHT 25
+
+struct tty;
 
 typedef void (*tty_command_handler_t) (struct tty *t, int argc, char **argv);
 
@@ -29,4 +31,4 @@ void tty_message(struct tty *t, const char *msg);
 
 void tty_command_handler(struct tty *t, tty_command_handler_t handler);
 
-#endif /* !CLI_H */
+#endif /* !CORE_TTY_H */

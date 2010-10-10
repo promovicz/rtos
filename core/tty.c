@@ -1,6 +1,7 @@
 
-#include "cli.h"
+#include "tty.h"
 
+// XXX verify includes
 #include <termios.h>
 #include <stdio.h>
 #include <stdlib.h>

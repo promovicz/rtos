@@ -112,7 +112,7 @@ static struct timer_regs * const timers[] = {TIMER0_REGS, TIMER1_REGS};
 static timer_match_handler_t timer_match_handlers[2][4] = {{0,0,0,0},{0,0,0,0}};
 
 
-void timer_init(timer_t t)
+void timer_init(int t)
 {
 	// disable interrupts
 	timers[t]->IR = 0;
@@ -134,7 +134,7 @@ void timer_init(timer_t t)
 	timers[t]->PC = 0;
 }
 
-void timer_enable(timer_t t, bool_t enable)
+void timer_enable(int t, bool_t enable)
 {
 	if(enable) {
 		timers[t]->TCR = TCR_COUNTER_ENABLE;
@@ -143,19 +143,19 @@ void timer_enable(timer_t t, bool_t enable)
 	}
 }
 
-void timer_prescale(timer_t t, uint32_t prescale)
+void timer_prescale(int t, uint32_t prescale)
 {
 	timers[t]->PR = prescale;
 	timers[t]->PC = 0;
 }
 
-void timer_reset(timer_t t)
+void timer_reset(int t)
 {
 	timers[t]->TCR |= TCR_COUNTER_RESET;
 	timers[t]->TCR &= ~TCR_COUNTER_RESET;
 }
 
-void timer_match_configure(timer_t t, timer_match_t mr, uint32_t value, timer_match_action_t flags)
+void timer_match_configure(int t, timer_match_t mr, uint32_t value, timer_match_action_t flags)
 {
 	uint32_t mrf;
 	timers[t]->MR[mr] = value;
@@ -169,19 +169,19 @@ void timer_match_configure(timer_t t, timer_match_t mr, uint32_t value, timer_ma
 	}
 }
 
-void timer_match_handler(timer_t t, timer_match_t m, timer_match_handler_t h)
+void timer_match_handler(int t, timer_match_t m, timer_match_handler_t h)
 {
 	timer_match_handlers[t][m] = h;
 }
 
-void timer_irq_match(timer_t t, timer_match_t m)
+void timer_irq_match(int t, timer_match_t m)
 {
 	if(timer_match_handlers[t][m]) {
 		timer_match_handlers[t][m](t,m);
 	}
 }
 
-void timer_irq(timer_t t)
+void timer_irq(int t)
 {
 	uint32_t f = timers[t]->IR;
 

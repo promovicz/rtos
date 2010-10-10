@@ -2,7 +2,7 @@
 #ifndef SSP_H
 #define SSP_H
 
-#include "types.h"
+#include <core/types.h>
 
 void ssp_init(void);
 void ssp_clock(uint32_t f);

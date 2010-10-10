@@ -1,5 +1,5 @@
 
-#include "types.h"
+#include <core/types.h>
 
 struct spi_regs {
 	uint16_t CR;

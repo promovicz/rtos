@@ -2,7 +2,7 @@
 #ifndef VCOM_H
 #define VCOM_H
 
-#include "types.h"
+#include <core/types.h>
 
 void vcom_init(void);
 void vcom_connect(bool_t connect);

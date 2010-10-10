@@ -1,5 +1,5 @@
 
-#include "types.h"
+#include <core/types.h>
 
 struct mam_regs {
 	uint8_t CR;

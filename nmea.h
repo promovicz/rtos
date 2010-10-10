@@ -1,7 +1,7 @@
 #ifndef NMEA_H
 #define NMEA_H
 
-#include "cli.h"
+#include <core/tty.h>
 
 void nmea_init(void);
 
