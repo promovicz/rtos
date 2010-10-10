@@ -166,16 +166,15 @@ SECTIONS
 
 	.text :								/* collect all sections that should go into FLASH after startup  */ 
 	{
-		*(.text)						/* all .text sections (code)  */
-		*(.rodata)						/* all .rodata sections (constants, strings, etc.)  */
-		*(.rodata*)						/* all .rodata* sections (constants, strings, etc.)  */
+		*(.text) *(.text.*)				/* all .text sections (code)  */
+		*(.rodata) *(.rodata.*)			/* all .rodata sections (constants, strings, etc.)  */
 		*(.glue_7)						/* all .glue_7 sections  (no idea what these are) */
 		*(.glue_7t)						/* all .glue_7t sections (no idea what these are) */
 		_etext = .;						/* define a global symbol _etext just after the last code byte */
 	} >flash							/* put all the above into FLASH */
 	
 
-	.usbdma :
+	.usbdma (NOLOAD) :
      {
         *(.usbdma)
         . = ALIGN(4);
@@ -184,11 +183,11 @@ SECTIONS
 	.data :								/* collect all initialized .data sections that go into RAM  */ 
 	{
 		_data = .;						/* create a global symbol marking the start of the .data section  */
-		*(.data)						/* all .data sections  */
+		*(.data) *(.data.*)				/* all .data sections  */
 		_edata = .;						/* define a global symbol marking the end of the .data section  */
 	} >ram AT >flash					/* put all the above into RAM (but load the LMA copy into FLASH) */
 
-	.bss :								/* collect all uninitialized .bss sections that go into RAM  */
+	.bss (NOLOAD) :								/* collect all uninitialized .bss sections that go into RAM  */
 	{
 		_bss_start = .;					/* define a global symbol marking the start of the .bss section */
 		*(.bss)							/* all .bss sections  */

@@ -30,11 +30,62 @@ struct {
 
 	char *type;
 	char *arguments[NMEA_MAX_ARGS];
+
+	uint32_t errframing;
+	uint32_t errunknown;
 } nmea;
+
+struct gps_sat {
+	int satid;
+	int satelev;
+	int satazim;
+	int satsnr;
+};
+
+struct {
+	bool_t fixvalid;
+	int fixtype;
+	int fixhour;
+	int fixminute;
+	int fixsecond;
+	int fixmilisecond;
+
+	bool_t satsvalid;
+	int numvissats;
+	struct gps_sat vissats[12];
+} gps;
+
+
+enum gps_fixtype {
+	FIX_NONE = 0,
+	FIX_GPS_SPS,
+	FIX_GPS_DGPS,
+	FIX_GPS_PPS,
+	FIX_RTK_FIXED,
+	FIX_RTK_FLOAT,
+	FIX_ESTIMATED,
+	FIX_MANUAL,
+	FIX_SIMULATOR,
+	_FIX_COUNT,
+};
+
+const char *gps_fixtype_str[] = {
+	"None",
+	"GPS SPS",
+	"GPS DGPS",
+	"GPS PPS",
+	"RTK Fixed",
+	"RTK Float",
+	"Estimated",
+	"Manual",
+	"Simulator",
+};
 
 void
 nmea_init() {
 	nmea.state = STATE_IDLE;
+	gps.fixvalid = BOOL_FALSE;
+	gps.satsvalid = BOOL_FALSE;
 }
 
 void nmea_framing_error();
@@ -59,50 +110,6 @@ nmea_push(char c)
 	}
 }
 
-struct gps_sat {
-	int satid;
-	int satelev;
-	int satazim;
-	int satsnr;
-};
-
-struct {
-	int fixtype;
-	int fixhour;
-	int fixminute;
-	int fixsecond;
-	int fixmilisecond;
-
-	int numvissats;
-	struct gps_sat vissats[12];
-} gps;
-
-
-enum gps_fixtype {
-	FIX_NONE = 0,
-	FIX_GPS_SPS,
-	FIX_GPS_DGPS,
-	FIX_GPS_PPS,
-	FIX_RTK_FIXED,
-	FIX_RTK_FLOAT,
-	FIX_ESTIMATED,
-	FIX_MANUAL,
-	FIX_SIMULATOR,
-	_FIX_COUNT,
-};
-
-char *gps_fixtype_str[] = {
-	"None",
-	"GPS SPS",
-	"GPS DGPS",
-	"GPS PPS",
-	"RTK Fixed",
-	"RTK Float",
-	"Estimated",
-	"Manual",
-	"Simulator",
-};
-
 bool_t
 getargstr(int num, int min, int max, int *v)
 {
@@ -122,10 +129,14 @@ getargstr(int num, int min, int max, int *v)
 
 void nmea_report()
 {
-	printf("fixtype %d - %s\n", gps.fixtype, gps_fixtype_str[gps.fixtype]);
-	printf("time %d:%d:%d.%d\n", gps.fixhour, gps.fixminute, gps.fixsecond, gps.fixmilisecond);
-	if(gps.numvissats) {
-		printf("%d sats visible\n", gps.numvissats);
+	printf("errors: framing %d, unknown sentence %d\n", nmea.errframing, nmea.errunknown);
+	if(gps.fixvalid) {
+		printf("fix at %d:%d:%d.%d type %d (%s)\n",
+			   gps.fixhour, gps.fixminute, gps.fixsecond, gps.fixmilisecond,
+			   gps.fixtype, gps_fixtype_str[gps.fixtype]);
+	}
+	if(gps.satsvalid && gps.numvissats) {
+		printf("%d sats visible:\n", gps.numvissats);
 		int i;
 		for(i = 0; i < 12; i++) {
 			struct gps_sat *sat = &gps.vissats[i];
@@ -136,6 +147,20 @@ void nmea_report()
 				break;
 			}
 		}
+	}
+}
+
+void nmea_command(struct tty *t, int argc, char **argv)
+{
+	if(argc > 0) {
+		if(!strcmp(argv[1], "report")) {
+			nmea_report();
+		}
+		if(!strcmp(argv[1], "reset")) {
+			nmea_init();
+		}
+	} else {
+		nmea_report();
 	}
 }
 
@@ -272,6 +297,10 @@ nmea_process(const char *buf, size_t nbytes)
 			if(isxdigit(c)) {
 				nmea_push(c);
 			} else if (c=='\r') {
+				// XXX process and verify checksum
+				//     by computing incrementally while receiving.
+				//     remember that saved sentence is modified
+				//     for null-termination.
 				nmea_process_sentence();
 				nmea.state = STATE_IDLE;
 			} else {
@@ -284,13 +313,13 @@ nmea_process(const char *buf, size_t nbytes)
 void
 nmea_framing_error()
 {
-	puts("NMEA framing error");
+	nmea.errframing++;
 	nmea.state = STATE_IDLE;
 }
 
 void
 nmea_unknown_sentence()
 {
-	puts("NMEA unknown sentence");
+	nmea.errunknown++;
 	nmea.state = STATE_IDLE;
 }

@@ -6,7 +6,7 @@ SIZE=$(CROSS)size
 OBJCOPY=$(CROSS)objcopy
 OBJDUMP=$(CROSS)objdump
 
-CFLAGS_CONFIG=-gdwarf-2 -Os
+CFLAGS_CONFIG=-gdwarf-2 -Os -ffunction-sections
 CFLAGS_TARGET=-mcpu=arm7tdmi -mfloat-abi=soft -mno-thumb-interwork
 CFLAGS_WARNINGS=-Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align -Wimplicit -Wunused -Wredundant-decls -Wnested-externs -Wbad-function-cast -Wsign-compare -Waggregate-return
 

@@ -171,11 +171,7 @@ void command_handler(struct tty *t, int argc, char **argv)
 {
 	if(argc) {
 		if(!strcmp("gps", argv[0])) {
-			if(argc > 1) {
-				if(!strcmp("report", argv[1])) {
-					nmea_report();
-				}
-			}
+			nmea_command(t, argc-1, argv+1);
 		}
 		if(!strcmp("vic", argv[0])) {
 			if(argc > 1) {
@@ -259,8 +255,6 @@ int main (void)
 	tty_init(&tser);
 	tty_command_handler(&tser, &command_handler);
 
-	uint8_t chr;
-
 	gpio_direction(0, LED_STAT0, TRUE);
 	gpio_direction(0, LED_STAT1, TRUE);
 	gpio_set(0, LED_STAT0);
@@ -271,6 +265,7 @@ int main (void)
 
 	scp_init();
 
+	uint8_t chr;
 	while (1) {
 		if(vcom_rx_fifo(&chr)) {
 			tty_feed(&tser, chr);
