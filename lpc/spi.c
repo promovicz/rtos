@@ -1,4 +1,6 @@
 
+#include "types.h"
+
 struct spi_regs {
 	uint16_t CR;
 	uint8_t _pad0[2];

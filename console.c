@@ -33,9 +33,9 @@
 
 #include "console.h"
 
-#include "uart.h"
-#include "vcom.h"
+#include <lpc/uart.h>
 
+#include "vcom.h"
 #include "cli.h"
 
 extern int consirq;

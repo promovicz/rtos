@@ -59,20 +59,16 @@ int errno;
 #include "console.h"
 #include "usbapi.h"
 
-#include "vic.h"
+#include <lpc/vic.h>
+#include <lpc/uart.h>
+#include <lpc/gpio.h>
+#include <lpc/timer.h>
 
-#include "uart.h"
 #include "vcom.h"
 
 #include "serial_fifo.h"
 
 #include "nmea.h"
-
-#include "gpio.h"
-
-#include "timer.h"
-
-#include "ssp.h"
 
 #include "scp.h"
 

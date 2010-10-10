@@ -18,8 +18,9 @@ LDSCRIPT=bike.lds
 
 LIBS=lpcusb-trunk/target/usbstack.a dietlibc/bin-arm/dietlibc.a
 
-OBJS=start.o halsys.o main.o serial_fifo.o armVIC.o console.o printf.o uart.o vic.o nmea.o vcom.o cli.o ssp.o rtc.o gpio.o timer.o scp.o scb.o mam.o
-INCLUDEFLAGS=-Ilpcusb-trunk/target -Idietlibc/include
+LPCOBJS=lpc/scb.o lpc/mam.o lpc/vic.o lpc/timer.o lpc/gpio.o lpc/rtc.o lpc/ssp.o lpc/spi.o lpc/uart.o
+OBJS=start.o halsys.o main.o serial_fifo.o armVIC.o console.o printf.o nmea.o vcom.o cli.o scp.o ${LPCOBJS}
+INCLUDEFLAGS=-Ilpcusb-trunk/target -Idietlibc/include -I.
 DEFINE=-DLPC214x -DDEBUG
 
 DEPS=$(OBJS:.o=.p)

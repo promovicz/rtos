@@ -9,6 +9,18 @@
 
 /* XXX find some better method for dealing with DLAB bullpoo */
 
+#include "defines.h"
+
+static inline always_inline uint8_t readb(volatile uint8_t *a)
+{
+	return *a;
+}
+
+static inline always_inline void writeb(uint8_t v, volatile uint8_t *a)
+{
+	*a = v;
+}
+
 /* register flags used for latched register addressing */
 #define REG_FLAGS  0xFF80
 #define REG_DLAB0  0x0080

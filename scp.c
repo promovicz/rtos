@@ -1,5 +1,5 @@
 
-#include "ssp.h"
+#include <lpc/ssp.h>
 
 extern void csel_scp(bool_t yeah);
 
