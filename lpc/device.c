@@ -16,6 +16,7 @@ const struct device devs[] = {
 	{"timer1"},
 	{"uart0"},
 	{"uart1"},
+	{"usb"},
 };
 
 const char *device_name(int device)

@@ -20,10 +20,13 @@ enum {
 	DEVICE_TIMER1,
 	DEVICE_UART0,
 	DEVICE_UART1,
+	DEVICE_USB,
 
 	NUM_DEVICE,
 
 	DEVICE_NONE = -1,
 };
+
+const char *device_name(int device);
 
 #endif /* !LPC_DEVICE_H */

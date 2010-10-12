@@ -3,6 +3,8 @@
 
 #include <core/defines.h>
 
+#include <lpc/xtal.h>
+
 struct pll_regs {
 	uint8_t CON;
 	uint8_t _pad0[3];
@@ -19,7 +21,7 @@ enum pll_con_bits {
 	PLL_CON_PLLC = (1<<1),
 };
 
-static uint8_t pll_psel(uint8_t p) {
+static uint8_t pll_encode_psel(uint8_t p) {
 	uint8_t r = 0;
 	do {
 		r++;
@@ -28,8 +30,23 @@ static uint8_t pll_psel(uint8_t p) {
 	return r-1;
 }
 
+static uint8_t pll_decode_psel(uint8_t p) {
+	switch(p) {
+	case 0:
+		return 1;
+	case 1:
+		return 2;
+	case 2:
+		return 4;
+	case 3:
+		return 8;
+	default:
+		return 0;
+	}
+}
+
 #define PLL_MSEL(m) (m-1)
-#define PLL_PSEL(p) (pll_psel(p))
+#define PLL_PSEL(p) (pll_encode_psel(p))
 
 #define PLL_CFG(msel, psel) (((PLL_PSEL(psel)&0x3)<<5)|(PLL_MSEL(msel)&0x1F))
 
@@ -39,8 +56,8 @@ enum pll_stat_bits {
 	PLL_STAT_PLOCK = (1<<10),
 };
 
-#define PLL_STAT_GET_MSEL(s) (s&0x1F)
-#define PLL_STAT_GET_PSEL(s) ((s>>5)%0x3)
+#define PLL_STAT_GET_MSEL(s) ((s&0x1F)+1)
+#define PLL_STAT_GET_PSEL(s) (pll_decode_psel((s>>5)&0x3))
 
 enum pll_feed_values {
 	PLL_FEED0 = 0xAA,
@@ -123,6 +140,29 @@ void pll_connect(int pll)
 
 void pll_print(int pll)
 {
-	printf("pll %d cfg %x ctl %x stat %x\n", pll, plls[pll]->CFG, plls[pll]->CON, plls[pll]->STAT);
-	printf("60 is %x\n", PLL_CFG(pll_60mhz.mul, pll_60mhz.div));
+	uint16_t s = plls[pll]->STAT;
+
+	uint8_t m = PLL_STAT_GET_MSEL(s);
+	uint8_t d = PLL_STAT_GET_PSEL(s);
+
+	uint32_t f = xtal_frequency() * m;
+
+	const char *state = "disabled";
+	if(s&PLL_STAT_PLLE) {
+		state = "enabled";
+		if(s&PLL_STAT_PLOCK) {
+			state = "locked";
+			if(s&PLL_STAT_PLLC) {
+				state = "connected";
+			}
+		}
+	}
+
+	printf("pll %d %s, cco at %d Hz (div %d), out at %d Hz (mul %d)\n", pll, state, f*d, d, f, m);
+}
+
+void pll_report(void)
+{
+	pll_print(PLL_CORE);
+	pll_print(PLL_USB);
 }

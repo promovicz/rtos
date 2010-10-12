@@ -48,6 +48,7 @@ int errno;
 
 #include <string.h>
 
+#include <core/defines.h>
 #include <core/tty.h>
 #include <core/tick.h>
 
@@ -55,6 +56,8 @@ int errno;
 
 #include <lpc/vic.h>
 #include <lpc/pll.h>
+#include <lpc/ssp.h>
+#include <lpc/eint.h>
 #include <lpc/uart.h>
 #include <lpc/gpio.h>
 #include <lpc/timer.h>
@@ -74,14 +77,12 @@ int errno;
 
 #define BAUD_RATE	115200
 
-#define	INTV_USB	0
-#define INTV_UART0  1
-#define INTV_UART1  2
-#define INTV_TIMER0 3
-#define INTV_TIMER1 4
-
-#define LED_STAT0 2
-#define LED_STAT1 11
+#define INTV_STOP   0
+#define	INTV_USB	1
+#define INTV_UART0  2
+#define INTV_UART1  3
+#define INTV_TIMER0 4
+#define INTV_TIMER1 5
 
 #define CSEL_SCP1000 20
 
@@ -89,46 +90,62 @@ int errno;
 #define IRQ_MASK 0x00000080
 
 
-// forward declaration of interrupt handler
-static void USBIntHandler(void) __attribute__ ((interrupt("IRQ")));
-static void UART0IntHandler(void) __attribute__ ((interrupt("IRQ")));
-static void UART1IntHandler(void) __attribute__ ((interrupt("IRQ")));
-static void Timer0IntHandler(void) __attribute__ ((interrupt("IRQ")));
-static void Timer1IntHandler(void) __attribute__ ((interrupt("IRQ")));
-static void DefIntHandler(void) __attribute__ ((interrupt("IRQ")));
-
-static void DefIntHandler(void)
+static interrupt_handler void DefIntHandler(void)
 {
 	vic_ack();
 }
 
-static void UART0IntHandler(void)
+static interrupt_handler void UART0IntHandler(void)
 {
 	uart_irq(UART0);
 	vic_ack();
 }
 
-static void UART1IntHandler(void)
+static interrupt_handler void UART1IntHandler(void)
 {
 	uart_irq(UART1);
 	vic_ack();
 }
 
-static void USBIntHandler(void)
+static interrupt_handler void USBIntHandler(void)
 {
 	USBHwISR();
 	vic_ack();
 }
 
-static void Timer0IntHandler(void)
+static interrupt_handler void Timer0IntHandler(void)
 {
 	timer_irq(0);
 	vic_ack();
 }
 
-static void Timer1IntHandler(void)
+static interrupt_handler void Timer1IntHandler(void)
 {
 	timer_irq(1);
+	vic_ack();
+}
+
+static interrupt_handler void e0IntHandler(void)
+{
+	eint_irq(0);
+	vic_ack();
+}
+
+static interrupt_handler void e1IntHandler(void)
+{
+	eint_irq(1);
+	vic_ack();
+}
+
+static interrupt_handler void e2IntHandler(void)
+{
+	eint_irq(2);
+	vic_ack();
+}
+
+static interrupt_handler void e3IntHandler(void)
+{
+	eint_irq(3);
 	vic_ack();
 }
 
@@ -145,12 +162,13 @@ void t0match(int t, timer_match_t m)
 
 	tick_t time = tick_get();
 	if(!(time%TICK_SECOND)) {
-		if((time/TICK_SECOND)&1) {
-			gpio_set(0, LED_STAT1);
-		} else {
-			gpio_clear(0, LED_STAT1);
-		}
+		led_stat1((time/TICK_SECOND)&1);
 	}
+}
+
+void stop_handler(int eint)
+{
+	led_stat2(1);
 }
 
 void command_handler(struct tty *t, int argc, char **argv)
@@ -184,7 +202,7 @@ void command_handler(struct tty *t, int argc, char **argv)
 			printf("sys time %07d.%03d\n", t/1000, t%1000);
 		}
 		if(!strcmp("pll", argv[0])) {
-			pll_print();
+			pll_report();
 		}
 		if(!strcmp("pin", argv[0])) {
 			pin_report();
@@ -214,12 +232,16 @@ int main (void)
 
 	vcom_init();
 
+	vic_configure(INTV_STOP, INT_EINT1, &e1IntHandler);
 	vic_configure(INTV_USB, INT_USB, &USBIntHandler);
 	vic_configure(INTV_UART0, INT_UART0, &UART0IntHandler);
 	vic_configure(INTV_UART1, INT_UART1, &UART1IntHandler);
 	vic_configure(INTV_TIMER0, INT_TIMER0, &Timer0IntHandler);
 	vic_configure(INTV_TIMER1, INT_TIMER1, &Timer1IntHandler);
 
+	eint_handler(EINT1, &stop_handler);
+
+	vic_enable(INT_EINT1);
 	vic_enable(INT_USB);
 	vic_enable(INT_UART0);
 	vic_enable(INT_UART1);
@@ -243,14 +265,6 @@ int main (void)
 
 	tty_init(&tser);
 	tty_command_handler(&tser, &command_handler);
-
-	gpio_direction(0, LED_STAT0, TRUE);
-	gpio_direction(0, LED_STAT1, TRUE);
-	gpio_set(0, LED_STAT0);
-	gpio_clear(0, LED_STAT1);
-
-	gpio_direction(0, CSEL_SCP1000, TRUE);
-	gpio_set(0, CSEL_SCP1000);
 
 	scp_init();
 

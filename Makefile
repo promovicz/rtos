@@ -20,7 +20,7 @@ LIBS=lpcusb-trunk/target/usbstack.a dietlibc/bin-arm/dietlibc.a
 
 LOGOMATICOBJS=board/logomatic.o
 COREOBJS=core/tick.o core/tty.o
-LPCOBJS=lpc/scb.o lpc/pll.o lpc/mam.o lpc/vpb.o lpc/vic.o lpc/pinsel.o lpc/timer.o lpc/gpio.o lpc/rtc.o lpc/ssp.o lpc/spi.o lpc/uart.o lpc/device.o lpc/pin.o
+LPCOBJS=lpc/scb.o lpc/pll.o lpc/mam.o lpc/vpb.o lpc/vic.o lpc/pinsel.o lpc/timer.o lpc/gpio.o lpc/rtc.o lpc/ssp.o lpc/spi.o lpc/uart.o lpc/device.o lpc/eint.o lpc/pin.o
 OBJS=start.o $(COREOBJS) $(LPCOBJS) $(LOGOMATICOBJS) halsys.o main.o serial_fifo.o armVIC.o console.o printf.o nmea.o vcom.o scp.o
 INCLUDEFLAGS=-Ilpcusb-trunk/target -Idietlibc/include -I.
 DEFINE=-DLPC214x -DDEBUG

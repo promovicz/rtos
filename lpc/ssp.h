@@ -1,6 +1,6 @@
 
-#ifndef SSP_H
-#define SSP_H
+#ifndef LPC_SSP_H
+#define LPC_SSP_H
 
 #include <core/types.h>
 
@@ -14,4 +14,4 @@ void ssp_slave_output(bool_t enable);
 
 uint8_t ssp_transfer(uint8_t d);
 
-#endif /* !SSP_H */
+#endif /* !LPC_SSP_H */
