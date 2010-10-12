@@ -87,7 +87,12 @@ void scp_write_r8(uint8_t addr, uint8_t value)
 	return r;
 }
 
-extern void mdelay(uint32_t d);
+void scp_reset(void)
+{
+	scp_write_r8(RSTR, 0x01);
+}
+
+extern void tick_delay(uint32_t d);
 
 void scp_init(void)
 {
@@ -95,33 +100,34 @@ void scp_init(void)
 
 	r = scp_read_r8(STATUS);
 	if(!(r&STATUS_STARTING)) {
-		scp_write_r8(RSTR, 0x01);
+		printf("scp reset\n");
+		scp_reset();
 	}
 
-	mdelay(50);
+	tick_delay(50);
 
 	int i = 0;
 	do {
-		mdelay(10);
+		tick_delay(10);
 		r = scp_read_r8(STATUS);
 		if(i++ > 10) {
-			printf("SCP init failed\n");
+			printf("scp init failed\n");
 		}
 	} while(r&STATUS_STARTING);
 
 	r = scp_read_r8(DATARD8);
 	if(!(r&1)) {
-		printf("SCP EEPROM checksum error\n");
+		printf("scp eeprom checksum error\n");
 	}
 
-	printf("SCP revision %d\n", scp_read_r8(REVID));
+	printf("scp revision %d\n", scp_read_r8(REVID));
 }
 
 void scp_waitidle(void)
 {
 	uint8_t r;
 	do {
-		mdelay(10);
+		tick_delay(10);
 		r = scp_read_r8(OPERATION);
 	} while(r != OPERATION_IDLE);
 }
@@ -130,7 +136,7 @@ void scp_waitdata(void)
 {
 	uint8_t r;
 	do {
-		mdelay(10);
+		tick_delay(10);
 		r = scp_read_r8(STATUS);
 	} while (!(r&STATUS_DATAREADY));
 }
@@ -139,7 +145,7 @@ void scp_selftest(void)
 {
 	uint8_t r;
 
-	printf("Commencing SCP selftest...\n");
+	printf("commencing scp selftest...");
 
 	scp_write_r8(OPERATION, OPERATION_SELFTEST);
 
@@ -147,9 +153,9 @@ void scp_selftest(void)
 
 	r = scp_read_r8(DATARD8);
 	if(r == 1) {
-		printf("SCP selftest succeeded\n");
+		printf("succeeded\n");
 	} else {
-		printf("SCP selftest failed!\n");
+		printf("failed!\n");
 	}
 }
 
@@ -158,11 +164,13 @@ void scp_measure(void)
 	uint32_t pres = 0;
 	uint16_t temp = 0;
 
-	printf("Commencing SCP measurement...\n");
+	printf("commencing scp measurement...");
 
 	scp_write_r8(OPERATION, OPERATION_MEASURE_LOWPOWER);
 
 	scp_waitdata();
+
+	printf("done\n");
 
 	temp = scp_read_r16(TEMPOUT);
 

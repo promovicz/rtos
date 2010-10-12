@@ -100,47 +100,6 @@ enum mem_map_bits {
 #define MEM ((volatile struct mem_regs*)MEM_BASE)
 
 
-
-
-struct pll_regs {
-	uint8_t CON;
-	uint8_t _pad0[3];
-	uint8_t CFG;
-	uint8_t _pad1[3];
-	uint16_t STAT;
-	uint8_t _pad2[2];
-	uint8_t FEED;
-	uint8_t _pad3[3];
-};
-
-enum pll_con_bits {
-	PLL_CON_PLLE = (1<<0),
-	PLL_CON_PLLC = (1<<1),
-};
-
-#define PLL_CFG(msel, psel) (((psel&0x3)<<5)|(msel&0x1F))
-
-enum pll_stat_bits {
-	PLL_STAT_PLLE  = (1<<8),
-	PLL_STAT_PLLC  = (1<<9),
-	PLL_STAT_PLOCK = (1<<10),
-};
-
-#define PLL_STAT_GET_MSEL(s) (s&0x1F)
-#define PLL_STAT_GET_PSEL(s) ((s>>5)%0x3)
-
-enum pll_feed_values {
-	PLL_FEED0 = 0xAA,
-	PLL_FEED1 = 0x55,
-};
-
-#define PLL0_BASE (0xE01FC080)
-#define PLL0 ((volatile struct pll_regs*)PLL0_BASE)
-
-#define PLL1_BASE (0xE01FC0A0)
-#define PLL1 ((volatile struct pll_regs*)PLL1_BASE)
-
-
 struct pcon_regs {
 	uint8_t PCON;
 	uint8_t _pad0[3];
@@ -196,18 +155,4 @@ enum reset_rsid_bits {
 #define RESET_BASE (0xE01FC180)
 #define RESET ((volatile struct reset_regs*)RESET_BASE)
 
-
-struct vpb_regs {
-	uint8_t DIV;
-	uint8_t _pad0[3];
-};
-
-enum vpb_div_bits {
-	VPB_DIV_FOURTH = 0x00,
-	VPB_DIV_SAME = 0x01,
-	VPN_DIV_HALF = 0x02,
-};
-
-#define VPB_BASE (0xE01FC100)
-#define VPB ((volatile struct vpb_regs*)VPB_BASE)
 

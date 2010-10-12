@@ -29,6 +29,7 @@ struct {
 	char *type;
 	char *arguments[NMEA_MAX_ARGS];
 
+	uint32_t sentences;
 	uint32_t errframing;
 	uint32_t errunknown;
 } nmea;
@@ -127,7 +128,7 @@ getargstr(int num, int min, int max, int *v)
 
 void nmea_report()
 {
-	printf("errors: framing %d, unknown sentence %d\n", nmea.errframing, nmea.errunknown);
+	printf("counters: %d sentences, %d framing errors, %d unknown sentences\n", nmea.sentences, nmea.errframing, nmea.errunknown);
 	if(gps.fixvalid) {
 		printf("fix at %d:%d:%d.%d type %d (%s)\n",
 			   gps.fixhour, gps.fixminute, gps.fixsecond, gps.fixmilisecond,
@@ -232,6 +233,8 @@ void nmea_process_gpgsv()
 void
 nmea_process_sentence()
 {
+	nmea.sentences++;
+
 	if(!strcmp(nmea.type, "GPGGA")) {
 		nmea_process_gpgga();
 	}

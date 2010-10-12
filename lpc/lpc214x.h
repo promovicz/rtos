@@ -92,9 +92,6 @@
 #define	PLL1STAT		*(volatile unsigned int *)0xE01FC0A8
 #define	PLL1FEED		*(volatile unsigned int *)0xE01FC0AC
 
-#define PINSEL0			*(volatile unsigned int *)0xE002C000
-#define PINSEL1			*(volatile unsigned int *)0xE002C004
-#define PINSEL2			*(volatile unsigned int *)0xE002C014
 #define IOPIN0			*(volatile unsigned int *)0xE0028000
 #define IOSET0			*(volatile unsigned int *)0xE0028004
 #define IODIR0			*(volatile unsigned int *)0xE0028008

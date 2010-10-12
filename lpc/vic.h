@@ -13,6 +13,10 @@ void vic_default(vic_handler_t handler);
 void vic_configure(int vector, int src, vic_handler_t handler);
 void vic_deconfigure(int vector);
 
+void vic_ack(void);
+
+void vic_report(void);
+
 // XXX: LPC2148 specific
 enum vic_int {
 	INT_WDT = 0,

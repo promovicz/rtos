@@ -26,3 +26,9 @@ enum mam_tim_bits {
 
 #define MAM_BASE (0xE01FC000)
 #define MAM ((volatile struct mam_regs*)MAM_BASE)
+
+void mam_init(void)
+{
+	MAM->TIM = MAM_TIME_3CCLK;
+	MAM->CR = MAM_MODE_FULL;
+}

@@ -96,6 +96,11 @@ void vic_deconfigure(int vector)
 	VIC->VectAddr[vector] = 0;
 }
 
+void vic_ack(void)
+{
+	VIC->Vector = 0;
+}
+
 void vic_report(void)
 {
 	int i;

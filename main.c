@@ -48,31 +48,29 @@ int errno;
 
 #include <string.h>
 
-#include "type.h"
-#include "debug.h"
+#include <core/tty.h>
+#include <core/tick.h>
 
-#include "lpc214x.h"
-
-#include "armVIC.h"
-
-#include "hal.h"
-#include "console.h"
-#include "usbapi.h"
+#include <board/logomatic.h>
 
 #include <lpc/vic.h>
+#include <lpc/pll.h>
 #include <lpc/uart.h>
 #include <lpc/gpio.h>
 #include <lpc/timer.h>
+#include <lpc/pinsel.h>
 
+#include "type.h"
+#include "debug.h"
+#include "lpc214x.h"
+#include "armVIC.h"
+#include "hal.h"
+#include "console.h"
+#include "usbapi.h"
 #include "vcom.h"
-
 #include "serial_fifo.h"
-
 #include "nmea.h"
-
 #include "scp.h"
-
-#include <core/tty.h>
 
 #define BAUD_RATE	115200
 
@@ -101,37 +99,37 @@ static void DefIntHandler(void) __attribute__ ((interrupt("IRQ")));
 
 static void DefIntHandler(void)
 {
-	VICVectAddr = 0x00;
+	vic_ack();
 }
 
 static void UART0IntHandler(void)
 {
 	uart_irq(UART0);
-	VICVectAddr = 0x00;
+	vic_ack();
 }
 
 static void UART1IntHandler(void)
 {
 	uart_irq(UART1);
-	VICVectAddr = 0x00;
+	vic_ack();
 }
 
 static void USBIntHandler(void)
 {
 	USBHwISR();
-	VICVectAddr = 0x00;
+	vic_ack();
 }
 
 static void Timer0IntHandler(void)
 {
 	timer_irq(0);
-	VICVectAddr = 0x00;
+	vic_ack();
 }
 
 static void Timer1IntHandler(void)
 {
 	timer_irq(1);
-	VICVectAddr = 0x00;
+	vic_ack();
 }
 
 
@@ -141,26 +139,18 @@ int consirq = 0;
 
 struct tty tser;
 
-volatile uint32_t systime = 0;
-
 void t0match(int t, timer_match_t m)
 {
-	systime++;
-	if(!(systime%1000)) {
-		if((systime/1000)&1) {
+	tick_handler();
+
+	tick_t time = tick_get();
+	if(!(time%TICK_SECOND)) {
+		if((time/TICK_SECOND)&1) {
 			gpio_set(0, LED_STAT1);
 		} else {
 			gpio_clear(0, LED_STAT1);
 		}
 	}
-}
-
-void mdelay(uint32_t msec)
-{
-	uint32_t start = systime;
-	uint32_t end = start + msec;
-	while(systime <= end) { }
-	return;
 }
 
 void command_handler(struct tty *t, int argc, char **argv)
@@ -190,8 +180,14 @@ void command_handler(struct tty *t, int argc, char **argv)
 			}
 		}
 		if(!strcmp("time", argv[0])) {
-			uint32_t t = systime;
+			tick_t t = tick_get();
 			printf("sys time %07d.%03d\n", t/1000, t%1000);
+		}
+		if(!strcmp("pll", argv[0])) {
+			pll_print();
+		}
+		if(!strcmp("pin", argv[0])) {
+			pin_report();
 		}
 	}
 }
@@ -207,10 +203,7 @@ void csel_scp(bool_t yeah)
 
 int main (void)
 {
-	HalSysInit();
-
-	PINSEL0 = (PINSEL0 & ~0x000FFF0F) | 0x00055505; // UART0, UART1, SPI
-	PINSEL1 = (PINSEL1 & ~0x000003FC) | 0x000000A8; // SSP with SSEL as GPIO
+	board_init();
 
 	uart_init(UART0, 115200);
 	uart_init(UART1, 9600);

@@ -9,7 +9,7 @@
 
 /* XXX find some better method for dealing with DLAB bullpoo */
 
-#include "defines.h"
+#include <core/defines.h>
 
 static inline always_inline uint8_t readb(volatile uint8_t *a)
 {

@@ -132,3 +132,11 @@ typedef uint16_t rtc_year_t;
 void rtc_init()
 {
 }
+
+void rtc_set_time(rtc_hour_t h, rtc_minute_t m, rtc_second_t s)
+{
+}
+
+void rtc_set_date(rtc_year_t y, rtc_month_t m, rtc_dom_t d)
+{
+}
