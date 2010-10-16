@@ -67,8 +67,6 @@ void board_init(void)
 	pin_set_function(PIN5, PIN_FUNCTION_SPI_MISO);
 	pin_set_function(PIN6, PIN_FUNCTION_SPI_MOSI);
 
-	spi_init();
-
 	// GPS serial
 	pin_set_function(PIN8, PIN_FUNCTION_UART1_TXD);
 	pin_set_function(PIN9, PIN_FUNCTION_UART1_RXD);

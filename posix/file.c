@@ -1,15 +1,13 @@
 
-#include <core/types.h>
-#include <core/defines.h>
+#include "file.h"
 
-#include <posix/control.h>
+#include <core/defines.h>
 
 /* "table" of all file descriptors */
 struct file *open_fds[MAXFDS];
 
 /* pre-allocated descriptor structures */
 struct file open_files[MAXFILES];
-
 
 void file_table_init(void)
 {
