@@ -15,12 +15,12 @@ void uart_init(uart_t uart, uart_baud_t baudrate);
 
 void uart_irq(uart_t uart);
 
-bool_t uart_tx_fifo(uart_t uart, uint8_t byte);
-void uart_tx_blocking(uart_t uart, uint8_t byte);
-bool_t uart_tx_nonblocking(uart_t uart, uint8_t byte);
+int uart_tx_fifo(uart_t uart, const void *buf, size_t nbytes);
+int uart_tx_blocking(uart_t uart, const void *buf, size_t nbytes);
+int uart_tx_nonblocking(uart_t uart, const void *buf, size_t nbytes);
 
-bool_t uart_rx_fifo(uart_t uart, uint8_t *byte);
-void uart_rx_blocking(uart_t uart, uint8_t *byte);
-bool_t uart_rx_nonblocking(uart_t uart, uint8_t *byte);
+int uart_rx_fifo(uart_t uart, void *buf, size_t nbytes);
+int uart_rx_blocking(uart_t uart, void *buf, size_t nbytes);
+int uart_rx_nonblocking(uart_t uart, void *buf, size_t nbytes);
 
 #endif /* !BIKE_UART_H */

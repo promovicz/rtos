@@ -36,40 +36,62 @@
 #include <lpc/uart.h>
 
 #include "vcom.h"
+
 #include <core/tty.h>
 
-extern int consirq;
+#include <posix/control.h>
 
-int putchar(int c)
+#include <stdio.h>
+
+extern int consirq; // XXX
+
+static int vcom_write(struct file *f, const void *buf, size_t nbytes)
 {
-	if(c == '\n') {
-		if(consirq) {
-			vcom_tx_fifo('\r');
-		} else {
-			uart_tx_fifo(0, '\r');
-		}
-	}
 	if(consirq) {
-		vcom_tx_fifo(c);
+		return vcom_tx_fifo(buf, nbytes);
 	} else {
-		uart_tx_fifo(0, c);
+		return nbytes;
 	}
-	return c;
 }
 
-int getchar (void)  {
-	uint8_t c;
-	uart_rx_blocking(0, &c);
-	return c;
-}
-
-extern struct tty tser;
-
-int puts(const char *s)
+static int vcom_read(struct file *f, void *buf, size_t nbytes)
 {
-	while (*s) {
-		putchar(*s++);
+	if(consirq) {
+		return vcom_rx_fifo(buf, nbytes);
+	} else {
+		return nbytes;
 	}
-	putchar('\n');
-	return 1;
+}
+
+struct file_operations vcom_operations = {
+	.fop_write = &vcom_write,
+	.fop_read = &vcom_read,
+};
+
+void console_init(void)
+{
+	struct file *fi = file_alloc();
+	struct file *fo = file_alloc();
+	struct file *fe = file_alloc();
+
+	/* initialize tables - must be done here to guarantee correct FD allocation */
+	file_table_init();
+
+	/* stdin */
+	fi->f_used = 1;
+	fi->f_flags = O_RDONLY;
+	fi->f_ops = &vcom_operations;
+	fd_alloc(fi); /* XXX ASSERT returns 0 */
+
+	/* stdout */
+	fo->f_used = 1;
+	fo->f_flags = O_WRONLY;
+	fo->f_ops = &vcom_operations;
+	fd_alloc(fo); /* XXX ASSERT returns 1 */
+
+	/* stderr */
+	fe->f_used = 1;
+	fe->f_flags = O_WRONLY;
+	fe->f_ops = &vcom_operations;
+	fd_alloc(fe); /* XXX ASSERT returns 2 */
 }

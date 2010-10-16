@@ -312,15 +312,36 @@ static void USBDevIntHandler(U8 bDevStatus)
 	}
 }
 
-bool_t vcom_tx_fifo(uint8_t c)
+int vcom_tx_fifo(const void *buf, size_t nbytes)
 {
-	return fifo_put(&txfifo, c);
+	uint8_t c;
+	size_t done;
+
+	for(done = 0; done < nbytes; done++) {
+		c = ((uint8_t *)buf)[done];
+		if(c == '\n') {
+			fifo_put(&txfifo, '\r');
+		}
+		if(!fifo_put(&txfifo, c)) {
+			break;
+		}
+	}
+	return done;
 }
 
 
-bool_t vcom_rx_fifo(uint8_t *c)
+int vcom_rx_fifo(void *buf, size_t nbytes)
 {
-	return fifo_get(&rxfifo, c);
+	uint8_t *cbuf = (uint8_t *)buf;
+	size_t done;
+
+	for(done = 0; done < nbytes; done++) {
+		if(!fifo_get(&rxfifo, &cbuf[done])) {
+			break;
+		}
+	}
+
+	return done;
 }
 
 void vcom_init(void)

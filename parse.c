@@ -1,6 +1,9 @@
 
 #include "parse.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 bool_t scan_bool(const char *str, bool_t *res)
 {
 	if((!strcmp(str, "true"))

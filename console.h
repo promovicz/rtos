@@ -27,6 +27,3 @@
 
 #define EOF (-1)
 
-int putchar(int c);
-int puts(const char *s);
-

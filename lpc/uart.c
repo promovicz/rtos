@@ -147,10 +147,10 @@ static inline uint8_t uart_reg_read(uart_t uart, enum uart_reg r)
 }
 
 fifo_t uart_rx_fifos[2];
-char uart_rx_fifo_buf[VCOM_FIFO_SIZE][2];
+char uart_rx_fifo_buf[2][VCOM_FIFO_SIZE];
 
 fifo_t uart_tx_fifos[2];
-char uart_tx_fifo_buf[VCOM_FIFO_SIZE][2];
+char uart_tx_fifo_buf[2][VCOM_FIFO_SIZE];
 
 extern int icount[2];
 
@@ -188,7 +188,7 @@ void uart_irq(uart_t uart)
 	}
 
 	if(ind&IIR_II_RDA) {
-		while(uart_rx_nonblocking(uart, &w)) {
+		while(uart_rx_nonblocking(uart, &w, 1)) {
 			if(!fifo_put(&uart_rx_fifos[uart], w)) {
 				break;
 			}
@@ -216,71 +216,116 @@ void uart_irq(uart_t uart)
 	}
 }
 
-bool_t uart_rx_fifo(uart_t uart, uint8_t *c)
+int uart_tx_blocking(uart_t uart, const void *buf, size_t nbytes)
 {
-	uint32_t m;
+	size_t done;
+	uint8_t c;
 
-	m = disableIRQ();
-
-	bool_t r = fifo_get(&uart_rx_fifos[uart], c);
-
-	restoreIRQ(m);
-
-	return r;
-}
-
-void uart_tx_blocking(uart_t uart, uint8_t c)
-{
-	while (!(readb(UART_REG(uart, LSR)) & LSR_THRE)) { }
-	writeb(c, UART_REG(uart, THR));
-}
-
-bool_t uart_tx_nonblocking(uart_t uart, uint8_t c)
-{
-	bool_t res = readb(UART_REG(uart, LSR)) & LSR_THRE;
-	if(res) {
+	for(done = 0; done < nbytes; done++) {
+		c = ((uint8_t *)buf)[done];
+		while (!(readb(UART_REG(uart, LSR)) & LSR_THRE)) { }
 		writeb(c, UART_REG(uart, THR));
 	}
-	return res;
+
+	return done;
 }
 
-bool_t uart_tx_fifo(uart_t uart, uint8_t c)
+int uart_tx_nonblocking(uart_t uart, const void *buf, size_t nbytes)
+{
+	size_t done;
+	bool_t res;
+	uint8_t c;
+
+	for(done = 0; done < nbytes; done++) {
+		c = ((uint8_t *)buf)[done];
+		res = readb(UART_REG(uart, LSR)) & LSR_THRE;
+		if(res) {
+			writeb(c, UART_REG(uart, THR));
+		} else {
+			break;
+		}
+	}
+	return done;
+}
+
+int uart_tx_fifo(uart_t uart, const void *buf, size_t nbytes)
 {
 	bool_t r;
-
+	size_t done;
 	uint32_t m;
+	uint8_t c;
+	uint8_t ier;
+
 	m = disableIRQ();
 
-	r = readb(UART_REG(uart, LSR)) & LSR_TEMT;
-
-	if(r) {
-		writeb(c, UART_REG(uart, THR));
-	} else {
-		r = fifo_put(&uart_tx_fifos[uart], c);
-
+	for(done = 0; done < nbytes; done++) {
+		r = readb(UART_REG(uart, LSR)) & LSR_TEMT;
+		c = ((uint8_t *)buf)[nbytes];
 		if(r) {
-			uint8_t m = uart_reg_read(uart, IER);
-			m |= IER_THRE;
-			uart_reg_write(uart, IER, m);
+			writeb(c, UART_REG(uart, THR));
+		} else {
+			r = fifo_put(&uart_tx_fifos[uart], c);
+
+			if(r) {
+				ier = uart_reg_read(uart, IER);
+				ier |= IER_THRE;
+				uart_reg_write(uart, IER, ier);
+			} else {
+				break;
+			}
 		}
 	}
 
 	restoreIRQ(m);
 
-	return r;
+	return done;
 }
 
-void uart_rx_blocking(uart_t uart, uint8_t *c)
+int uart_rx_blocking(uart_t uart, void *buf, size_t nbytes)
 {
-	while(!(readb(UART_REG(uart, LSR)) & LSR_RDR)) { }
-	*c = readb(UART_REG(uart, RBR));
-}
+	uint8_t *cbuf = (uint8_t *)buf;
+	size_t done;
 
-bool_t uart_rx_nonblocking(uart_t uart, uint8_t *c)
-{
-	bool_t res = readb(UART_REG(uart, LSR)) & LSR_RDR;
-	if(res) {
-		*c = readb(UART_REG(uart, RBR));
+	for(done = 0; done < nbytes; done++) {
+		while(!(readb(UART_REG(uart, LSR)) & LSR_RDR)) { }
+		cbuf[done] = readb(UART_REG(uart, RBR));
 	}
-	return res;
+
+	return done;
+}
+
+int uart_rx_nonblocking(uart_t uart, void *buf, size_t nbytes)
+{
+	uint8_t *cbuf = (uint8_t *)buf;
+	size_t done;
+
+	for(done = 0; done < nbytes; done++) {
+		bool_t res = readb(UART_REG(uart, LSR)) & LSR_RDR;
+		if(res) {
+			cbuf[done] = readb(UART_REG(uart, RBR));
+		} else {
+			break;
+		}
+	}
+	return done;
+}
+
+int uart_rx_fifo(uart_t uart, void *buf, size_t nbytes)
+{
+	uint8_t *cbuf = (uint8_t *)buf;
+	size_t done;
+	uint32_t m;
+
+	m = disableIRQ();
+
+	for(done = 0; done < nbytes; done++) {
+		bool_t r = fifo_get(&uart_rx_fifos[uart], &cbuf[done]);
+		if(!r) {
+			break;
+		}
+	}
+
+	restoreIRQ(m);
+
+	return done;
 }

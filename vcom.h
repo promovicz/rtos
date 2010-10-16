@@ -7,7 +7,7 @@
 void vcom_init(void);
 void vcom_connect(bool_t connect);
 
-bool_t vcom_rx_fifo(uint8_t *c);
-bool_t vcom_tx_fifo(uint8_t c);
+int vcom_rx_fifo(void *buf, size_t nbytes);
+int vcom_tx_fifo(const void *buf, size_t nbytes);
 
 #endif /* !VCOM_H */

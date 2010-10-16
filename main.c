@@ -47,6 +47,7 @@
 int errno;
 
 #include <string.h>
+#include <stdio.h>
 
 #include <core/defines.h>
 #include <core/tty.h>
@@ -65,6 +66,8 @@ int errno;
 #include <lpc/spi.h>
 
 #include <posix/control.h>
+
+#include <commands/commands.h>
 
 #include "type.h"
 #include "debug.h"
@@ -226,6 +229,25 @@ void command_handler(struct tty *t, int argc, char **argv)
 		if(!strcmp("pin", argv[0])) {
 			pin_report();
 		}
+
+		if(!strcmp("cwrite", argv[0])) {
+			int c = 10;
+			while(c-- > 0) {
+				const char *str = "fnord\r\n";
+				int c = write(1, str, strlen(str));
+				tick_delay(1*TICK_SECOND);
+			}
+		}
+
+		if(!strcmp("cread", argv[0])) {
+			int c = 10;
+			while(c-- > 0) {
+				const char buf[32];
+				int c = read(0, buf, sizeof(buf));
+				printf("got %d bytes\r\n", c);
+				tick_delay(1*TICK_SECOND);
+			}
+		}
 	}
 }
 
@@ -250,6 +272,8 @@ void csel_mmc(bool_t yeah)
 int main (void)
 {
 	board_init();
+
+	console_init();
 
 	uart_init(UART0, 115200);
 	uart_init(UART1, 9600);
@@ -303,14 +327,16 @@ int main (void)
 
 	uint8_t chr;
 	while (1) {
-		if(vcom_rx_fifo(&chr)) {
+		if(read(0, &chr, 1)) {
 			tty_feed(&tser, chr);
 		}
 
-		if(uart_rx_fifo(0, &chr)) {
+		fflush(stdout);
+
+		if(uart_rx_fifo(0, &chr, 1)) {
 		}
 
-		if(uart_rx_fifo(1, &chr)) {
+		if(uart_rx_fifo(1, &chr, 1)) {
 			nmea_process(&chr, 1);
 		}
 	}

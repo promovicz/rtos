@@ -16,11 +16,18 @@
 void
 tty_write(struct tty *t, const char *buf, size_t len)
 {
-	off_t i;
-	for(i = 0; i < len; i++) {
-		vcom_tx_fifo(buf[i]);
-	}
-	return len;
+	/*
+	char lf = '\r';
+	size_t done;
+
+	for(done = 0; done < len; done++) {
+		if(buf[done] == '\n') {
+			vcom_tx_fifo(&lf, 1);
+		}
+		vcom_tx_fifo(&buf[done], 1);
+		}*/
+
+	write(1, buf, len); // XXX loop
 }
 
 void
@@ -171,11 +178,15 @@ docmd(struct tty *t, const char *cmd)
 		}
 	}
 
-	printf("\n");
+	tty_writechr(t, '\n');
+
+	fflush(stdout);
 
 	if(t->t_command_handler) {
 		t->t_command_handler(t, toknum, tok);
 	}
+
+	fflush(stdout);
 }
 
 void
