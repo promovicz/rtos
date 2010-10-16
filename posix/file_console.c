@@ -1,6 +1,5 @@
 
-#include "console.h"
-
+#include <posix/control.h>
 #include <posix/file.h>
 
 bool_t console_enabled;
@@ -38,19 +37,16 @@ void console_init(void)
 	file_table_init();
 
 	/* stdin */
-	fi->f_used = 1;
 	fi->f_flags = O_RDONLY;
 	fi->f_ops = &console_operations;
 	fd_alloc(fi); /* XXX ASSERT returns 0 */
 
 	/* stdout */
-	fo->f_used = 1;
 	fo->f_flags = O_WRONLY;
 	fo->f_ops = &console_operations;
 	fd_alloc(fo); /* XXX ASSERT returns 1 */
 
 	/* stderr */
-	fe->f_used = 1;
 	fe->f_flags = O_WRONLY;
 	fe->f_ops = &console_operations;
 	fd_alloc(fe); /* XXX ASSERT returns 2 */

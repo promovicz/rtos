@@ -66,7 +66,6 @@ int errno;
 #include <lpc/spi.h>
 
 #include <posix/control.h>
-#include <posix/console.h>
 
 #include <commands/commands.h>
 
@@ -275,7 +274,7 @@ int main (void)
 
 	console_init();
 
-	uart_init(UART0, 115200);
+	uart_init(UART0, 38400);
 	uart_init(UART1, 9600);
 
 	ssp_init();
@@ -338,7 +337,9 @@ int main (void)
 
 		fflush(stdout);
 
-		if(uart_rx_fifo(0, &chr, 1)) {
+		res = read(u0, buf, sizeof(buf));
+		if(res > 0) {
+			write(u0, buf, res);
 		}
 
 		res = read(u1, buf, sizeof(buf));
