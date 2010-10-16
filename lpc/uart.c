@@ -34,17 +34,22 @@ static inline always_inline void writeb(uint8_t v, volatile uint8_t *a)
 #define UART_REG(u,r) ((uint8_t*)(((uint8_t*)uarts[u].base) + ((r) & ~(REG_FLAGS))))
 
 /* state structures */
+char u0_rxbuf[VCOM_FIFO_SIZE];
+char u0_txbuf[VCOM_FIFO_SIZE];
+char u1_rxbuf[VCOM_FIFO_SIZE];
+char u1_txbuf[VCOM_FIFO_SIZE];
+
 struct uart {
 	void *base;
 	fifo_t rxfifo;
-	char rxbuf[VCOM_FIFO_SIZE];
+	char *rxbuf;
 	fifo_t txfifo;
-	char txbuf[VCOM_FIFO_SIZE];
+	char *txbuf;
 };
 
 struct uart uarts[2] = {
-	{base: UART0_BASE},
-	{base: UART1_BASE},
+	{base: UART0_BASE, rxbuf: &u0_rxbuf, txbuf: &u0_txbuf},
+	{base: UART1_BASE, rxbuf: &u1_rxbuf, txbuf: &u1_txbuf},
 };
 
 /* register definitions */

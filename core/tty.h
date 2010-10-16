@@ -20,6 +20,8 @@ struct tty {
 	off_t t_end;
 
 	tty_command_handler_t t_command_handler;
+
+	int t_state;
 };
 
 void tty_init(struct tty *t);

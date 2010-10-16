@@ -12,21 +12,18 @@
 #include "vcom.h"
 
 #define CTRL(x)	(x&037)
+#define ESCAPE (0x1b)
+#define DELETE (0x7f)
+
+enum {
+	TTY_STATE_PLAIN,
+	TTY_STATE_ESCAPE,
+	TTY_STATE_ESCAPE_BRACKET,
+};
 
 void
 tty_write(struct tty *t, const char *buf, size_t len)
 {
-	/*
-	char lf = '\r';
-	size_t done;
-
-	for(done = 0; done < len; done++) {
-		if(buf[done] == '\n') {
-			vcom_tx_fifo(&lf, 1);
-		}
-		vcom_tx_fifo(&buf[done], 1);
-		}*/
-
 	write(1, buf, len); // XXX loop
 }
 
@@ -87,6 +84,8 @@ void
 tty_reset(struct tty *t)
 {
 	memcpy(t->t_line, t->t_prompt, sizeof(t->t_line));
+
+	t->t_state = TTY_STATE_PLAIN;
 
 	t->t_start = strlen(t->t_prompt);
 	t->t_end = t->t_start;
@@ -190,7 +189,55 @@ docmd(struct tty *t, const char *cmd)
 }
 
 void
-tty_feed(struct tty *t, int c)
+tty_cursor_right(struct tty *t)
+{
+	if(t->t_posn < t->t_end) {
+		t->t_posn++;
+		tty_writestr(t, "\x1b[C");
+	}
+}
+
+void
+tty_cursor_left(struct tty *t)
+{
+	if(t->t_posn > t->t_start) {
+		t->t_posn--;
+		tty_writestr(t, "\x1b[D");
+	}
+}
+
+void
+tty_feed_escape_bracket(struct tty *t, int c)
+{
+	switch(c) {
+	case 'A':
+		break;
+	case 'B':
+		break;
+	case 'C':
+		tty_cursor_right(t);
+		break;
+	case 'D':
+		tty_cursor_left(t);
+		break;
+	default:
+		break;
+	}
+	t->t_state = TTY_STATE_PLAIN;
+}
+
+void
+tty_feed_escape(struct tty *t, int c)
+{
+	if(c == '[') {
+		t->t_state = TTY_STATE_ESCAPE_BRACKET;
+	} else {
+		t->t_state = TTY_STATE_PLAIN;
+	}
+}
+
+void
+tty_feed_plain(struct tty *t, int c)
 {
 	if(isgraph(c) || (c == ' ')) {
 		if(tty_insert_at(t, c, t->t_posn)) {
@@ -203,19 +250,14 @@ tty_feed(struct tty *t, int c)
 			tty_redraw(t);
 			break;
 		case CTRL('c'):
+			tty_writechr(t, '\n');
 			tty_reset(t);
 			break;
-		case CTRL('p'):
-			if(t->t_posn > t->t_start) {
-				t->t_posn--;
-				tty_writestr(t, "\x1b[D");
-			}
+		case CTRL('b'):
+			tty_cursor_left(t);
 			break;
-		case CTRL('n'):
-			if(t->t_posn < t->t_end) {
-				t->t_posn++;
-				tty_writestr(t, "\x1b[C");
-			}
+		case CTRL('f'):
+			tty_cursor_right(t);
 			break;
 		case CTRL('a'):
 			t->t_posn = t->t_start;
@@ -225,6 +267,7 @@ tty_feed(struct tty *t, int c)
 			t->t_posn = t->t_end;
 			tty_redraw(t);
 			break;
+		case DELETE:
 		case CTRL('h'):
 			if(tty_remove_at(t, t->t_posn - 1)) {
 				t->t_posn--;
@@ -235,13 +278,36 @@ tty_feed(struct tty *t, int c)
 			if(strlen(&t->t_line[t->t_start])) {
 				docmd(t, &t->t_line[t->t_start]);
 			} else {
-				tty_writestr(t, "\r\n");
+				tty_writechr(t, '\n');
 			}
 			tty_reset(t);
+			break;
+		case ESCAPE:
+			t->t_state = TTY_STATE_ESCAPE;
 			break;
 		default:
 			break;
 		}
+	}
+}
+
+void
+tty_feed(struct tty *t, int c)
+{
+	switch(t->t_state) {
+	case TTY_STATE_PLAIN:
+		tty_feed_plain(t, c);
+		break;
+	case TTY_STATE_ESCAPE:
+		tty_feed_escape(t, c);
+		break;
+	case TTY_STATE_ESCAPE_BRACKET:
+		tty_feed_escape_bracket(t, c);
+		break;
+	default:
+		/* for safety */
+		t->t_state = TTY_STATE_PLAIN;
+		break;
 	}
 }
 
