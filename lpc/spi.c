@@ -1,11 +1,11 @@
 
+#include "spi.h"
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <core/types.h>
-
-#include <parse.h>
+#include <core/parse.h>
 
 struct spi_regs {
 	uint16_t CR;

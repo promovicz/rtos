@@ -2,7 +2,7 @@
 #define COMMANDS_H
 
 #include <core/tty.h>
-#include <parse.h>
+#include <core/parse.h>
 
 void gpio_command(struct tty *t, int argc, char **argv);
 

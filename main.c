@@ -66,6 +66,7 @@ int errno;
 #include <lpc/spi.h>
 
 #include <posix/control.h>
+#include <posix/console.h>
 
 #include <commands/commands.h>
 
@@ -74,8 +75,6 @@ int errno;
 #include "lpc214x.h"
 #include "armVIC.h"
 #include "hal.h"
-#include "console.h"
-#include "usbapi.h"
 #include "vcom.h"
 #include "serial_fifo.h"
 #include "nmea.h"
@@ -316,7 +315,7 @@ int main (void)
 
 	vcom_connect(BOOL_TRUE);
 
-	consirq = 1;
+	console_enable();
 
 	nmea_init();
 

@@ -3,7 +3,7 @@
 
 #include "hal.h"
 
-#include <parse.h>
+#include <core/parse.h>
 
 #include <string.h>
 #include <stdlib.h>
