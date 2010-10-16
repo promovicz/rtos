@@ -16,8 +16,7 @@ struct pinsel_regs {
 #define PIN_REGSEL(p) (p/16)
 #define PIN_PINSEL(p) (p%16)
 
-int
-pin_function(int pin, int function)
+int pin_set_function(int pin, int function)
 {
 	int i;
 	int r = PIN_REGSEL(pin);
@@ -34,8 +33,23 @@ pin_function(int pin, int function)
 	return -1;
 }
 
-void
-pin_report(void)
+int pin_get_function(int pin)
+{
+	int i;
+	int r = PIN_REGSEL(pin);
+	int p = PIN_PINSEL(pin);
+
+	return (PINSEL->SELECT[r] >> p*2) & 0x3;
+}
+
+bool_t pin_is_gpio(int pin)
+{
+	int f = pin_get_function(pin);
+	const struct pin *p = &pins[pin];
+	return p->functions[0].device == DEVICE_GPIO && f == 0;
+}
+
+void pin_report(void)
 {
 	int i, j, c;
 	const struct pin_function *f;

@@ -158,7 +158,7 @@ void pll_print(int pll)
 		}
 	}
 
-	printf("pll %d %s, cco at %d Hz (div %d), out at %d Hz (mul %d)\n", pll, state, f*d, d, f, m);
+	printf("pll %d %s, cco %d Hz (div %d), out %d Hz (mul %d)\n", pll, state, f*d, d, f, m);
 }
 
 void pll_report(void)

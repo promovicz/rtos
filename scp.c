@@ -1,6 +1,8 @@
 
 #include <lpc/ssp.h>
 
+#include <stdio.h>
+
 extern void csel_scp(bool_t yeah);
 
 enum scp_regs {
@@ -84,7 +86,7 @@ void scp_write_r8(uint8_t addr, uint8_t value)
 
 	csel_scp(0);
 
-	return r;
+	return;
 }
 
 void scp_reset(void)

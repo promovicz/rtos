@@ -2,15 +2,11 @@
 #define LPC_PLL_H
 
 #include <core/types.h>
+#include <core/clock.h>
 
 #define THOUSAND (1000)
 #define MILLION  (1000*THOUSAND)
 #define BILLION  (1000*MILLION)
-
-typedef uint32_t freq_t;
-
-struct clock {
-};
 
 enum {
 	PLL_CORE = 0,

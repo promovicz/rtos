@@ -3,6 +3,12 @@
 
 #include "hal.h"
 
+#include <parse.h>
+
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 #define WAIT_TXF_NOTFULL() do { while (!(SSP->SR & SR_TNF)); } while (0)
 #define WAIT_TXF_EMPTY() do { while(!(SSP->SR & SR_TFE)); } while (0)
 #define WAIT_RXF_NOTEMPTY() do { while (!(SSP->SR & SR_RNE)); } while (0)
@@ -28,9 +34,6 @@ struct ssp_regs {
 	uint8_t ICR;
 	uint8_t _pad8[3];
 };
-
-#define SSP_BASE (0xE0068000)
-#define SSP ((volatile struct ssp_regs *)SSP_BASE)
 
 enum ssp_cr0_bits {
 	CR0_DSS_4BIT  = 0x0003,
@@ -101,11 +104,27 @@ enum ssp_icr_bits {
 	ICR_RTIC  = (1<<1),
 };
 
+#define SSP_BASE (0xE0068000)
+#define SSP ((volatile struct ssp_regs *)SSP_BASE)
+
+#define ssp_trace(...) if(ssp.trace) { printf(__VA_ARGS__); }
+
+struct {
+	bool_t trace;
+} ssp;
+
 void ssp_init(void)
 {
+	ssp.trace = BOOL_FALSE;
+
 	SSP->CR0 = CR0_DSS_8BIT | CR0_FRF_SPI;
 	SSP->CR1 = 0;
 	SSP->IMSC = 0;
+}
+
+void ssp_set_trace(bool_t f)
+{
+	ssp.trace = f;
 }
 
 void ssp_enable(bool_t enable)
@@ -161,18 +180,55 @@ void ssp_clock(uint32_t f)
 	SSP->CPSR = div & 0xFF;
 }
 
-uint8_t ssp_transfer(uint8_t d)
+uint8_t ssp_transfer(uint8_t t)
 {
+	uint8_t r;
+
 	WAIT_TXF_NOTFULL();
 
-	SSP->DR = d;
+	SSP->DR = t;
 
 	WAIT_RXF_NOTEMPTY();
 
-	return SSP->DR;
+	r = SSP->DR;
+
+	ssp_trace("ssp: %02x -> %02x\n", t, r);
+
+	return r;
 }
 
-void ssp_flush(void)
+extern void csel_scp(bool_t yeah);
+
+void ssp_command(struct tty *t, int argc, char **argv)
 {
-	WAIT_IDLE();
+	int i;
+	char *end;
+	uint8_t rb, tb;
+	bool_t flag;
+	if(argc) {
+		if(!strcmp("speak", argv[0])) {
+			if(argc > 1) {
+				printf("exchanging %d words:\n", argc - 1);
+				csel_scp(1);
+				for(i = 1; i < argc; i++) {
+					if(scan_byte(argv[i], &tb)) {
+						rb = ssp_transfer(tb);
+						printf(" %02x -> %02x\n", tb, rb);
+					} else {
+						printf(" %s invalid\n", argv[i]);
+						break;
+					}
+				}
+				csel_scp(0);
+			}
+		} else if (!strcmp("trace", argv[0])) {
+			if(argc > 1) {
+				if(scan_bool(argv[1], &flag)) {
+					ssp.trace = flag;
+				}
+			} else {
+				ssp.trace = 1;
+			}
+		}
+	}
 }

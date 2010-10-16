@@ -62,6 +62,9 @@ int errno;
 #include <lpc/gpio.h>
 #include <lpc/timer.h>
 #include <lpc/pinsel.h>
+#include <lpc/spi.h>
+
+#include <posix/control.h>
 
 #include "type.h"
 #include "debug.h"
@@ -84,7 +87,8 @@ int errno;
 #define INTV_TIMER0 4
 #define INTV_TIMER1 5
 
-#define CSEL_SCP1000 20
+#define CSEL_SCP 20
+#define CSEL_MMC 7
 
 
 #define IRQ_MASK 0x00000080
@@ -177,6 +181,21 @@ void command_handler(struct tty *t, int argc, char **argv)
 		if(!strcmp("gps", argv[0])) {
 			nmea_command(t, argc-1, argv+1);
 		}
+		if(!strcmp("spi", argv[0])) {
+			spi_command(t, argc-1, argv+1);
+		}
+		if(!strcmp("ssp", argv[0])) {
+			ssp_command(t, argc-1, argv+1);
+		}
+		if(!strcmp("mem", argv[0])) {
+			mem_command(t, argc-1, argv+1);
+		}
+		if(!strcmp("gpio", argv[0])) {
+			gpio_command(t, argc-1, argv+1);
+		}
+		if(!strcmp("power", argv[0])) {
+			power_command(t, argc-1, argv+1);
+		}
 		if(!strcmp("vic", argv[0])) {
 			if(argc > 1) {
 				if(!strcmp("report", argv[1])) {
@@ -213,9 +232,18 @@ void command_handler(struct tty *t, int argc, char **argv)
 void csel_scp(bool_t yeah)
 {
 	if(yeah) {
-		gpio_clear(0, CSEL_SCP1000);
+		gpio_pin_low(0, CSEL_SCP);
 	} else {
-		gpio_set(0, CSEL_SCP1000);
+		gpio_pin_high(0, CSEL_SCP);
+	}
+}
+
+void csel_mmc(bool_t yeah)
+{
+	if(yeah) {
+		gpio_pin_low(0, CSEL_MMC);
+	} else {
+		gpio_pin_high(0, CSEL_MMC);
 	}
 }
 
@@ -238,6 +266,11 @@ int main (void)
 	vic_configure(INTV_UART1, INT_UART1, &UART1IntHandler);
 	vic_configure(INTV_TIMER0, INT_TIMER0, &Timer0IntHandler);
 	vic_configure(INTV_TIMER1, INT_TIMER1, &Timer1IntHandler);
+
+	gpio_pin_high(0, CSEL_SCP);
+	gpio_pin_set_direction(0, CSEL_SCP, BOOL_TRUE);
+	gpio_pin_high(0, CSEL_MMC);
+	gpio_pin_set_direction(0, CSEL_MMC, BOOL_TRUE);
 
 	eint_handler(EINT1, &stop_handler);
 
