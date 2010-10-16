@@ -79,8 +79,6 @@ int errno;
 #include "nmea.h"
 #include "scp.h"
 
-#define BAUD_RATE	115200
-
 #define INTV_STOP   0
 #define	INTV_USB	1
 #define INTV_UART0  2
@@ -92,9 +90,6 @@ int errno;
 #define CSEL_MMC 7
 
 
-#define IRQ_MASK 0x00000080
-
-
 static interrupt_handler void DefIntHandler(void)
 {
 	vic_ack();
@@ -102,13 +97,13 @@ static interrupt_handler void DefIntHandler(void)
 
 static interrupt_handler void UART0IntHandler(void)
 {
-	uart_irq(UART0);
+	uart_irq(0);
 	vic_ack();
 }
 
 static interrupt_handler void UART1IntHandler(void)
 {
-	uart_irq(UART1);
+	uart_irq(1);
 	vic_ack();
 }
 
@@ -243,6 +238,7 @@ void command_handler(struct tty *t, int argc, char **argv)
 				const char buf[32];
 				int c = read(0, buf, sizeof(buf));
 				printf("got %d bytes\r\n", c);
+				fflush(stdout);
 				tick_delay(1*TICK_SECOND);
 			}
 		}
@@ -274,8 +270,8 @@ int main (void)
 
 	console_init();
 
-	uart_init(UART0, 38400);
-	uart_init(UART1, 9600);
+	uart_init(0, 115200);
+	uart_init(1, 9600);
 
 	ssp_init();
 	ssp_clock(100000);
@@ -327,6 +323,7 @@ int main (void)
 	int u0 = uart_open(0);
 	int u1 = uart_open(1);
 
+	int i;
 	uint8_t chr;
 	char buf[64];
 	int res;
@@ -345,7 +342,10 @@ int main (void)
 		res = read(u1, buf, sizeof(buf));
 		if(res > 0) {
 			nmea_process(buf, res);
+			write(u0, buf, res);
 		}
+
+		usleep(10000);
 	}
 
 	return 0;

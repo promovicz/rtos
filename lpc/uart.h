@@ -4,10 +4,7 @@
 
 #include <core/types.h>
 
-typedef enum {
-	UART0 = 0,
-	UART1 = 1,
-} uart_t;
+typedef int uart_t;
 
 typedef uint32_t uart_baud_t;
 

@@ -26,12 +26,26 @@ static inline always_inline void writeb(uint8_t v, volatile uint8_t *a)
 #define REG_DLAB0  0x0080
 #define REG_DLAB1  0x0100
 
-/* base address of all uarts and offset between uarts */
-#define UART_BASE   0xe000c000
-#define UART_OFFSET 0x4000
+/* base addresses of uarts */
+#define UART0_BASE   0xe000c000
+#define UART1_BASE   0xe0010000
 
 /* register address computation */
-#define UART_REG(u,r) ((uint8_t*)(UART_BASE + (u * UART_OFFSET) + ((r) & ~(REG_FLAGS))))
+#define UART_REG(u,r) ((uint8_t*)(((uint8_t*)uarts[u].base) + ((r) & ~(REG_FLAGS))))
+
+/* state structures */
+struct uart {
+	void *base;
+	fifo_t rxfifo;
+	char rxbuf[VCOM_FIFO_SIZE];
+	fifo_t txfifo;
+	char txbuf[VCOM_FIFO_SIZE];
+};
+
+struct uart uarts[2] = {
+	{base: UART0_BASE},
+	{base: UART1_BASE},
+};
 
 /* register definitions */
 enum uart_reg {
@@ -146,18 +160,8 @@ static inline uint8_t uart_reg_read(uart_t uart, enum uart_reg r)
 	return readb(UART_REG(uart, r));
 }
 
-fifo_t uart_rx_fifos[2];
-char uart_rx_fifo_buf[2][VCOM_FIFO_SIZE];
-
-fifo_t uart_tx_fifos[2];
-char uart_tx_fifo_buf[2][VCOM_FIFO_SIZE];
-
-extern int icount[2];
-
 void uart_init(uart_t uart, uart_baud_t baudrate)
 {
-	icount[uart] = 0xF000000;
-
 	uint16_t div = (60000000 / (16 * baudrate));
 
 	uart_reg_write(uart, LCR, LCR_WL_8|LCR_SB_1|LCR_PAR_NONE);
@@ -171,8 +175,8 @@ void uart_init(uart_t uart, uart_baud_t baudrate)
 
 	uart_reg_write(uart, FCR, FCR_ENABLE|FCR_RX_TRIG_1);
 
-	fifo_init(&uart_rx_fifos[uart], &uart_rx_fifo_buf[uart]);
-	fifo_init(&uart_tx_fifos[uart], &uart_tx_fifo_buf[uart]);
+	fifo_init(&uarts[uart].rxfifo, uarts[uart].rxbuf);
+	fifo_init(&uarts[uart].txfifo, uarts[uart].txbuf);
 
 	uart_reg_write(uart, IER, IER_RBR);
 }
@@ -182,14 +186,12 @@ void uart_irq(uart_t uart)
 	uint8_t ind = readb(UART_REG(uart, IIR));
 	uint8_t w;
 
-	icount[uart]++;
-
 	if(ind&IIR_II_CTI) {
 	}
 
 	if(ind&IIR_II_RDA) {
 		while(uart_rx_nonblocking(uart, &w, 1)) {
-			if(!fifo_put(&uart_rx_fifos[uart], w)) {
+			if(!fifo_put(&uarts[uart].rxfifo, w)) {
 				break;
 			}
 		}
@@ -197,7 +199,7 @@ void uart_irq(uart_t uart)
 
 	if(ind&IIR_II_THRE) {
 		while (uart_reg_read(uart, LSR) & LSR_THRE) {
-			if(!fifo_get(&uart_tx_fifos[uart], &w)) {
+			if(!fifo_get(&uarts[uart].txfifo, &w)) {
 				uint8_t m = uart_reg_read(uart, IER);
 				m &= ~IER_THRE;
 				uart_reg_write(uart, IER, m);
@@ -260,11 +262,11 @@ int uart_tx_fifo(uart_t uart, const void *buf, size_t nbytes)
 
 	for(done = 0; done < nbytes; done++) {
 		r = readb(UART_REG(uart, LSR)) & LSR_TEMT;
-		c = ((uint8_t *)buf)[nbytes];
+		c = ((uint8_t *)buf)[done];
 		if(r) {
 			writeb(c, UART_REG(uart, THR));
 		} else {
-			r = fifo_put(&uart_tx_fifos[uart], c);
+			r = fifo_put(&uarts[uart].txfifo, c);
 
 			if(r) {
 				ier = uart_reg_read(uart, IER);
@@ -319,7 +321,7 @@ int uart_rx_fifo(uart_t uart, void *buf, size_t nbytes)
 	m = disableIRQ();
 
 	for(done = 0; done < nbytes; done++) {
-		bool_t r = fifo_get(&uart_rx_fifos[uart], &cbuf[done]);
+		bool_t r = fifo_get(&uarts[uart].rxfifo, &cbuf[done]);
 		if(!r) {
 			break;
 		}
