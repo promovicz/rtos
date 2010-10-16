@@ -247,6 +247,7 @@ void command_handler(struct tty *t, int argc, char **argv)
 				tick_delay(1*TICK_SECOND);
 			}
 		}
+
 	}
 }
 
@@ -324,7 +325,12 @@ int main (void)
 
 	scp_init();
 
+	int u0 = uart_open(0);
+	int u1 = uart_open(1);
+
 	uint8_t chr;
+	char buf[64];
+	int res;
 	while (1) {
 		if(read(0, &chr, 1)) {
 			tty_feed(&tser, chr);
@@ -335,8 +341,9 @@ int main (void)
 		if(uart_rx_fifo(0, &chr, 1)) {
 		}
 
-		if(uart_rx_fifo(1, &chr, 1)) {
-			nmea_process(&chr, 1);
+		res = read(u1, buf, sizeof(buf));
+		if(res > 0) {
+			nmea_process(buf, res);
 		}
 	}
 

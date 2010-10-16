@@ -102,7 +102,7 @@ int file_close(struct file *fd)
 	}
 
 	/* call object implementation once */
-	if (fd->f_ops->fop_close) {
+	if (fd->f_ops && fd->f_ops->fop_close) {
 		return fd->f_ops->fop_close(fd);
 	}
 

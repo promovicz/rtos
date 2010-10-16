@@ -1,4 +1,8 @@
 
+#include "scp.h"
+
+#include <core/tick.h>
+
 #include <lpc/ssp.h>
 
 #include <stdio.h>
@@ -94,8 +98,6 @@ void scp_reset(void)
 	scp_write_r8(RSTR, 0x01);
 }
 
-extern void tick_delay(uint32_t d);
-
 void scp_init(void)
 {
 	uint8_t r;
@@ -148,6 +150,7 @@ void scp_selftest(void)
 	uint8_t r;
 
 	printf("commencing scp selftest...");
+	fflush(stdout);
 
 	scp_write_r8(OPERATION, OPERATION_SELFTEST);
 
@@ -159,6 +162,7 @@ void scp_selftest(void)
 	} else {
 		printf("failed!\n");
 	}
+	fflush(stdout);
 }
 
 void scp_measure(void)
@@ -167,12 +171,14 @@ void scp_measure(void)
 	uint16_t temp = 0;
 
 	printf("commencing scp measurement...");
+	fflush(stdout);
 
 	scp_write_r8(OPERATION, OPERATION_MEASURE_LOWPOWER);
 
 	scp_waitdata();
 
-	printf("done\n");
+	printf("done.\n");
+	fflush(stdout);
 
 	temp = scp_read_r16(TEMPOUT);
 
@@ -181,5 +187,5 @@ void scp_measure(void)
 
 	printf("scp pressure %d.%02d pascals\n", pres/4, (pres%4)*25);
 	printf("scp temperature %d.%02d degrees celsius\n", temp/20, (temp%20)*5);
-
+	fflush(stdout);
 }
