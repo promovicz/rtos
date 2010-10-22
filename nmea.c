@@ -184,6 +184,8 @@ void nmea_process_gpgga()
 	gps.fixminute = minute;
 	gps.fixsecond = second;
 	gps.fixmilisecond = milisecond;
+
+	gps.fixvalid = BOOL_TRUE;
 }
 
 void nmea_process_gpgsv()

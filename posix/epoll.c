@@ -117,6 +117,7 @@ int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
 		}
 
 		/* find available entry or duplicate */
+		/* XXX this will not always fail on duplicates immediately. might register first. */
 		for(i = 0; i < EPOLL_MAXFDS; i++) {
 			if(ef->entries[i].fd == fd) {
 				errno = EEXIST;

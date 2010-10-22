@@ -77,7 +77,8 @@ int errno;
 #include "vcom.h"
 #include "serial_fifo.h"
 #include "nmea.h"
-#include "scp.h"
+
+#include <sensor/scp.h>
 
 #define INTV_STOP   0
 #define	INTV_USB	1

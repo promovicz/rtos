@@ -3,6 +3,7 @@
 #include <posix/file.h>
 
 bool_t console_enabled;
+int    console_level;
 
 static int console_write(struct file *f, const void *buf, size_t nbytes)
 {
@@ -50,9 +51,17 @@ void console_init(void)
 	fe->f_flags = O_WRONLY;
 	fe->f_ops = &console_operations;
 	fd_alloc(fe); /* XXX ASSERT returns 2 */
+	
+	console_enabled = BOOL_FALSE;
+	console_level = 0;
 }
 
 void console_enable(void)
 {
 	console_enabled = BOOL_TRUE;
+}
+
+void console_set_level(int level)
+{
+	console_level = level;
 }
