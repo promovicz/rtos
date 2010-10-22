@@ -1,0 +1,40 @@
+Index: target/usbhw_lpc.c
+===================================================================
+--- target/usbhw_lpc.c	(revision 179)
++++ target/usbhw_lpc.c	(working copy)
+@@ -45,7 +45,7 @@
+ 
+ #ifdef DEBUG
+ // comment out the following line if you don't want to use debug LEDs
+-#define DEBUG_LED
++//#define DEBUG_LED
+ #endif
+ 
+ #ifdef DEBUG_LED
+Index: target/debug.h
+===================================================================
+--- target/debug.h	(revision 179)
++++ target/debug.h	(working copy)
+@@ -25,9 +25,6 @@
+ 	THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+ 
+-
+-int printf(const char *format, ...);
+-
+ #ifdef DEBUG
+ #define DBG	printf
+ #define ASSERT(x)	if(!(x)){DBG("\nAssertion '%s' failed in %s:%s#%d!\n",#x,__FILE__,__FUNCTION__,__LINE__);while(1);}
+Index: target/Makefile
+===================================================================
+--- target/Makefile	(revision 179)
++++ target/Makefile	(working copy)
+@@ -21,7 +21,7 @@
+ RM		= rm
+ TAR		= tar
+ 
+-CFLAGS  = -I./ -I../ -c -W -Wall -Os -g -DDEBUG -D$(TARGET) $(LPC2378_PORT) -mcpu=arm7tdmi
++CFLAGS  = -I./ -I../ -c -W -Wall -Os -g -D$(TARGET) $(LPC2378_PORT) -mcpu=arm7tdmi -ffunction-sections
+ ARFLAGS = -rcs
+ 
+ LIBSRCS = usbhw_lpc.c usbcontrol.c usbstdreq.c usbinit.c
