@@ -1,7 +1,10 @@
 
 #include <core/defines.h>
 
+#include <sys/types.h>
+
 #include <stdio.h>
+#include <unistd.h>
 
 void _exit(int status)
 {
@@ -12,3 +15,8 @@ void _exit(int status)
 
 void exit(int status)
 	weak_alias("_exit");
+
+pid_t getpid(void)
+{
+	return 0;
+}

@@ -8,4 +8,6 @@ void console_enable(void);
 
 int uart_open(int uart);
 
+void memory_init(void);
+
 #endif /* !POSIX_CONTROL_H */
