@@ -101,10 +101,10 @@ enum ctcr_bits {
 };
 
 #define TIMER0_BASE (0xE0004000)
-#define TIMER0_REGS ((struct timer_regs*)TIMER0_BASE)
+#define TIMER0_REGS ((volatile struct timer_regs*)TIMER0_BASE)
 
 #define TIMER1_BASE (0xE0008000)
-#define TIMER1_REGS ((struct timer_regs*)TIMER1_BASE)
+#define TIMER1_REGS ((volatile struct timer_regs*)TIMER1_BASE)
 
 
 static struct timer_regs * const timers[] = {TIMER0_REGS, TIMER1_REGS};

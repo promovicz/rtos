@@ -31,7 +31,7 @@ static inline always_inline void writeb(uint8_t v, volatile uint8_t *a)
 #define UART1_BASE   0xe0010000
 
 /* register address computation */
-#define UART_REG(u,r) ((uint8_t*)(((uint8_t*)uarts[u].base) + ((r) & ~(REG_FLAGS))))
+#define UART_REG(u,r) ((volatile uint8_t*)(((uint8_t*)uarts[u].base) + ((r) & ~(REG_FLAGS))))
 
 /* state structures */
 char u0_rxbuf[VCOM_FIFO_SIZE];

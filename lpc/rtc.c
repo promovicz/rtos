@@ -120,7 +120,7 @@ char *monthname[] = {
 
 
 #define RTC_BASE (0xE0024000)
-#define RTC ((struct rtc_regs *)RTC_BASE)
+#define RTC ((volatile struct rtc_regs *)RTC_BASE)
 
 enum rtc_source_t {
 	RTC_SOURCE_INVALID,

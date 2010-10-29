@@ -21,7 +21,7 @@ struct vic_regs {
 };
 
 #define VIC_BASE (0xFFFFF000)
-#define VIC ((struct vic_regs *)VIC_BASE)
+#define VIC ((volatile struct vic_regs *)VIC_BASE)
 
 #define INT_BIT(n) ((uint32_t)(1<<(n)))
 

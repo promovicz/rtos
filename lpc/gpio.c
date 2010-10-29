@@ -11,10 +11,10 @@ struct gpio_regs {
 };
 
 #define PORT0_BASE (0xE0028000)
-#define PORT0 ((struct gpio_regs *)PORT0_BASE)
+#define PORT0 ((volatile struct gpio_regs *)PORT0_BASE)
 
 #define PORT1_BASE (0xE0028010)
-#define PORT1 ((struct gpio_regs *)PORT1_BASE)
+#define PORT1 ((volatile struct gpio_regs *)PORT1_BASE)
 
 volatile struct gpio_regs *ports[] = {PORT0, PORT1};
 
