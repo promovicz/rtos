@@ -21,10 +21,10 @@ LIBS=lpcusb-trunk/target/usbstack.a dietlibc/bin-arm/dietlibc.a
 LOGOMATICOBJS=board/logomatic.o
 COREOBJS=core/tick.o core/tty.o core/parse.o
 LPCOBJS=lpc/scb.o lpc/pll.o lpc/mam.o lpc/vpb.o lpc/vic.o lpc/pinsel.o lpc/timer.o lpc/gpio.o lpc/rtc.o lpc/ssp.o lpc/spi.o lpc/uart.o lpc/device.o lpc/eint.o lpc/pin.o lpc/pcon.o
-SENSOROBJ=sensor/scp.o
-CMDOBJS=commands/gpio.o commands/pin.o commands/mem.o commands/power.o
+SENSOROBJ=sensor/scp.o sensor/nmea.o
+CMDOBJS=commands/gpio.o commands/pin.o commands/mem.o commands/power.o commands/nmea.o
 POSIXOBJS=posix/file.o posix/process.o posix/sleep.o posix/epoll.o posix/file_console.o posix/file_uart.o posix/signal.o posix/memory.o
-OBJS=start.o $(COREOBJS) $(LPCOBJS) $(SENSOROBJ) $(CMDOBJS) $(LOGOMATICOBJS) $(POSIXOBJS) halsys.o main.o serial_fifo.o armVIC.o nmea.o vcom.o
+OBJS=start.o $(COREOBJS) $(LPCOBJS) $(SENSOROBJ) $(CMDOBJS) $(LOGOMATICOBJS) $(POSIXOBJS) halsys.o main.o serial_fifo.o armVIC.o vcom.o
 INCLUDEFLAGS=-Ilpcusb-trunk/target -Idietlibc/include -I.
 DEFINE=-DLPC214x -DDEBUG
 

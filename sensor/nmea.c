@@ -1,5 +1,6 @@
 
 #include "nmea.h"
+#include "gps.h"
 
 #include <core/types.h>
 
@@ -8,81 +9,13 @@
 #include <string.h>
 #include <ctype.h>
 
-#define NMEA_MAX 91
-#define NMEA_MAX_ARGS 20
+struct nmea nmea;
 
-enum {
-	STATE_IDLE,
-	STATE_TYPE,
-	STATE_ARGS,
-	STATE_CSUM,
-};
-
-struct {
-	int state;
-
-	off_t fill;
-	uint8_t argstart;
-	uint8_t argfill;
-	char sentence[NMEA_MAX+1];
-
-	char *type;
-	char *arguments[NMEA_MAX_ARGS];
-
-	uint32_t sentences;
-	uint32_t errframing;
-	uint32_t errunknown;
-} nmea;
-
-struct gps_sat {
-	int satid;
-	int satelev;
-	int satazim;
-	int satsnr;
-};
-
-struct {
-	bool_t fixvalid;
-	int fixtype;
-	int fixhour;
-	int fixminute;
-	int fixsecond;
-	int fixmilisecond;
-
-	bool_t satsvalid;
-	int numvissats;
-	struct gps_sat vissats[12];
-} gps;
-
-
-enum gps_fixtype {
-	FIX_NONE = 0,
-	FIX_GPS_SPS,
-	FIX_GPS_DGPS,
-	FIX_GPS_PPS,
-	FIX_RTK_FIXED,
-	FIX_RTK_FLOAT,
-	FIX_ESTIMATED,
-	FIX_MANUAL,
-	FIX_SIMULATOR,
-	_FIX_COUNT,
-};
-
-const char *gps_fixtype_str[] = {
-	"None",
-	"GPS SPS",
-	"GPS DGPS",
-	"GPS PPS",
-	"RTK Fixed",
-	"RTK Float",
-	"Estimated",
-	"Manual",
-	"Simulator",
-};
+struct gps gps;
 
 void
 nmea_init() {
-	nmea.state = STATE_IDLE;
+	nmea.state = NMEA_STATE_IDLE;
 	gps.fixvalid = BOOL_FALSE;
 	gps.satsvalid = BOOL_FALSE;
 }
@@ -90,7 +23,7 @@ nmea_init() {
 void nmea_framing_error();
 void nmea_unknown_sentence();
 
-void
+static void
 nmea_pusharg()
 {
 	nmea.arguments[nmea.argfill++] = &nmea.sentence[nmea.argstart];
@@ -100,7 +33,7 @@ nmea_pusharg()
 	}
 }
 
-void
+static void
 nmea_push(char c)
 {
 	nmea.sentence[nmea.fill++] = c;
@@ -126,43 +59,6 @@ getargstr(int num, int min, int max, int *v)
 	return BOOL_FALSE;
 }
 
-void nmea_report()
-{
-	printf("counters: %d sentences, %d framing errors, %d unknown sentences\n", nmea.sentences, nmea.errframing, nmea.errunknown);
-	if(gps.fixvalid) {
-		printf("fix at %d:%d:%d.%d type %d (%s)\n",
-			   gps.fixhour, gps.fixminute, gps.fixsecond, gps.fixmilisecond,
-			   gps.fixtype, gps_fixtype_str[gps.fixtype]);
-	}
-	if(gps.satsvalid && gps.numvissats) {
-		printf("%d sats visible:\n", gps.numvissats);
-		int i;
-		for(i = 0; i < 12; i++) {
-			struct gps_sat *sat = &gps.vissats[i];
-			if(sat->satid) {
-				printf("  id %d elev %d azim %d snr %d\n",
-					   sat->satid, sat->satelev, sat->satazim, sat->satsnr);
-			} else {
-				break;
-			}
-		}
-	}
-}
-
-void nmea_command(struct tty *t, int argc, char **argv)
-{
-	if(argc > 0) {
-		if(!strcmp(argv[1], "report")) {
-			nmea_report();
-		}
-		if(!strcmp(argv[1], "reset")) {
-			nmea_init();
-		}
-	} else {
-		nmea_report();
-	}
-}
-
 void nmea_process_gpgga()
 {
 	int r;
@@ -175,7 +71,7 @@ void nmea_process_gpgga()
 	}
 
 	int fixtype;
-	if(!getargstr(5, 0, _FIX_COUNT-1, &fixtype)) {
+	if(!getargstr(5, 0, _GPS_FIX_COUNT-1, &fixtype)) {
 		return;
 	}
 
@@ -225,6 +121,7 @@ void nmea_process_gpgsv()
 		}
 
 		if(cur_msg == num_msg) {
+			gps.satsvalid = (numsats > 0);
 			gps.numvissats = numsats;
 			memset(&gps.vissats, 0, sizeof(gps.vissats));
 			memcpy(&gps.vissats, sats, sizeof(struct gps_sat)*numsats);
@@ -257,16 +154,16 @@ nmea_process(const char *buf, size_t nbytes)
 		char c = buf[p];
 
 		switch(nmea.state) {
-		case STATE_IDLE:
+		case NMEA_STATE_IDLE:
 			if(c == '$') {
-				nmea.state = STATE_TYPE;
+				nmea.state = NMEA_STATE_TYPE;
 
 				nmea.fill = 0;
 
 				nmea_push(c);
 			} // XXX else junk or gps-specific binary like on SUP500
 			break;
-		case STATE_TYPE:
+		case NMEA_STATE_TYPE:
 			if(isalnum(c)) {
 				nmea_push(c);
 			} else if(c == ',') {
@@ -274,14 +171,14 @@ nmea_process(const char *buf, size_t nbytes)
 
 				nmea.type = &nmea.sentence[1];
 
-				nmea.state = STATE_ARGS;
+				nmea.state = NMEA_STATE_ARGS;
 				nmea.argstart = nmea.fill;
 				nmea.argfill = 0;
 			} else {
 				nmea_framing_error();
 			}
 			break;
-		case STATE_ARGS:
+		case NMEA_STATE_ARGS:
 			if(isalnum(c) || c == '.' || c == '-' || c == '+') {
 				nmea_push(c);
 			} else if(c == ',' || c == '*') {
@@ -290,13 +187,13 @@ nmea_process(const char *buf, size_t nbytes)
 				nmea_pusharg();
 
 				if(c == '*') {
-					nmea.state = STATE_CSUM;
+					nmea.state = NMEA_STATE_CSUM;
 				}
 			} else {
 				nmea_framing_error();
 			}
 			break;
-		case STATE_CSUM:
+		case NMEA_STATE_CSUM:
 			if(isxdigit(c)) {
 				nmea_push(c);
 			} else if (c=='\r') {
@@ -305,7 +202,7 @@ nmea_process(const char *buf, size_t nbytes)
 				//     remember that saved sentence is modified
 				//     for null-termination.
 				nmea_process_sentence();
-				nmea.state = STATE_IDLE;
+				nmea.state = NMEA_STATE_IDLE;
 			} else {
 				nmea_framing_error();
 			}
@@ -317,12 +214,12 @@ void
 nmea_framing_error()
 {
 	nmea.errframing++;
-	nmea.state = STATE_IDLE;
+	nmea.state = NMEA_STATE_IDLE;
 }
 
 void
 nmea_unknown_sentence()
 {
 	nmea.errunknown++;
-	nmea.state = STATE_IDLE;
+	nmea.state = NMEA_STATE_IDLE;
 }

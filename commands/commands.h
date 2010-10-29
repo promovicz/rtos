@@ -12,4 +12,6 @@ void pin_report(void);
 
 void power_command(struct tty *t, int argc, char **argv);
 
+void nmea_command(struct tty *t, int argc, char **argv);
+
 #endif /* !COMMANDS_H */

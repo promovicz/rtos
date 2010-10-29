@@ -76,7 +76,6 @@ int errno;
 #include "hal.h"
 #include "vcom.h"
 #include "serial_fifo.h"
-#include "nmea.h"
 
 #include <sensor/scp.h>
 
