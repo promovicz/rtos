@@ -116,6 +116,7 @@ void scp_init(void)
 		r = scp_read_r8(STATUS);
 		if(i++ > 10) {
 			printf("scp init failed\n");
+			return;
 		}
 	} while(r&STATUS_STARTING);
 
