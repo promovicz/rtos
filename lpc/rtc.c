@@ -93,7 +93,7 @@ enum amr_bits {
 	AMR_AMRYEAR = (1<<7),
 };
 
-char *dayname[] = {
+const char const *dayname[] = {
 	"Monday",
 	"Tuesday",
 	"Wednesday",
@@ -103,7 +103,7 @@ char *dayname[] = {
 	"Sunday",
 };
 
-char *monthname[] = {
+const char const *monthname[] = {
 	"January",
 	"February",
 	"March",
@@ -118,16 +118,16 @@ char *monthname[] = {
 	"December"
 };
 
+const char const *sourcename[] = {
+	"invalid",
+	"rtc",
+	"user",
+	"gps",
+};
+
 
 #define RTC_BASE (0xE0024000)
 #define RTC ((volatile struct rtc_regs *)RTC_BASE)
-
-enum rtc_source_t {
-	RTC_SOURCE_INVALID,
-	RTC_SOURCE_RTC,
-	RTC_SOURCE_USER,
-	RTC_SOURCE_GPS,
-};
 
 struct rtc_time_t {
 	rtc_hour_t hour;
@@ -144,40 +144,52 @@ struct rtc_date_t {
 bool_t rtc_running_at_init;
 
 bool_t rtc_time_valid;
+rtc_source_t rtc_time_source;
+
 bool_t rtc_date_valid;
+rtc_source_t rtc_date_source;
 
 void rtc_init()
 {
 	if(RTC->CCR != (CCR_CLKEN|CCR_CLKSRC)) {
 		RTC->CCR = CCR_CLKEN|CCR_CLKSRC;
 
-		rtc_set_time(12, 0, 0);
-		rtc_set_date(0, 1, 1);
-
 		rtc_time_valid = BOOL_FALSE;
+		rtc_time_source = RTC_SOURCE_RTC;
 		rtc_date_valid = BOOL_FALSE;
+		rtc_date_source = RTC_SOURCE_RTC;
+
+		rtc_indicate_time(RTC_SOURCE_INVALID, 12, 0, 0);
+		rtc_indicate_date(RTC_SOURCE_INVALID, 0, 1, 1);
 
 		rtc_running_at_init = BOOL_FALSE;
 	} else {
 		bool_t date_seems_valid = (RTC->YEAR > 2000);
 
-		if(!date_seems_valid) {
-			rtc_set_date(0, 1, 1);
-		}
-
 		rtc_time_valid = BOOL_TRUE;
+		rtc_time_source = RTC_SOURCE_RTC;
 		rtc_date_valid = date_seems_valid?BOOL_TRUE:BOOL_FALSE;
+		rtc_date_source = date_seems_valid?RTC_SOURCE_RTC:RTC_SOURCE_INVALID;
+
+		if(!date_seems_valid) {
+			rtc_indicate_date(RTC_SOURCE_INVALID, 0, 1, 1);
+		}
 
 		rtc_running_at_init = BOOL_TRUE;
 	}
 }
 
-void rtc_set_time(rtc_hour_t h, rtc_minute_t m, rtc_second_t s)
+void rtc_indicate_time(rtc_source_t source, rtc_hour_t h, rtc_minute_t m, rtc_second_t s)
 {
-	RTC->SEC = s;
-	RTC->MIN = m;
-	RTC->HOUR = h;
-	rtc_time_valid = BOOL_TRUE;
+	if(source >= rtc_time_source) {
+		RTC->SEC = s;
+		RTC->MIN = m;
+		RTC->HOUR = h;
+		if(source != RTC_SOURCE_INVALID) {
+			rtc_time_valid = BOOL_TRUE;
+		}
+		rtc_time_source = source;
+	}
 }
 
 rtc_dow_t rtc_compute_dow(rtc_year_t year, rtc_month_t month, rtc_dom_t dom)
@@ -190,23 +202,33 @@ rtc_doy_t rtc_compute_doy(rtc_year_t year, rtc_month_t month, rtc_dom_t dom)
 	return 0;
 }
 
-void rtc_set_date(rtc_year_t year, rtc_month_t month, rtc_dom_t dom)
+void rtc_indicate_date(rtc_source_t source, rtc_year_t year, rtc_month_t month, rtc_dom_t dom)
 {
-	RTC->DOW = rtc_compute_dow(year, month, dom);
-	RTC->DOY = rtc_computer_doy(year, month, dom);
-	RTC->DOM = dom;
-	RTC->MONTH = month;
-	RTC->YEAR = year;
-	rtc_date_valid = BOOL_TRUE;
+	if(source >= rtc_date_source) {
+		RTC->DOW = rtc_compute_dow(year, month, dom);
+		RTC->DOY = rtc_compute_doy(year, month, dom);
+		RTC->DOM = dom;
+		RTC->MONTH = month;
+		RTC->YEAR = year;
+		if(source != RTC_SOURCE_INVALID) {
+			rtc_date_valid = BOOL_TRUE;
+		}
+		rtc_date_source = source;
+	}
 }
 
 void rtc_report(void)
 {
 	if(rtc_date_valid) {
 		printf("date valid!\n");
+		printf("rtc date XXX source %s\n", sourcename[rtc_date_source]);
 	}
 	if(rtc_time_valid) {
-		printf("date valid!\n");
-		printf("%02d:%02d:%02d\n", RTC->HOUR, RTC->MIN, RTC->SEC);
+		printf("rtc time %02d:%02d:%02d source %s\n",
+			   RTC->HOUR, RTC->MIN, RTC->SEC,
+			   sourcename[rtc_time_source]);
+	}
+	if(rtc_running_at_init) {
+		printf("rtc was running at init\n");
 	}
 }

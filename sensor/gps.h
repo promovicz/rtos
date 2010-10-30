@@ -32,6 +32,12 @@ struct gps {
 	int fixminute;
 	int fixsecond;
 	int fixmilisecond;
+	int fixlatmsb;
+	int fixlatlsb;
+	char fixlathem;
+	int fixlonmsb;
+	int fixlonlsb;
+	char fixlonhem;
 
 	bool_t satsvalid;
 	int numvissats;

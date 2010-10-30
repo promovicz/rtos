@@ -15,6 +15,7 @@ SECTIONS
 
 	.text :
 	{
+		__text_start = .;
 		*(.startup)
 		*(.text) *(.text.*)
 		*(.rodata) *(.rodata.*)
@@ -22,26 +23,23 @@ SECTIONS
 		*(.glue_7t)
 		_etext = .;
 	} > flash
-
-	/* USB DMA RAM */
-	. = ORIGIN(ram_usb_dma);
-
-	.usbdma (NOLOAD) :
-	{
-		*(.usbdma)
-	} > ram_usb_dma
+	. = ALIGN(4);
+	__text_end = .;
 
 	 /* RAM */
 	 . = ORIGIN(ram);
 
-	 __static_memory_start = .;
+	 __static_start = .;
 
 	.data :
 	{
+		__data_start = .;
 		_data = .;
 		*(.data) *(.data.*)
 		_edata = .;
 	} > ram AT > flash
+	. = ALIGN(4);
+	__data_end = .;
 
 	.bss (NOLOAD) :
 	{
@@ -51,12 +49,21 @@ SECTIONS
 	. = ALIGN(4);
 	__bss_end = . ;
 
-	__static_memory_end = .;
+	__static_end = .;
 
 	. = ORIGIN(ram) + (LENGTH(ram) & ~ 3); /* XXX strange memdefs have unaligned memory size */
 	__stacks_end = .;
 	__stacks_start = __stacks_end - 4096;
 
-	__dynamic_memory_start = __static_memory_end;
-	__dynamic_memory_end = __stacks_start;
+	__heap_start = __static_end;
+	__heap_end = __stacks_start;
+
+	/* USB DMA RAM */
+	. = ORIGIN(ram_usb_dma);
+
+	.usbdma (NOLOAD) :
+	{
+		*(.usbdma)
+	} > ram_usb_dma
+
 }

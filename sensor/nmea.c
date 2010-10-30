@@ -9,15 +9,16 @@
 #include <string.h>
 #include <ctype.h>
 
+#include <lpc/rtc.h>
+
 struct nmea nmea;
 
 struct gps gps;
 
 void
 nmea_init() {
-	nmea.state = NMEA_STATE_IDLE;
-	gps.fixvalid = BOOL_FALSE;
-	gps.satsvalid = BOOL_FALSE;
+	memset(&nmea, 0, sizeof(nmea));
+	memset(&gps, 0, sizeof(gps));
 }
 
 void nmea_framing_error();
@@ -70,6 +71,40 @@ void nmea_process_gpgga()
 		return;
 	}
 
+	int latmsb, latlsb;
+	char *lathem;
+
+	r = sscanf(nmea.arguments[1], "%4d.%4d", &latmsb, &latlsb);
+	if(r != 2) {
+		printf("gga lat invalid: \"%s\"\n", nmea.arguments[1]);
+		return;
+	}
+
+	lathem = nmea.arguments[2];
+	if(strcmp(lathem, "N") && strcmp(lathem, "S")) {
+		printf("gga lathem invalid: \"%s\"\n", nmea.arguments[2]);
+		return;
+	}
+
+	//printf("lat %5d.%5d %s\n", latmsb, latlsb, lathem);
+
+	int lonmsb, lonlsb;
+	char *lonhem;
+
+	r = sscanf(nmea.arguments[3], "%5d.%5d", &lonmsb, &lonlsb);
+	if(r != 2) {
+		printf("gga lon invalid: \"%s\"\n", nmea.arguments[3]);
+		return;
+	}
+
+	lonhem = nmea.arguments[4];
+	if(strcmp(lonhem, "E") && strcmp(lonhem, "W")) {
+		printf("gga lonhem invalid: \"%s\"\n", lonhem);
+		return;
+	}
+
+	//printf("lon %5d.%5d %s\n", lonmsb, lonlsb, lonhem);
+
 	int fixtype;
 	if(!getargstr(5, 0, _GPS_FIX_COUNT-1, &fixtype)) {
 		return;
@@ -80,8 +115,19 @@ void nmea_process_gpgga()
 	gps.fixminute = minute;
 	gps.fixsecond = second;
 	gps.fixmilisecond = milisecond;
+	gps.fixlatmsb = latmsb;
+	gps.fixlatlsb = latlsb;
+	gps.fixlathem = lathem[0];
+	gps.fixlonmsb = lonmsb;
+	gps.fixlonlsb = lonlsb;
+	gps.fixlonhem = lonhem[0];
 
 	gps.fixvalid = BOOL_TRUE;
+
+	/* XXX suboptimal, but a sane way of preventing bad time setting by gps */
+	if(gps.numvissats >= 1) {
+		rtc_indicate_time(RTC_SOURCE_GPS, gps.fixhour, gps.fixminute, gps.fixsecond);
+	}
 }
 
 void nmea_process_gpgsv()

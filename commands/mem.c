@@ -60,12 +60,18 @@ struct mem_section {
 	void *end;
 };
 
+extern void __text_start, __text_end;
+extern void __data_start, __data_end;
+extern void __bss_start, __bss_end;
+extern void __heap_start, __heap_end;
+extern void __stacks_start, __stacks_end;
+
 struct mem_section sections[] = {
-#if 0
 	{".text", &__text_start, &__text_end},
 	{".data", &__data_start, &__data_end},
 	{".bss",  &__bss_start, &__bss_end},
-#endif
+	{".heap", &__heap_start, &__heap_end},
+	{".stacks", &__stacks_start, &__stacks_end},
 	{0,0,0},
 };
 
@@ -100,12 +106,22 @@ void mem_command(struct tty *t, int argc, char **argv)
 			struct mem_region *mr = regions;
 			printf("memory map:\n");
 			while(mr->name) {
-				printf(" %6s: %08x bytes at %08x - %08x\n",
+				printf(" %8s: %08x bytes at %08x - %08x\n",
 					   mr->name,
 					   mr->size,
 					   mr->start,
 					   mr->start + mr->size - 1);
 				mr++;
+			}
+			printf("memory sections:\n");
+			struct mem_section *ms = sections;
+			while(ms->name) {
+				printf(" %8s: %08x bytes at %08x - %08x\n",
+					   ms->name,
+					   ms->end - ms->start,
+					   ms->start,
+					   ms->end);
+				ms++;
 			}
 		} else if (!strcmp("s32", argv[0])) {
 		} else if (!strcmp("s16", argv[0])) {

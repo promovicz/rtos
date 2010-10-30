@@ -26,6 +26,9 @@ static void nmea_report()
 		printf("fix at %d:%d:%d.%d type %d (%s)\n",
 			   gps.fixhour, gps.fixminute, gps.fixsecond, gps.fixmilisecond,
 			   gps.fixtype, gps_fixtype_str[gps.fixtype]);
+		printf("  position latitude %02dd%02d.%04ds %c lon %03dd%02d.%04ds %c\n",
+			   gps.fixlatmsb/100, gps.fixlatmsb%100, gps.fixlatlsb, gps.fixlathem,
+			   gps.fixlonmsb/100, gps.fixlonmsb%100, gps.fixlonlsb, gps.fixlonhem);
 	}
 	if(gps.satsvalid && gps.numvissats) {
 		printf("%d sats visible:\n", gps.numvissats);

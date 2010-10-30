@@ -6,6 +6,7 @@
 #include <lpc/vpb.h>
 #include <lpc/pin.h>
 #include <lpc/spi.h>
+#include <lpc/rtc.h>
 #include <lpc/eint.h>
 #include <lpc/gpio.h>
 
@@ -53,6 +54,8 @@ void board_init(void)
 	mam_init();
 
 	vpb_init();
+
+	rtc_init();
 
 	// IMU
 	pin_set_function(PIN0, PIN_FUNCTION_UART0_TXD);

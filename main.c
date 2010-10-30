@@ -64,6 +64,7 @@ int errno;
 #include <lpc/timer.h>
 #include <lpc/pinsel.h>
 #include <lpc/spi.h>
+#include <lpc/wdt.h>
 
 #include <posix/control.h>
 
@@ -78,6 +79,8 @@ int errno;
 #include "serial_fifo.h"
 
 #include <sensor/scp.h>
+
+#include <sys/mman.h>
 
 #define INTV_STOP   0
 #define	INTV_USB	1
@@ -215,6 +218,7 @@ void command_handler(struct tty *t, int argc, char **argv)
 		if(!strcmp("time", argv[0])) {
 			tick_t t = tick_get();
 			printf("sys time %07d.%03d\n", t/1000, t%1000);
+			rtc_report();
 		}
 		if(!strcmp("pll", argv[0])) {
 			pll_report();
@@ -222,27 +226,56 @@ void command_handler(struct tty *t, int argc, char **argv)
 		if(!strcmp("pin", argv[0])) {
 			pin_report();
 		}
+		if(!strcmp("reset", argv[0])) {
+			system_reset();
+		}
 
-		if(!strcmp("cwrite", argv[0])) {
-			int c = 10;
-			while(c-- > 0) {
-				const char *str = "fnord\r\n";
-				int c = write(1, str, strlen(str));
-				tick_delay(1*TICK_SECOND);
+#if 0
+		int r;
+		void *p;
+		uint32_t u;
+
+		if(!strcmp("memm", argv[0])) {
+			p = mmap(NULL, 1024, 0, MAP_ANONYMOUS, 0, 0);
+			if(!p) {
+				perror("mmap");
 			}
 		}
 
-		if(!strcmp("cread", argv[0])) {
-			int c = 10;
-			while(c-- > 0) {
-				const char buf[32];
-				int c = read(0, buf, sizeof(buf));
-				printf("got %d bytes\r\n", c);
-				fflush(stdout);
-				tick_delay(1*TICK_SECOND);
+		if(!strcmp("memu", argv[0])) {
+			if(argc > 1) {
+				if(scan_ptr(argv[1], &p)) {
+					printf("unmapping %08x\n", p);
+					r = munmap(p, 512);
+					if(r == -1) {
+						perror("munmap");
+					}
+				}
 			}
 		}
 
+		if(!strcmp("mema", argv[0])) {
+			if(argc > 1) {
+				if(scan_uint32(argv[1], &u)) {
+					p = malloc(u);
+					if(p) {
+						printf("got %08x\n", p);
+					} else {
+						perror("malloc");
+					}
+				}
+			}
+		}
+
+		if(!strcmp("memf", argv[0])) {
+			if(argc > 1) {
+				if(scan_ptr(argv[1], &p)) {
+					printf("freeing %08x\n", p);
+					free(p);
+				}
+			}
+		}
+#endif
 	}
 }
 
@@ -266,9 +299,7 @@ void csel_mmc(bool_t yeah)
 
 int main (void)
 {
-	board_init();
-
-	console_init();
+	system_init();
 
 	uart_init(0, 115200);
 	uart_init(1, 9600);
@@ -328,6 +359,8 @@ int main (void)
 	char buf[64];
 	int res;
 	while (1) {
+		system_kick();
+
 		if(read(0, &chr, 1)) {
 			tty_feed(&tser, chr);
 		}
