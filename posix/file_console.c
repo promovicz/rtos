@@ -39,16 +39,19 @@ void console_init(void)
 
 	/* stdin */
 	fi->f_flags = O_RDONLY;
+	fi->f_name = "stdin";
 	fi->f_ops = &console_operations;
 	fd_alloc(fi); /* XXX ASSERT returns 0 */
 
 	/* stdout */
 	fo->f_flags = O_WRONLY;
+	fo->f_name = "stdout";
 	fo->f_ops = &console_operations;
 	fd_alloc(fo); /* XXX ASSERT returns 1 */
 
 	/* stderr */
 	fe->f_flags = O_WRONLY;
+	fe->f_name = "stderr";
 	fe->f_ops = &console_operations;
 	fd_alloc(fe); /* XXX ASSERT returns 2 */
 	

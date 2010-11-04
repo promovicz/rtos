@@ -22,6 +22,7 @@ int uart_open(int uart)
 {
 	struct file *f = file_alloc();
 
+	f->f_name = "uart";
 	f->f_flags = O_RDWR;
 	f->f_ops = &uart_operations;
 

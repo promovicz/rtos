@@ -1,6 +1,8 @@
 
 #include "file.h"
 
+#include <stdio.h>
+
 #include <core/defines.h>
 
 /* "table" of all file descriptors */
@@ -14,6 +16,34 @@ void file_table_init(void)
 	/* clear all structures */
 	memset(open_files, 0, sizeof(open_files));
 	memset(open_fds, 0, sizeof(open_fds));
+}
+
+void file_table_report(void)
+{
+	int i, cfd, cf;
+
+	cf = 0;
+	for(i = 0; i < MAXFILES; i++) {
+		if(open_files[i].f_used) {
+			cf++;
+		}
+	}
+
+	cfd = 0;
+	for(i = 0; i < MAXFDS; i++) {
+		if(open_fds[i]) {
+			cfd++;
+		}
+	}
+
+	printf("files open: %d descriptors: %d\n", cf, cfd);
+
+	for(i = 0; i < MAXFDS; i++) {
+		struct file *f = open_fds[i];
+		if(f) {
+			printf("  fd%d is %s\n", i, f->f_name?f->f_name:"ufo");
+		}
+	}
 }
 
 struct file *file_alloc()

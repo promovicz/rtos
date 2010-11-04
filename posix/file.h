@@ -38,6 +38,8 @@ struct file {
 	int8_t f_used;
 	/* file flags (O_RDONLY and so forth) */
 	int f_flags;
+	/* descriptive name */
+	char *f_name;
 	/* object-specific operation structure */
 	struct file_operations *f_ops;
 	/* object-specific file structure */
@@ -48,6 +50,7 @@ struct file {
 };
 
 void file_table_init(void);
+void file_table_report(void);
 
 struct file *file_alloc();
 int file_ref(struct file *fd);

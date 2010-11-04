@@ -1,6 +1,7 @@
 
 #include <board/logomatic.h>
 
+#include <lpc/pcon.h>
 #include <lpc/wdt.h>
 
 #include <posix/control.h>
@@ -24,4 +25,11 @@ void system_kick(void)
 void system_reset(void)
 {
 	wdt_reset();
+	while(1) { }
+}
+
+void system_halt(void)
+{
+	pcon_power_down();
+	while(1) { }
 }

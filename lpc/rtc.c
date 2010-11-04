@@ -220,15 +220,18 @@ void rtc_indicate_date(rtc_source_t source, rtc_year_t year, rtc_month_t month, 
 void rtc_report(void)
 {
 	if(rtc_date_valid) {
-		printf("date valid!\n");
 		printf("rtc date XXX source %s\n", sourcename[rtc_date_source]);
+	} else {
+		printf("rtc date invalid\n");
 	}
+
 	if(rtc_time_valid) {
 		printf("rtc time %02d:%02d:%02d source %s\n",
 			   RTC->HOUR, RTC->MIN, RTC->SEC,
 			   sourcename[rtc_time_source]);
+	} else {
+		printf("rtc time invalid\n");
 	}
-	if(rtc_running_at_init) {
-		printf("rtc was running at init\n");
-	}
+
+	printf("rtc was %s at init\n", rtc_running_at_init?"running":"started");
 }

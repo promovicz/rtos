@@ -177,6 +177,21 @@ void stop_handler(int eint)
 void command_handler(struct tty *t, int argc, char **argv)
 {
 	if(argc) {
+		if(!strcmp("reset", argv[0])) {
+			reset_command(t, argc-1, argv+1);
+		}
+		if(!strcmp("halt", argv[0])) {
+			halt_command(t, argc-1, argv+1);
+		}
+		if(!strcmp("status", argv[0])) {
+			status_command(t, argc-1, argv+1);
+		}
+
+		if(!strcmp("posix", argv[0])) {
+			posix_command(t, argc-1, argv+1);
+		}
+
+
 		if(!strcmp("gps", argv[0])) {
 			nmea_command(t, argc-1, argv+1);
 		}
@@ -191,9 +206,6 @@ void command_handler(struct tty *t, int argc, char **argv)
 		}
 		if(!strcmp("gpio", argv[0])) {
 			gpio_command(t, argc-1, argv+1);
-		}
-		if(!strcmp("power", argv[0])) {
-			power_command(t, argc-1, argv+1);
 		}
 		if(!strcmp("vic", argv[0])) {
 			if(argc > 1) {

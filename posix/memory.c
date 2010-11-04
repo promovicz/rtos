@@ -1,4 +1,6 @@
 
+#include "memory.h"
+
 #include <core/defines.h>
 #include <core/types.h>
 
@@ -64,13 +66,33 @@ void memory_init(void)
 #endif
 
 	membase = ((char*)start) + ltablepages * PAGESIZE;
-	pagecount = lpages;
+	pagecount = lpages - ltablepages; // XXX correct things to mark page tables in tables properly
 	pagetable = (struct page *)start;
 
 	memset(pagetable, 0, ltablepages * PAGESIZE);
 
+#if 0
 	printf("mm memory base is 0x%08x\n", membase);
 	printf("mm table at 0x%08x with %d entries\n", pagetable, pagecount);
+#endif
+}
+
+void memory_report(void)
+{
+	int i, free, used;
+	free = 0; used = 0;
+	for(i = 0; i < pagecount; i++) {
+		if(pagetable[i].flags & PAGE_FLAG_ALLOC) {
+			used++;
+		} else {
+			free++;
+		}
+	}
+
+	printf("memory avail: %d bytes in %d pages of %d bytes\n",
+		   pagecount*PAGESIZE, pagecount, PAGESIZE);
+	printf("memory used: %d of %d bytes\n",
+		   used*PAGESIZE, free*PAGESIZE);
 }
 
 void *mmap(void *addr, size_t length,

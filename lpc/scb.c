@@ -31,20 +31,3 @@ enum mem_map_bits {
 #define MEM ((volatile struct mem_regs*)MEM_BASE)
 
 
-
-struct reset_regs {
-	uint8_t RSID;
-	uint8_t _pad0[3];
-};
-
-enum reset_rsid_bits {
-	RESET_RSID_POR = (1<<0),
-	RESET_RSID_EXTR = (1<<1),
-	RESET_RSID_WDTR = (1<<2),
-	RESET_RSID_BODR = (1<<3),
-};
-
-#define RESET_BASE (0xE01FC180)
-#define RESET ((volatile struct reset_regs*)RESET_BASE)
-
-
