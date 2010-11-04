@@ -7,8 +7,6 @@
 
 #include "serial_fifo.h"
 
-/* XXX find some better method for dealing with DLAB bullpoo */
-
 #include <core/defines.h>
 
 static inline always_inline uint8_t readb(volatile uint8_t *a)
@@ -52,20 +50,68 @@ struct uart uarts[2] = {
 	{base: UART1_BASE, rxbuf: &u1_rxbuf, txbuf: &u1_txbuf},
 };
 
+struct uart_regs {
+	/* 0x00 */
+	union {
+		uint8_t RBR; /* ro */
+		uint8_t THR; /* wo */
+		uint8_t DLL; /* rw, dlab */
+	};
+	uint8_t _pad0[3];
+	/* 0x04 */
+	union {
+		uint8_t IER; /* rw */
+		uint8_t DLM; /* rw, dlab */
+	};
+	uint8_t _pad1[3];
+	/* 0x08 */
+	union {
+		uint8_t IIR; /* ro */
+		uint8_t FCR; /* wo */
+	};
+	uint8_t _pad2[3];
+	/* 0x0c */
+	uint8_t LCR; /* rw */
+	uint8_t _pad3[3];
+	/* 0x10 */
+	uint8_t MCR; /* rw, modem control */
+	uint8_t _pad4[3];
+	/* 0x14 */
+	uint8_t LSR; /* ro */
+	uint8_t _pad5[3];
+	/* 0x18 */
+	uint8_t MSR; /* ro, modem control */
+	uint8_t _pad6[3];
+	/* 0x1c */
+	uint8_t SCR; /* rw */
+	uint8_t _pad7[3];
+	/* 0x20 */
+	uint32_t ACR; /* rw */
+	uint8_t _pad8[4];
+	/* 0x28 */
+	uint32_t FDR; /* rw */
+	uint8_t _pad9[4];
+	/* 0x30 */
+	uint8_t TER; /* rw */
+	uint8_t _pad10[3];
+};
+
 /* register definitions */
 enum uart_reg {
 	RBR = 0x00 | REG_DLAB0, /* r */
 	THR = 0x00 | REG_DLAB0, /* w */
 	DLL = 0x00 | REG_DLAB1, /* rw */
-	DLM = 0x04 | REG_DLAB1, /* rw */
 	IER = 0x04 | REG_DLAB0, /* rw */
+	DLM = 0x04 | REG_DLAB1, /* rw */
 	IIR = 0x08, /* r */
 	FCR = 0x08, /* w */
 	LCR = 0x0c, /* rw */
+	MCR = 0x10, /* rw, LPC2148: only second uart */
 	LSR = 0x14, /* r */
+	MSR = 0x18, /* r, LPC2148: only second uart */
 	SCR = 0x1c, /* rw */
-	ACR = 0x20, /* rw */
-	FDR = 0x28, /* rw */
+	ACR = 0x20, /* rw, 32bit */
+	FDR = 0x28, /* rw, 32bit */
 	TER = 0x30  /* rw */
 };
 
