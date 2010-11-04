@@ -303,30 +303,37 @@ int uart_tx_nonblocking(uart_t uart, const void *buf, size_t nbytes)
 
 int uart_tx_fifo(uart_t uart, const void *buf, size_t nbytes)
 {
-	bool_t r;
-	size_t done;
+	bool_t starting, success;
+	size_t done, donedirect;
 	uint32_t m;
 	uint8_t c;
 	uint8_t ier;
 
+	done = donedirect = 0;
+
 	m = disableIRQ();
 
-	for(done = 0; done < nbytes; done++) {
-		r = readb(UART_REG(uart, LSR)) & LSR_TEMT;
-		c = ((uint8_t *)buf)[done];
-		if(r) {
-			writeb(c, UART_REG(uart, THR));
-		} else {
-			r = fifo_put(&uarts[uart].txfifo, c);
+	starting = readb(UART_REG(uart, LSR)) & LSR_TEMT;
 
-			if(r) {
-				ier = uart_reg_read(uart, IER);
-				ier |= IER_THRE;
-				uart_reg_write(uart, IER, ier);
-			} else {
-				break;
-			}
+	if(starting) {
+		donedirect = uart_tx_nonblocking(uart, buf, nbytes);
+	}
+
+	done = donedirect;
+
+	for( ; done < nbytes; done++) {
+		c = ((uint8_t *)buf)[done];
+		success = fifo_put(&uarts[uart].txfifo, c);
+
+		if(!success) {
+			break;
 		}
+	}
+
+	if(done > 0) {
+		ier = uart_reg_read(uart, IER);
+		ier |= IER_THRE;
+		uart_reg_write(uart, IER, ier);
 	}
 
 	restoreIRQ(m);
