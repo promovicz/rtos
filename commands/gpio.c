@@ -6,8 +6,8 @@
 void gpio_status(int pin)
 {
 	printf("gpio%d is %s state %s\n", pin,
-		   gpio_pin_get_direction(0, pin)?"output":"input",
-		   gpio_pin_get(0, pin)?"high":"low");
+		   gpio_pin_get_direction(pin)?"output":"input",
+		   gpio_pin_get(pin)?"high":"low");
 }
 
 void gpio_status_all(void)
@@ -35,25 +35,25 @@ void gpio_command(struct tty *t, int argc, char **argv)
 		} else if (!strcmp("output", argv[0])) {
 			if(argc > 1) {
 				if(scan_dec(argv[1], &pin)) {
-					gpio_pin_set_direction(0, pin, BOOL_TRUE);
+					gpio_pin_set_direction(pin, BOOL_TRUE);
 				}
 			}
 		} else if (!strcmp("input", argv[0])) {
 			if(argc > 1) {
 				if(scan_dec(argv[1], &pin)) {
-					gpio_pin_set_direction(0, pin, BOOL_FALSE);
+					gpio_pin_set_direction(pin, BOOL_FALSE);
 				}
 			}
 		} else if (!strcmp("high", argv[0])) {
 			if(argc > 1) {
 				if(scan_dec(argv[1], &pin)) {
-					gpio_pin_high(0, pin);
+					gpio_pin_high(pin);
 				}
 			}
 		} else if (!strcmp("low", argv[0])) {
 			if(argc > 1) {
 				if(scan_dec(argv[1], &pin)) {
-					gpio_pin_low(0, pin);
+					gpio_pin_low(pin);
 				}
 			}
 		}

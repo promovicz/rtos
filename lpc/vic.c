@@ -1,6 +1,9 @@
 
 #include "vic.h"
 
+// XXX: LPC2148 specific
+#define VECT_COUNT (16)
+
 struct vic_regs {
 	uint32_t IRQStatus;
 	uint32_t FIQStatus;
@@ -15,16 +18,15 @@ struct vic_regs {
 	vic_handler_t Vector;
 	vic_handler_t DefVectAddr;
 	uint8_t  _pad1[200];
-	vic_handler_t VectAddr[16];
+	vic_handler_t VectAddr[16]; // XXX VECT_COUNT
 	uint8_t  _pad2[192];
-	uint32_t VectCntl[16];
+	uint32_t VectCntl[16]; // XXX VECT_COUNT
 };
 
 #define VIC_BASE (0xFFFFF000)
 #define VIC ((volatile struct vic_regs *)VIC_BASE)
 
 #define INT_BIT(n) ((uint32_t)(1<<(n)))
-
 
 // XXX: LPC2148 specific
 char *vic_int_names[INT_COUNT] = {
@@ -111,7 +113,7 @@ void vic_report(void)
 					(VIC->IntSelect&mask)?"fiq":"irq");
 		}
 	}
-	for(i = 0; i < 16; i++) {
+	for(i = 0; i < VECT_COUNT; i++) {
 		uint32_t cntl = VIC->VectCntl[i];
 		if(cntl&VIC_VECT_ENABLE) {
 			int src = VIC_VECT_SOURCE(cntl);

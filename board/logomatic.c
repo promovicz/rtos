@@ -15,19 +15,19 @@
 
 static void led_init(void)
 {
-	gpio_pin_high(0, GPIO_LED_STAT1);
-	gpio_pin_high(0, GPIO_LED_STAT2);
+	gpio_pin_high(GPIO_LED_STAT1);
+	gpio_pin_high(GPIO_LED_STAT2);
 
-	gpio_pin_set_direction(0, GPIO_LED_STAT1, 1);
-	gpio_pin_set_direction(0, GPIO_LED_STAT2, 1);
+	gpio_pin_set_direction(GPIO_LED_STAT1, 1);
+	gpio_pin_set_direction(GPIO_LED_STAT2, 1);
 }
 
 void led_stat1(bool_t lit)
 {
 	if(lit) {
-		gpio_pin_low(0, GPIO_LED_STAT1);
+		gpio_pin_low(GPIO_LED_STAT1);
 	} else {
-		gpio_pin_high(0, GPIO_LED_STAT1);
+		gpio_pin_high(GPIO_LED_STAT1);
 
 	}
 }
@@ -35,9 +35,9 @@ void led_stat1(bool_t lit)
 void led_stat2(bool_t lit)
 {
 	if(lit) {
-		gpio_pin_low(0, GPIO_LED_STAT2);
+		gpio_pin_low(GPIO_LED_STAT2);
 	} else {
-		gpio_pin_high(0, GPIO_LED_STAT2);
+		gpio_pin_high(GPIO_LED_STAT2);
 	}
 }
 

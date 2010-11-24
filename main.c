@@ -294,18 +294,18 @@ void command_handler(struct tty *t, int argc, char **argv)
 void csel_scp(bool_t yeah)
 {
 	if(yeah) {
-		gpio_pin_low(0, CSEL_SCP);
+		gpio_pin_low(CSEL_SCP);
 	} else {
-		gpio_pin_high(0, CSEL_SCP);
+		gpio_pin_high(CSEL_SCP);
 	}
 }
 
 void csel_mmc(bool_t yeah)
 {
 	if(yeah) {
-		gpio_pin_low(0, CSEL_MMC);
+		gpio_pin_low(CSEL_MMC);
 	} else {
-		gpio_pin_high(0, CSEL_MMC);
+		gpio_pin_high(CSEL_MMC);
 	}
 }
 
@@ -329,10 +329,10 @@ int main (void)
 	vic_configure(INTV_TIMER0, INT_TIMER0, &Timer0IntHandler);
 	vic_configure(INTV_TIMER1, INT_TIMER1, &Timer1IntHandler);
 
-	gpio_pin_high(0, CSEL_SCP);
-	gpio_pin_set_direction(0, CSEL_SCP, BOOL_TRUE);
-	gpio_pin_high(0, CSEL_MMC);
-	gpio_pin_set_direction(0, CSEL_MMC, BOOL_TRUE);
+	gpio_pin_high(CSEL_SCP);
+	gpio_pin_set_direction(CSEL_SCP, BOOL_TRUE);
+	gpio_pin_high(CSEL_MMC);
+	gpio_pin_set_direction(CSEL_MMC, BOOL_TRUE);
 
 	eint_handler(EINT1, &stop_handler);
 
