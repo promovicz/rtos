@@ -17,28 +17,37 @@ const char const *resetnames[] = {
 	"unknown cause",
 };
 
-void status_command(struct tty *t, int argc, char **argv)
+int command_system_status(struct cli *c, int argc, char **argv)
 {
 	int r;
 	tick_t tick;
 
-	printf("rtos primordial running\n");
+	printf("rtos version primordial\n");
 
 	r = reset_cause();
 	printf("reset by %s\n", resetnames[r]);
 
 	tick = tick_get();
-	printf("sys time is %7d.%03d\n", tick/1000, tick%1000);
+	printf("sys time is %d.%03d\n", tick/1000, tick%1000);
 
 	rtc_report();
 }
 
-void reset_command(struct tty *t, int argc, char **argv)
+int command_system_reset(struct cli *c, int argc, char **argv)
 {
 	system_reset();
+	return 0;
 }
 
-void halt_command(struct tty *t, int argc, char **argv)
+int command_system_halt(struct cli *c, int argc, char **argv)
 {
 	system_halt();
+	return 0;
 }
+
+struct command cmd_system[] = {
+	{"status", "report system status", &command_system_status, NULL},
+	{"reset",  "reset the system",     &command_system_reset,  NULL},
+	{"halt",   "halt the system",      &command_system_halt,   NULL},
+	{NULL},
+};

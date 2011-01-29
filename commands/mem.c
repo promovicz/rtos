@@ -75,6 +75,87 @@ struct mem_section sections[] = {
 	{0,0,0},
 };
 
+int command_mem_dump(struct cli *c, int argc, char **argv)
+{
+	void *addr;
+	long int len;
+	if(argc > 0 && scan_ptr(argv[0], &addr)) {
+		if(argc > 1) {
+			if(!scan_hex(argv[1], &len)) {
+				printf("Invalid length.\n");
+				return 1;
+			}
+		} else {
+			len = 256;
+		}
+		hexdump(addr, len);
+		return 0;
+	}
+
+	printf("Usage: mem dump <addr> [len]\n");
+
+	return 1;
+}
+
+int command_mem_copy(struct cli *c, int argc, char **argv)
+{
+	void *dst;
+	void *src;
+	long int len;
+
+	if(argc == 3) {
+		if(!scan_ptr(argv[0], &dst)) {
+			printf("Invalid dst address.\n");
+			return 1;
+		}
+		if(!scan_ptr(argv[1], &src)) {
+			printf("Invalid src address.\n");
+			return 1;
+		}
+		if(!scan_hex(argv[1], &len)) {
+			printf("Invalid length.\n");
+			return 1;
+		}
+
+		printf("copying %d bytes to %08x from %08x\n", len, (uint32_t)dst, (uint32_t)src);
+		memcpy(dst, src, len);
+
+		return 0;
+	}
+
+	printf("Usage: mem copy <dst> <src> <len>\n");
+	return 1;
+}
+
+int command_mem_regions(struct cli *c, int argc, char **argv)
+{
+	struct mem_region *mr = regions;
+	printf("physical regions:\n");
+	while(mr->name) {
+		printf(" %8s: %08x bytes at %08x - %08x\n",
+			   mr->name,
+			   mr->size,
+			   mr->start,
+			   mr->start + mr->size - 1);
+		mr++;
+	}
+}
+
+int command_mem_sections(struct cli *c, int argc, char **argv)
+{
+	printf("system sections:\n");
+	struct mem_section *ms = sections;
+	while(ms->name) {
+		printf(" %8s: %08x bytes at %08x - %08x\n",
+			   ms->name,
+			   ms->end - ms->start,
+			   ms->start,
+			   ms->end);
+		ms++;
+	}
+}
+
+#if 0
 void mem_command(struct tty *t, int argc, char **argv)
 {
 	void *addr;
@@ -84,48 +165,6 @@ void mem_command(struct tty *t, int argc, char **argv)
 	uint16_t *a16;
 	uint32_t *a32;
 	if(argc) {
-		if(!strcmp("dump", argv[0])) {
-			if(argc > 1) {
-				if(scan_ptr(argv[1], &addr)) {
-					if(!(argc > 2 && scan_hex(argv[2], &count))) {
-						count = 256;
-					}
-					hexdump(addr, count);
-				}
-			}
-		} else if(!strcmp("copy", argv[0])) {
-			if(argc > 4) {
-				if(scan_ptr(argv[1], &addr)
-				   && scan_ptr(argv[2], &addrx)
-				   && scan_hex(argv[3], &count)) {
-					printf("copying %d bytes from %08x to %08x\n", count, (uint32_t)addrx, (uint32_t)addr);
-					memcpy(addr, addrx, count);
-				}
-			}
-		} else if (!strcmp("map", argv[0])) {
-			struct mem_region *mr = regions;
-			printf("memory map:\n");
-			while(mr->name) {
-				printf(" %8s: %08x bytes at %08x - %08x\n",
-					   mr->name,
-					   mr->size,
-					   mr->start,
-					   mr->start + mr->size - 1);
-				mr++;
-			}
-			printf("memory sections:\n");
-			struct mem_section *ms = sections;
-			while(ms->name) {
-				printf(" %8s: %08x bytes at %08x - %08x\n",
-					   ms->name,
-					   ms->end - ms->start,
-					   ms->start,
-					   ms->end);
-				ms++;
-			}
-		} else if (!strcmp("s32", argv[0])) {
-		} else if (!strcmp("s16", argv[0])) {
-		} else if (!strcmp("s8",  argv[0])) {
 		} else if (!strcmp("l32", argv[0])) {
 			if(argc > 1) {
 				if(scan_ptr(argv[1], &addr)) {
@@ -165,3 +204,12 @@ void mem_command(struct tty *t, int argc, char **argv)
 		}
 	}
 }
+#endif
+
+struct command cmd_mem[] = {
+	{"dump",     "dump memory at given address",    &command_mem_dump},
+	{"copy",     "copy memory from place to place", &command_mem_copy},
+	{"regions",  "display physical memory regions", &command_mem_regions},
+	{"sections", "display system memory sections",  &command_mem_sections},
+	{NULL},
+};

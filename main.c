@@ -51,6 +51,7 @@ int errno;
 
 #include <core/defines.h>
 #include <core/tty.h>
+#include <core/cli.h>
 #include <core/tick.h>
 
 #include <board/logomatic.h>
@@ -174,36 +175,36 @@ void stop_handler(int eint)
 	led_stat2(1);
 }
 
+
+
+struct command cmd[] = {
+	{"system", "system",            NULL, &cmd_system},
+	{"posix",  "posix emulator",    NULL, &cmd_posix},
+	{"gpio",   "gpio pins",         NULL, &cmd_gpio},
+	{"gps",    "gps receiver",      NULL, &cmd_gps},
+	{"nmea",   "nmea receiver",     NULL, &cmd_nmea},
+	{"mem",    "memory operations", NULL, &cmd_mem},
+	{"lpc",    "lpc platform",      NULL, &cmd_lpc},
+	{NULL}
+};
+
+struct cli c;
+
 void command_handler(struct tty *t, int argc, char **argv)
 {
+	cli_execute(&c, argc, argv);
+
+#if 0
 	if(argc) {
-		if(!strcmp("reset", argv[0])) {
-			reset_command(t, argc-1, argv+1);
-		}
-		if(!strcmp("halt", argv[0])) {
-			halt_command(t, argc-1, argv+1);
-		}
-		if(!strcmp("status", argv[0])) {
-			status_command(t, argc-1, argv+1);
-		}
+		cli_execute(&c, argc-1, argv+1);
 
-		if(!strcmp("posix", argv[0])) {
-			posix_command(t, argc-1, argv+1);
-		}
-
-
-		if(!strcmp("gps", argv[0])) {
-			nmea_command(t, argc-1, argv+1);
-		}
 		if(!strcmp("spi", argv[0])) {
 			spi_command(t, argc-1, argv+1);
 		}
 		if(!strcmp("ssp", argv[0])) {
 			ssp_command(t, argc-1, argv+1);
 		}
-		if(!strcmp("mem", argv[0])) {
-			mem_command(t, argc-1, argv+1);
-		}
+
 		if(!strcmp("gpio", argv[0])) {
 			gpio_command(t, argc-1, argv+1);
 		}
@@ -242,7 +243,6 @@ void command_handler(struct tty *t, int argc, char **argv)
 			system_reset();
 		}
 
-#if 0
 		int r;
 		void *p;
 		uint32_t u;
@@ -287,8 +287,9 @@ void command_handler(struct tty *t, int argc, char **argv)
 				}
 			}
 		}
-#endif
 	}
+
+#endif
 }
 
 void csel_scp(bool_t yeah)
@@ -309,11 +310,22 @@ void csel_mmc(bool_t yeah)
 	}
 }
 
+int u0 = -1, u1 = -1;
+
+void nmea_hook(const char *raw, size_t nbytes)
+{
+	if(u0 != -1) {
+		write(u0, raw, nbytes);
+	}
+}
+
 int main (void)
 {
+	c.c_rootcmd = &cmd;
+
 	system_init();
 
-	uart_init(0, 115200);
+	uart_init(0, 38400);
 	uart_init(1, 9600);
 
 	ssp_init();
@@ -357,14 +369,15 @@ int main (void)
 	console_enable();
 
 	nmea_init();
+	nmea_sentence_hook(&nmea_hook);
 
 	tty_init(&tser);
 	tty_command_handler(&tser, &command_handler);
 
 	scp_init();
 
-	int u0 = uart_open(0);
-	int u1 = uart_open(1);
+	u0 = uart_open(0);
+	u1 = uart_open(1);
 
 	int i;
 	uint8_t chr;
@@ -387,7 +400,6 @@ int main (void)
 		res = read(u1, buf, sizeof(buf));
 		if(res > 0) {
 			nmea_process(buf, res);
-			write(u0, buf, res);
 		}
 
 		usleep(10000);

@@ -25,19 +25,7 @@ void gpio_command(struct tty *t, int argc, char **argv)
 	long int pin;
 	if(argc) {
 		if(!strcmp("status", argv[0])) {
-			if(argc > 1) {
-				if(scan_dec(argv[1], &pin)) {
-					gpio_status(pin);
-				}
-			} else {
-				gpio_status_all();
-			}
 		} else if (!strcmp("output", argv[0])) {
-			if(argc > 1) {
-				if(scan_dec(argv[1], &pin)) {
-					gpio_pin_set_direction(pin, BOOL_TRUE);
-				}
-			}
 		} else if (!strcmp("input", argv[0])) {
 			if(argc > 1) {
 				if(scan_dec(argv[1], &pin)) {
@@ -61,3 +49,91 @@ void gpio_command(struct tty *t, int argc, char **argv)
 		gpio_status_all();
 	}
 }
+
+int command_gpio_status(struct cli *c, int argc, char **argv)
+{
+	long int pin;
+
+	if(argc > 0) {
+		if(scan_dec(argv[0], &pin)) {
+			gpio_status(pin);
+			return 0;
+		}
+	} else {
+		gpio_status_all();
+		return 0;
+	}
+
+	printf("Usage: gpio status [pin]\n");
+	return 1;
+}
+
+int command_gpio_input(struct cli *c, int argc, char **argv)
+{
+	long int pin;
+
+	if(argc > 0) {
+		if(scan_dec(argv[0], &pin)) {
+			gpio_pin_set_direction(pin, BOOL_TRUE);
+			return 0;
+		}
+	}
+
+   	printf("Usage: gpio input <pin>\n");
+	return 1;
+}
+
+int command_gpio_output(struct cli *c, int argc, char **argv)
+{
+	long int pin;
+
+	if(argc > 0) {
+		if(scan_dec(argv[0], &pin)) {
+			gpio_pin_set_direction(pin, BOOL_TRUE);
+			return 0;
+		}
+	}
+
+	printf("Usage: gpio output <pin>\n");
+	return 1;
+}
+
+int command_gpio_high(struct cli *c, int argc, char **argv)
+{
+	long int pin;
+
+	if(argc > 0) {
+		if(scan_dec(argv[0], &pin)) {
+			gpio_pin_high(pin);
+			return 0;
+		}
+	}
+
+	printf("Usage: gpio high <pin>\n");
+	return 1;
+}
+
+int command_gpio_low(struct cli *c, int argc, char **argv)
+{
+	long int pin;
+
+	if(argc > 0) {
+		if(scan_dec(argv[0], &pin)) {
+			gpio_pin_low(pin);
+			return 0;
+		}
+	}
+
+	printf("Usage: gpio low <pin>\n");
+	return 1;
+}
+
+struct command cmd_gpio[] = {
+	{"status", "examine pin status", &command_gpio_status},
+	{"input",  "make pin an input",  &command_gpio_input},
+	{"output", "make pin an output", &command_gpio_output},
+	{"high",   "set pin to high",    &command_gpio_high},
+	{"low",    "set pin to low",     &command_gpio_low},
+	{"",       "",                   &command_gpio_status},
+	{NULL},
+};

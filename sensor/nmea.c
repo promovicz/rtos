@@ -35,9 +35,13 @@ nmea_pusharg()
 }
 
 static void
-nmea_push(char c)
+nmea_push(char c, char r)
 {
-	nmea.sentence[nmea.fill++] = c;
+	nmea.raw[nmea.fill] = r;
+	nmea.sentence[nmea.fill] = c;
+
+	nmea.fill++;
+
 	if(nmea.fill == NMEA_MAX) {
 		nmea_framing_error();
 	}
@@ -176,6 +180,12 @@ void nmea_process_gpgsv()
 }
 
 void
+nmea_sentence_hook(nmea_sentence_hook_t hook)
+{
+	nmea.sentence_hook = hook;
+}
+
+void
 nmea_process_sentence()
 {
 	nmea.sentences++;
@@ -186,6 +196,10 @@ nmea_process_sentence()
 
 	if(!strcmp(nmea.type, "GPGSV")) {
 		nmea_process_gpgsv();
+	}
+
+	if(nmea.sentence_hook) {
+		nmea.sentence_hook(nmea.raw, nmea.fill);
 	}
 }
 
@@ -206,14 +220,14 @@ nmea_process(const char *buf, size_t nbytes)
 
 				nmea.fill = 0;
 
-				nmea_push(c);
+				nmea_push(c, c);
 			} // XXX else junk or gps-specific binary like on SUP500
 			break;
 		case NMEA_STATE_TYPE:
 			if(isalnum(c)) {
-				nmea_push(c);
+				nmea_push(c, c);
 			} else if(c == ',') {
-				nmea_push(0);
+				nmea_push(0, c);
 
 				nmea.type = &nmea.sentence[1];
 
@@ -226,9 +240,9 @@ nmea_process(const char *buf, size_t nbytes)
 			break;
 		case NMEA_STATE_ARGS:
 			if(isalnum(c) || c == '.' || c == '-' || c == '+') {
-				nmea_push(c);
+				nmea_push(c, c);
 			} else if(c == ',' || c == '*') {
-				nmea_push(0);
+				nmea_push(0, c);
 
 				nmea_pusharg();
 
@@ -241,17 +255,29 @@ nmea_process(const char *buf, size_t nbytes)
 			break;
 		case NMEA_STATE_CSUM:
 			if(isxdigit(c)) {
-				nmea_push(c);
+				nmea_push(c, c);
 			} else if (c=='\r') {
+				nmea_push(0, c);
+				nmea.state = NMEA_STATE_CR;
+			} else {
+				nmea_framing_error();
+			}
+			break;
+		case NMEA_STATE_CR:
+			if(c=='\n') {
+				nmea_push(0, '\n');
+				nmea_push(0, 0);
 				// XXX process and verify checksum
 				//     by computing incrementally while receiving.
 				//     remember that saved sentence is modified
 				//     for null-termination.
+				nmea.state = NMEA_STATE_PROCESS;
 				nmea_process_sentence();
 				nmea.state = NMEA_STATE_IDLE;
 			} else {
 				nmea_framing_error();
 			}
+			break;
 		}
 	}
 }

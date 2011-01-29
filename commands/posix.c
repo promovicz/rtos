@@ -6,9 +6,27 @@
 #include <posix/file.h>
 #include <posix/memory.h>
 
-void posix_command(struct tty *t, int argc, char **argv)
+int command_posix_status(struct cli *c, int argc, char **argv)
 {
-	printf("posix emulator running\n");
-	memory_report();
-	file_table_report();
+	printf("XXX\n");
+	return 0;
 }
+
+int command_posix_memory(struct cli *c, int argc, char **argv)
+{
+	memory_report();
+	return 0;
+}
+
+int command_posix_file(struct cli *c, int argc, char **argv)
+{
+	file_table_report();
+	return 0;
+}
+
+struct command cmd_posix[] = {
+	{"status", "posix emulator status",   &command_posix_status},
+	{"memory", "posix memory allocation", &command_posix_memory},
+	{"file",   "posix file descriptors",  &command_posix_file},
+	{NULL},
+};

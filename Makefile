@@ -6,7 +6,7 @@ SIZE=$(CROSS)size
 OBJCOPY=$(CROSS)objcopy
 OBJDUMP=$(CROSS)objdump
 
-CFLAGS_CONFIG=-gdwarf-2 -Os -ffunction-sections
+CFLAGS_CONFIG=-gdwarf-2 -Os -ffunction-sections -nostdlib
 CFLAGS_TARGET=-mcpu=arm7tdmi -mfloat-abi=soft
 CFLAGS_WARNINGS=-Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align -Wimplicit -Wunused -Wredundant-decls -Wnested-externs -Wbad-function-cast -Wsign-compare -Waggregate-return
 
@@ -19,10 +19,10 @@ LDSCRIPT=bike.lds
 LIBS=lpcusb-trunk/target/usbstack.a dietlibc/bin-arm/dietlibc.a
 
 LOGOMATICOBJS=board/logomatic.o
-COREOBJS=core/tick.o core/tty.o core/parse.o core/system.o
+COREOBJS=core/tick.o core/tty.o core/parse.o core/system.o core/cli.o
 LPCOBJS=lpc/scb.o lpc/pll.o lpc/mam.o lpc/vpb.o lpc/vic.o lpc/pinsel.o lpc/timer.o lpc/gpio.o lpc/rtc.o lpc/ssp.o lpc/spi.o lpc/uart.o lpc/device.o lpc/eint.o lpc/pin.o lpc/pcon.o lpc/wdt.o lpc/reset.o
 SENSOROBJ=sensor/scp.o sensor/nmea.o
-CMDOBJS=commands/gpio.o commands/pin.o commands/mem.o commands/system.o commands/nmea.o commands/posix.o
+CMDOBJS=commands/gpio.o commands/mem.o commands/system.o commands/nmea.o commands/posix.o commands/gps.o commands/lpc.o
 POSIXOBJS=posix/file.o posix/process.o posix/sleep.o posix/epoll.o posix/file_console.o posix/file_uart.o posix/signal.o posix/memory.o posix/errlist.o
 OBJS=start.o $(COREOBJS) $(LPCOBJS) $(SENSOROBJ) $(CMDOBJS) $(LOGOMATICOBJS) $(POSIXOBJS) halsys.o main.o serial_fifo.o armVIC.o vcom.o
 INCLUDEFLAGS=-Ilpcusb-trunk/target -Idietlibc/include -I.
