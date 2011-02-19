@@ -137,13 +137,30 @@ void scp_waitidle(void)
 	} while(r != OPERATION_IDLE);
 }
 
+volatile uint8_t irqflag = 0;
+
+void scp_irq(void)
+{
+	irqflag = 1;
+}
+
 void scp_waitdata(void)
 {
 	uint8_t r;
+
+	while(!irqflag);
+	irqflag = 0;
+
 	do {
 		tick_delay(10);
 		r = scp_read_r8(STATUS);
 	} while (!(r&STATUS_DATAREADY));
+#if 0
+	// XXX RACE CONDITIONS!
+	irqflag = 0;
+	while(!irqflag);
+	irqflag = 0;
+#endif
 }
 
 void scp_selftest(void)

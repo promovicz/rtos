@@ -83,14 +83,18 @@ int errno;
 
 #include <sys/mman.h>
 
-#define INTV_STOP   0
-#define	INTV_USB	1
-#define INTV_UART0  2
-#define INTV_UART1  3
-#define INTV_TIMER0 4
-#define INTV_TIMER1 5
+#define INTV_STOP     0
+#define	INTV_USB	  1
+#define INTV_UART0    2
+#define INTV_UART1    3
+#define INTV_TIMER0   4
+#define INTV_TIMER1   5
+#define INTV_SCP_DRDY 6
 
-#define CSEL_SCP 20
+#define CE_NRF 25
+
+#define CSEL_NRF 28
+#define CSEL_SCP 29
 #define CSEL_MMC 7
 
 
@@ -175,7 +179,16 @@ void stop_handler(int eint)
 	led_stat2(1);
 }
 
+void scp_drdy_handler(int eint)
+{
+	scp_irq();
+}
 
+int command_scpm(struct cli *c, int argc, char **argv)
+{
+	scp_measure();
+	return 0;
+}
 
 struct command cmd[] = {
 	{"system", "system",            NULL, &cmd_system},
@@ -185,6 +198,7 @@ struct command cmd[] = {
 	{"nmea",   "nmea receiver",     NULL, &cmd_nmea},
 	{"mem",    "memory operations", NULL, &cmd_mem},
 	{"lpc",    "lpc platform",      NULL, &cmd_lpc},
+	{"scpm",   "scp measure",       &command_scpm, NULL},
 	{NULL}
 };
 
@@ -192,6 +206,8 @@ struct cli c;
 
 void command_handler(struct tty *t, int argc, char **argv)
 {
+	led_stat2(0);
+
 	cli_execute(&c, argc, argv);
 
 #if 0
@@ -301,6 +317,24 @@ void csel_scp(bool_t yeah)
 	}
 }
 
+void csel_nrf(bool_t yeah)
+{
+	if(yeah) {
+		gpio_pin_low(CSEL_NRF);
+	} else {
+		gpio_pin_high(CSEL_NRF);
+	}
+}
+
+void ce_nrf(bool_t yeah)
+{
+	if(yeah) {
+		gpio_pin_low(CE_NRF);
+	} else {
+		gpio_pin_high(CE_NRF);
+	}
+}
+
 void csel_mmc(bool_t yeah)
 {
 	if(yeah) {
@@ -340,19 +374,31 @@ int main (void)
 	vic_configure(INTV_UART1, INT_UART1, &UART1IntHandler);
 	vic_configure(INTV_TIMER0, INT_TIMER0, &Timer0IntHandler);
 	vic_configure(INTV_TIMER1, INT_TIMER1, &Timer1IntHandler);
+	vic_configure(INTV_SCP_DRDY, INT_EINT3, &e3IntHandler);
 
 	gpio_pin_high(CSEL_SCP);
 	gpio_pin_set_direction(CSEL_SCP, BOOL_TRUE);
 	gpio_pin_high(CSEL_MMC);
 	gpio_pin_set_direction(CSEL_MMC, BOOL_TRUE);
 
+	gpio_pin_high(CSEL_NRF);
+	gpio_pin_set_direction(CSEL_NRF, BOOL_TRUE);
+	gpio_pin_high(CE_NRF);
+	gpio_pin_set_direction(CE_NRF, BOOL_TRUE);
+
+
 	eint_handler(EINT1, &stop_handler);
+
+	pin_set_function(PIN30, PIN_FUNCTION_EINT3);
+	eint_configure(EINT3, 1, 1);
+	eint_handler(EINT3, &scp_drdy_handler);
 
 	vic_enable(INT_EINT1);
 	vic_enable(INT_USB);
 	vic_enable(INT_UART0);
 	vic_enable(INT_UART1);
 	vic_enable(INT_TIMER0);
+	vic_enable(INT_EINT3);
 
 	timer_init(TIMER0);
 	timer_prescale(TIMER0, 60);
