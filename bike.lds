@@ -1,11 +1,9 @@
 ENTRY(_startup)
 MEMORY 
 {
-	flash     			: ORIGIN = 0,          LENGTH = 512K	/* FLASH ROM                            	*/	
-	ram_isp_low(A)		: ORIGIN = 0x40000120, LENGTH = 223		/* variables used by Philips ISP bootloader	*/		 
-	ram   				: ORIGIN = 0x40000200, LENGTH = 32513   /* free RAM area							*/
-	ram_isp_high(A)		: ORIGIN = 0x40007FE0, LENGTH = 32		/* variables used by Philips ISP bootloader	*/
-	ram_usb_dma			: ORIGIN = 0x7FD00000, LENGTH = 8192    /* on-chip USB DMA RAM area (not used)      */
+    flash     	        : ORIGIN = 0,          LENGTH = 512K    /* FLASH ROM                                */
+    ram                 : ORIGIN = 0x40000200, LENGTH = 32000   /* free RAM area                            */
+    ram_usbdma          : ORIGIN = 0x7FD00000, LENGTH = 8192    /* on-chip USB DMA RAM area (not used)      */
 }
 SECTIONS 
 {
@@ -51,7 +49,7 @@ SECTIONS
 
 	__static_end = .;
 
-	. = ORIGIN(ram) + (LENGTH(ram) & ~ 3); /* XXX strange memdefs have unaligned memory size */
+	. = ORIGIN(ram) + LENGTH(ram);
 	__stacks_end = .;
 	__stacks_start = __stacks_end - 4096;
 
