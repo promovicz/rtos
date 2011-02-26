@@ -9,6 +9,7 @@
 #include <lpc/rtc.h>
 #include <lpc/eint.h>
 #include <lpc/gpio.h>
+#include <lpc/pinsel.h>
 
 #define GPIO_LED_STAT1 11
 #define GPIO_LED_STAT2 2
@@ -51,15 +52,20 @@ void board_init(void)
 	pll_lock_blocking(PLL_CORE);
 	pll_connect(PLL_CORE);
 
+	// initialize additional busses and memories
 	mam_init();
-
 	vpb_init();
 
+	// initialize the real time clock
 	rtc_init();
 
-	// IMU
+	// UART0
 	pin_set_function(PIN0, PIN_FUNCTION_UART0_TXD);
 	pin_set_function(PIN1, PIN_FUNCTION_UART0_RXD);
+
+	// UART1
+	pin_set_function(PIN8, PIN_FUNCTION_UART1_TXD);
+	pin_set_function(PIN9, PIN_FUNCTION_UART1_RXD);
 
 	// STOP button
 	pin_set_function(PIN3, PIN_FUNCTION_EINT1);
@@ -69,10 +75,6 @@ void board_init(void)
 	pin_set_function(PIN4, PIN_FUNCTION_SPI_SCK);
 	pin_set_function(PIN5, PIN_FUNCTION_SPI_MISO);
 	pin_set_function(PIN6, PIN_FUNCTION_SPI_MOSI);
-
-	// GPS serial
-	pin_set_function(PIN8, PIN_FUNCTION_UART1_TXD);
-	pin_set_function(PIN9, PIN_FUNCTION_UART1_RXD);
 
 	// SCP pressure sensor
 	pin_set_function(PIN17, PIN_FUNCTION_SSP_SCK);

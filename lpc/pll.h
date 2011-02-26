@@ -27,6 +27,6 @@ extern const struct pll_configuration pll_60mhz;
 void pll_init(int pll, struct clock *clk);
 void pll_configure(int pll, const struct pll_configuration *cfg);
 void pll_lock_blocking(int pll);
-void pll_connect_blocking(int pll);
+void pll_connect(int pll);
 
 #endif /* !LPC_PLL_H */
