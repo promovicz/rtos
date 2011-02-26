@@ -19,18 +19,20 @@ const char const *resetnames[] = {
 
 int command_system_status(struct cli *c, int argc, char **argv)
 {
-	int r;
 	tick_t tick;
+	int rescause;
 
 	printf("rtos version primordial\n");
 
-	r = reset_cause();
-	printf("reset by %s\n", resetnames[r]);
-
 	tick = tick_get();
-	printf("sys time is %d.%03d\n", tick/1000, tick%1000);
+	rescause = reset_cause();
+	printf("running for %d.%03d secs, reset by %s\n", tick/1000, tick%1000, resetnames[rescause]);
 
 	rtc_report();
+
+	printf("watchdog is %s, reset %s\n",
+		   wdt_enabled()?"enabled":"disabled",
+		   wdt_reset_enabled()?"enabled":"disabled");
 }
 
 int command_system_reset(struct cli *c, int argc, char **argv)
