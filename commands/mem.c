@@ -1,6 +1,8 @@
 
 #include "commands.h"
 
+#include <libdisarm/disarm.h>
+
 static void hexdump(const uint8_t *data, unsigned int len)
 {
 	const uint8_t *bufptr = data;
@@ -35,6 +37,29 @@ static void hexdump(const uint8_t *data, unsigned int len)
 		bufptr -= m;
 
 		putchar('\n');
+	}
+}
+
+static void disassemble(const uint32_t *base, unsigned int len)
+{
+	da_addr_t addr = base;
+	int n;
+
+	for(n=0; n < len/4; n++) {
+		da_word_t data = *((const uint32_t*)addr);
+
+		da_instr_t instr;
+		da_instr_args_t args;
+
+		da_instr_parse(&instr, data, 0); // XXX 0 is little endian
+		da_instr_parse_args(&args, &instr);
+
+		printf("%08x\t", addr);
+		printf("%08x\t", instr.data);
+		da_instr_fprint(stdout, &instr, &args, addr);
+		printf("\n");
+
+		addr += sizeof(da_word_t);
 	}
 }
 
@@ -93,6 +118,29 @@ int command_mem_dump(struct cli *c, int argc, char **argv)
 	}
 
 	printf("Usage: mem dump <addr> [len]\n");
+
+	return 1;
+}
+
+int command_mem_disasm(struct cli *c, int argc, char **argv)
+{
+	void *addr;
+	long int len;
+	if(argc > 0 && scan_ptr(argv[0], &addr)) {
+		if(argc > 1) {
+			if(!scan_hex(argv[1], &len)) {
+				printf("Invalid length.\n");
+				return 1;
+			}
+		} else {
+			len = 64;
+		}
+		// XXX align, foo!
+		disassemble(addr, len);
+		return 0;
+	}
+
+	printf("Usage: mem disasm <addr> [len]\n");
 
 	return 1;
 }
@@ -207,9 +255,10 @@ void mem_command(struct tty *t, int argc, char **argv)
 #endif
 
 struct command cmd_mem[] = {
-	{"dump",     "dump memory at given address",    &command_mem_dump},
-	{"copy",     "copy memory from place to place", &command_mem_copy},
-	{"regions",  "display physical memory regions", &command_mem_regions},
-	{"sections", "display system memory sections",  &command_mem_sections},
+	{"dump",     "dump memory at given address",      &command_mem_dump},
+	{"disasm",   "disassemble code at given address", &command_mem_disasm},
+	{"copy",     "copy memory from place to place",   &command_mem_copy},
+	{"regions",  "display physical memory regions",   &command_mem_regions},
+	{"sections", "display system memory sections",    &command_mem_sections},
 	{NULL},
 };

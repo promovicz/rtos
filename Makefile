@@ -24,8 +24,9 @@ LPCOBJS=lpc/scb.o lpc/pll.o lpc/mam.o lpc/vpb.o lpc/vic.o lpc/pinsel.o lpc/timer
 SENSOROBJ=sensor/scp.o sensor/nmea.o
 CMDOBJS=commands/gpio.o commands/mem.o commands/system.o commands/nmea.o commands/posix.o commands/gps.o commands/lpc.o
 POSIXOBJS=posix/file.o posix/process.o posix/sleep.o posix/epoll.o posix/file_console.o posix/file_uart.o posix/signal.o posix/memory.o posix/errlist.o
-OBJS=start.o $(COREOBJS) $(LPCOBJS) $(SENSOROBJ) $(CMDOBJS) $(LOGOMATICOBJS) $(POSIXOBJS) halsys.o main.o serial_fifo.o armVIC.o vcom.o
-INCLUDEFLAGS=-Ilpcusb-trunk/target -Idietlibc/include -I.
+DISARMOBJS=libdisarm/src/libdisarm/args.o libdisarm/src/libdisarm/print.o libdisarm/src/libdisarm/parser.o
+OBJS=start.o $(COREOBJS) $(LPCOBJS) $(SENSOROBJ) $(CMDOBJS) $(LOGOMATICOBJS) $(POSIXOBJS) $(DISARMOBJS) halsys.o main.o serial_fifo.o armVIC.o vcom.o
+INCLUDEFLAGS=-Ilpcusb-trunk/target -Idietlibc/include -Ilibdisarm/src -I.
 DEFINE=-DLPC214x -DDEBUG
 
 DEPS=$(OBJS:.o=.p)
