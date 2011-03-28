@@ -412,7 +412,7 @@ int main (void)
 
 	vcom_connect(BOOL_TRUE);
 
-	console_enable();
+	posix_console_enable();
 
 	nmea_init();
 	nmea_sentence_hook(&nmea_hook);

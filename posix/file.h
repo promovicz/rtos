@@ -49,14 +49,19 @@ struct file {
 	};
 };
 
+/* initializer for the file subsystem */
 void file_table_init(void);
+
+/* debug: report file table stats */
 void file_table_report(void);
 
+/* file object operations */
 struct file *file_alloc();
 int file_ref(struct file *fd);
 int file_unref(struct file *fd);
 int file_close(struct file *fd);
 
+/* file descriptor operations */
 int fd_alloc(struct file *file);
 struct file *file_for_fd(int fd);
 

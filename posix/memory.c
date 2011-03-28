@@ -1,5 +1,5 @@
 
-#include "memory.h"
+#include "control.h"
 
 #include <core/defines.h>
 #include <core/types.h>
@@ -25,7 +25,7 @@ char *membase;
 size_t pagecount;
 struct page *pagetable;
 
-void memory_init(void)
+void posix_memory_init(void)
 {
 	uintptr_t start = (uintptr_t)&__heap_start;
 	uintptr_t end = (uintptr_t)&__heap_end;
@@ -77,7 +77,7 @@ void memory_init(void)
 #endif
 }
 
-void memory_report(void)
+void posix_memory_report(void)
 {
 	int i, free, used;
 	free = 0; used = 0;

@@ -178,6 +178,7 @@ struct file *file_for_fd(int fd)
 	return open_fds[fd];
 }
 
+
 /* dummy open implementation */
 int __libc_open(const char *pathname, int flags, ...)
 {
@@ -187,6 +188,7 @@ int __libc_open(const char *pathname, int flags, ...)
 
 int open(const char *pathname, int flags, ...)
 	weak_alias("__libc_open");
+
 
 /* close implementation */
 int __libc_close(int fd)
@@ -210,6 +212,7 @@ int __libc_close(int fd)
 int close(int fd)
 	weak_alias("__libc_close");
 
+
 /* read implementation */
 ssize_t __libc_read(int fd, void *buf, size_t count)
 {
@@ -224,6 +227,7 @@ ssize_t __libc_read(int fd, void *buf, size_t count)
 
 ssize_t read(int fd, void *buf, size_t count)
 	weak_alias("__libc_read");
+
 
 /* write implementation */
 ssize_t __libc_write(int fd, const void *buf, size_t count)
@@ -240,6 +244,7 @@ ssize_t __libc_write(int fd, const void *buf, size_t count)
 ssize_t write(int fd, const void *buf, size_t count)
 	weak_alias("__libc_write");
 
+
 /* seek implementation */
 off_t __libc_lseek(int fd, off_t offset, int whence)
 {
@@ -254,6 +259,7 @@ off_t __libc_lseek(int fd, off_t offset, int whence)
 
 off_t lseek(int fd, off_t offset, int whence)
 	weak_alias("__libc_lseek");
+
 
 /* dummy fstat implementation */
 int __libc_fstat(int fd, struct stat *buf)

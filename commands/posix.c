@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include <posix/file.h>
-#include <posix/memory.h>
+#include <posix/control.h>
 
 int command_posix_status(struct cli *c, int argc, char **argv)
 {
@@ -14,7 +14,7 @@ int command_posix_status(struct cli *c, int argc, char **argv)
 
 int command_posix_memory(struct cli *c, int argc, char **argv)
 {
-	memory_report();
+	posix_memory_report();
 	return 0;
 }
 

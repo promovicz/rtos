@@ -4,8 +4,13 @@
 #include "file.h"
 #include "memory.h"
 
-void console_init(void);
-void console_enable(void);
+void posix_init(void);
+
+void posix_console_init(void);
+void posix_console_enable(void);
+
+void posix_memory_init(void);
+void posix_memory_report(void);
 
 int uart_open(int uart);
 

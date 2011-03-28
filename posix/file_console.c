@@ -28,7 +28,7 @@ struct file_operations console_operations = {
 	.fop_read = &console_read,
 };
 
-void console_init(void)
+void posix_console_init(void)
 {
 	struct file *fi = file_alloc();
 	struct file *fo = file_alloc();
@@ -59,7 +59,7 @@ void console_init(void)
 	console_level = 0;
 }
 
-void console_enable(void)
+void posix_console_enable(void)
 {
 	console_enabled = BOOL_TRUE;
 }

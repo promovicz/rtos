@@ -10,11 +10,9 @@ void system_init(void)
 {
 	board_init();
 
-	memory_init();
-
-	console_init();
-
 	wdt_init(BOOL_TRUE);
+
+	posix_init();
 }
 
 void system_kick(void)

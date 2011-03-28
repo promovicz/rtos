@@ -33,6 +33,8 @@ int command_system_status(struct cli *c, int argc, char **argv)
 	printf("watchdog is %s, reset %s\n",
 		   wdt_enabled()?"enabled":"disabled",
 		   wdt_reset_enabled()?"enabled":"disabled");
+
+	return 0;
 }
 
 int command_system_reset(struct cli *c, int argc, char **argv)
