@@ -3,8 +3,7 @@
 
 #include <core/defines.h>
 
-static always_inline const uint32_t xtal_frequency(void)
-{
+static always_inline uint32_t xtal_frequency(void) {
 	return 12000000; // XXX
 }
 

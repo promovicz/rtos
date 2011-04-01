@@ -5,6 +5,8 @@
 
 #include <lpc/xtal.h>
 
+#include <stdio.h>
+
 struct pll_regs {
 	uint8_t CON;
 	uint8_t _pad0[3];
@@ -104,11 +106,6 @@ struct pll_cb pllcb[] = {
 	{PLL_OFF, 12*MILLION, 0},
 };
 
-void pll_init(int pll, struct clock *clk)
-{
-	// register with clock
-}
-
 void pll_feed(int pll)
 {
 	plls[pll]->FEED = PLL_FEED0;
@@ -138,7 +135,7 @@ void pll_connect(int pll)
 	pll_feed(pll);
 }
 
-void pll_print(int pll)
+static void pll_print(int pll)
 {
 	uint16_t s = plls[pll]->STAT;
 
