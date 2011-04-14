@@ -4,7 +4,7 @@
 int cli_execute(struct cli *c, int argc, char **argv)
 {
 	int i;
-	struct command *cmd = c->c_rootcmd;
+	struct command *cmd = c->rootcmd;
 
 	if(argc <= 0) {
 		printf("No command given.\n");
@@ -13,14 +13,14 @@ int cli_execute(struct cli *c, int argc, char **argv)
 
 	for(i = 0; i <= argc; i++) {
 		int found = 0;
-		while(cmd->c_name) {
+		while(cmd->name) {
 			if(i < argc) {
-				if(!strcmp(cmd->c_name, argv[i])) {
+				if(!strcmp(cmd->name, argv[i])) {
 					found = 1;
 					break;
 				}
 			} else {
-				if(!strlen(cmd->c_name)) {
+				if(!strlen(cmd->name)) {
 					found = 1;
 					break;
 				}
@@ -28,14 +28,14 @@ int cli_execute(struct cli *c, int argc, char **argv)
 			cmd++;
 		}
 		if(found) {
-			if(cmd->c_handler) {
+			if(cmd->handler) {
 				if(i < argc) {
-					return cmd->c_handler(c, argc - i - 1, argv + i + 1);
+					return cmd->handler(c, argc - i - 1, argv + i + 1);
 				} else {
-					return cmd->c_handler(c, 0, NULL);
+					return cmd->handler(c, 0, NULL);
 				}
-			} else if(cmd->c_children) {
-				cmd = cmd->c_children;
+			} else if(cmd->children) {
+				cmd = cmd->children;
 			} else {
 				printf("Stub command.\n");
 				return 1;

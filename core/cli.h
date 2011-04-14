@@ -4,17 +4,17 @@
 #include <core/types.h>
 
 struct cli {
-	struct command *c_rootcmd;
+	struct command *rootcmd;
 };
 
 typedef int (*command_handler_t) (struct cli *c, int argc, char **argv);
 
 struct command {
-	char *c_name;
-	char *c_help;
+	char *name;
+	char *help;
 
-	command_handler_t c_handler;
-	struct command *c_children;
+	command_handler_t handler;
+	struct command *children;
 };
 
 int cli_execute(struct cli *c, int argc, char **argv);

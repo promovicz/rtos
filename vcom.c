@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <core/defines.h>
+
 #include "debug.h"
 #include "usbapi.h"
 #include "serial_fifo.h"
@@ -162,7 +164,7 @@ static const U8 abDescriptors[] = {
 	@param [in] bEP
 	@param [in] bEPStatus
  */
-static void BulkOut(U8 bEP, U8 bEPStatus)
+static void BulkOut(U8 bEP, always_unused U8 bEPStatus)
 {
 	int i, iLen;
 
@@ -231,7 +233,7 @@ static void SendNextBulkIn(U8 bEP, BOOL fFirstPacket)
 	@param [in] bEP
 	@param [in] bEPStatus
  */
-static void BulkIn(U8 bEP, U8 bEPStatus)
+static void BulkIn(U8 bEP, always_unused U8 bEPStatus)
 {
 	SendNextBulkIn(bEP, FALSE);
 }
@@ -292,7 +294,7 @@ DBG("SET_CONTROL_LINE_STATE %X\n", pSetup->wValue);
 	(as required by the windows usbser.sys driver).
 
  */
-static void USBFrameHandler(U16 wFrame)
+static void USBFrameHandler(always_unused U16 wFrame)
 {
 	if (!fBulkInBusy && (fifo_avail(&txfifo) != 0)) {
 		// send first packet

@@ -19,15 +19,15 @@ LDSCRIPT=bike.lds
 LIBS=lpcusb-trunk/target/usbstack.a dietlibc/bin-arm/dietlibc.a
 
 LOGOMATICOBJS=board/logomatic.o
-COREOBJS=core/tick.o core/tty.o core/parse.o core/system.o core/cli.o
+COREOBJS=core/tick.o core/tty.o core/parse.o core/system.o core/cli.o core/context.o
 LPCOBJS=lpc/scb.o lpc/pll.o lpc/mam.o lpc/vpb.o lpc/vic.o lpc/pinsel.o lpc/timer.o lpc/gpio.o lpc/rtc.o lpc/ssp.o lpc/spi.o lpc/uart.o lpc/device.o lpc/eint.o lpc/pin.o lpc/pcon.o lpc/wdt.o lpc/reset.o
 SENSOROBJ=sensor/scp.o sensor/nmea.o
 CMDOBJS=commands/gpio.o commands/mem.o commands/system.o commands/nmea.o commands/posix.o commands/gps.o commands/lpc.o
-POSIXOBJS=posix/file.o posix/process.o posix/sleep.o posix/epoll.o posix/file_console.o posix/file_uart.o posix/signal.o posix/memory.o posix/errlist.o posix/control.o
+POSIXOBJS=posix/file.o posix/process.o posix/sleep.o posix/epoll.o posix/file_console.o posix/file_uart.o posix/signal.o posix/memory.o posix/errlist.o posix/control.o posix/errno.o
 DISARMOBJS=libdisarm/src/libdisarm/args.o libdisarm/src/libdisarm/print.o libdisarm/src/libdisarm/parser.o
 OBJS=start.o $(COREOBJS) $(LPCOBJS) $(SENSOROBJ) $(CMDOBJS) $(LOGOMATICOBJS) $(POSIXOBJS) $(DISARMOBJS) halsys.o main.o serial_fifo.o armVIC.o vcom.o
-INCLUDEFLAGS=-Ilpcusb-trunk/target -Idietlibc/include -Ilibdisarm/src -I.
-DEFINE=-DLPC214x -DDEBUG
+INCLUDEFLAGS=-Iinclude -Ilpcusb-trunk/target -Idietlibc/include -Ilibdisarm/src -I.
+DEFINE=-DLPC214x -DNDEBUG
 
 DEPS=$(OBJS:.o=.p)
 LSTS=$(OBJS:.o=.lst)

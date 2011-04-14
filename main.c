@@ -44,8 +44,6 @@
 
 */
 
-int errno;
-
 #include <string.h>
 #include <stdio.h>
 
@@ -191,15 +189,54 @@ int command_scpm(struct cli *c, int argc, char **argv)
 }
 
 struct command cmd[] = {
-	{"system", "system",            NULL, &cmd_system},
-	{"posix",  "posix emulator",    NULL, &cmd_posix},
-	{"gpio",   "gpio pins",         NULL, &cmd_gpio},
-	{"gps",    "gps receiver",      NULL, &cmd_gps},
-	{"nmea",   "nmea receiver",     NULL, &cmd_nmea},
-	{"mem",    "memory operations", NULL, &cmd_mem},
-	{"lpc",    "lpc platform",      NULL, &cmd_lpc},
-	{"scpm",   "scp measure",       &command_scpm, NULL},
-	{NULL}
+	{
+		.name = "system",
+		.help = "system",
+		.handler = NULL,
+		.children = cmd_system
+	},
+	{
+		.name = "posix", 
+		.help = "posix emulator",
+		.handler = NULL,
+		.children = cmd_posix
+	},
+	{
+		.name = "gpio",
+		.help = "gpio pins",
+		.handler = NULL,
+		.children = cmd_gpio
+	},
+	{
+		.name = "gps",
+		.help = "gps receiver",
+		.handler = NULL,
+		.children = cmd_gps
+	},
+	{
+		.name = "nmea",
+		.help = "nmea receiver",
+		.handler = NULL,
+		.children = cmd_nmea
+	},
+	{
+		.name = "mem",
+		.help = "memory operations",
+		.handler = NULL,
+		.children = cmd_mem
+	},
+	{
+		.name = "lpc",
+		.help = "lpc platform",
+		.handler = NULL,
+		.children = cmd_lpc
+	},
+	{
+		.name = "scpm",
+		.help = "scp measure",
+		.handler = &command_scpm,
+	},
+	{.name = NULL}
 };
 
 struct cli c;
@@ -209,103 +246,6 @@ void command_handler(struct tty *t, int argc, char **argv)
 	led_stat2(0);
 
 	cli_execute(&c, argc, argv);
-
-#if 0
-	if(argc) {
-		cli_execute(&c, argc-1, argv+1);
-
-		if(!strcmp("spi", argv[0])) {
-			spi_command(t, argc-1, argv+1);
-		}
-		if(!strcmp("ssp", argv[0])) {
-			ssp_command(t, argc-1, argv+1);
-		}
-
-		if(!strcmp("gpio", argv[0])) {
-			gpio_command(t, argc-1, argv+1);
-		}
-		if(!strcmp("vic", argv[0])) {
-			if(argc > 1) {
-				if(!strcmp("report", argv[1])) {
-					vic_report();
-				}
-			}
-		}
-		if(!strcmp("scp", argv[0])) {
-			if(argc > 1) {
-				if(!strcmp("reset", argv[1])) {
-					scp_init();
-				}
-				if(!strcmp("measure", argv[1])) {
-					scp_measure();
-				}
-				if(!strcmp("selftest", argv[1])) {
-					scp_selftest();
-				}
-			}
-		}
-		if(!strcmp("time", argv[0])) {
-			tick_t t = tick_get();
-			printf("sys time %07d.%03d\n", t/1000, t%1000);
-			rtc_report();
-		}
-		if(!strcmp("pll", argv[0])) {
-			pll_report();
-		}
-		if(!strcmp("pin", argv[0])) {
-			pin_report();
-		}
-		if(!strcmp("reset", argv[0])) {
-			system_reset();
-		}
-
-		int r;
-		void *p;
-		uint32_t u;
-
-		if(!strcmp("memm", argv[0])) {
-			p = mmap(NULL, 1024, 0, MAP_ANONYMOUS, 0, 0);
-			if(!p) {
-				perror("mmap");
-			}
-		}
-
-		if(!strcmp("memu", argv[0])) {
-			if(argc > 1) {
-				if(scan_ptr(argv[1], &p)) {
-					printf("unmapping %08x\n", p);
-					r = munmap(p, 512);
-					if(r == -1) {
-						perror("munmap");
-					}
-				}
-			}
-		}
-
-		if(!strcmp("mema", argv[0])) {
-			if(argc > 1) {
-				if(scan_uint32(argv[1], &u)) {
-					p = malloc(u);
-					if(p) {
-						printf("got %08x\n", p);
-					} else {
-						perror("malloc");
-					}
-				}
-			}
-		}
-
-		if(!strcmp("memf", argv[0])) {
-			if(argc > 1) {
-				if(scan_ptr(argv[1], &p)) {
-					printf("freeing %08x\n", p);
-					free(p);
-				}
-			}
-		}
-	}
-
-#endif
 }
 
 void csel_scp(bool_t yeah)
@@ -355,7 +295,7 @@ void nmea_hook(const char *raw, size_t nbytes)
 
 int main (void)
 {
-	c.c_rootcmd = &cmd;
+	c.rootcmd = cmd;
 
 	system_init();
 

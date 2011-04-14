@@ -112,3 +112,16 @@ Reset_Handler:
 
 .endfunc
 .end
+
+/* void _swap_context (void **save_sp [r0], void *new_sp [r1]) */
+.global _swap_context
+.func _swap_context
+		/* save registers onto current stack */
+		stmfd sp!, {r4 - r11, lr}
+		/* save current stack pointer (old context) */
+		str   sp, [r0]
+		/* load new stack pointer */
+		ldr	  sp, [r1]
+		/* load registers from new stack */
+		ldmfd sp!, {r4 - r11, pc}
+.endfunc
