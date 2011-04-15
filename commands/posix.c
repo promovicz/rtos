@@ -25,8 +25,15 @@ int command_posix_file(struct cli *c, int argc, char **argv)
 }
 
 struct command cmd_posix[] = {
-	{"status", "posix emulator status",   &command_posix_status},
-	{"memory", "posix memory allocation", &command_posix_memory},
-	{"file",   "posix file descriptors",  &command_posix_file},
-	{NULL},
+	{.name = "status",
+	 .help = "posix emulator status",
+	 .handler = &command_posix_status},
+	{.name = "memory",
+	 .help = "posix memory allocation",
+	 .handler = &command_posix_memory},
+	{.name = "file",
+	 .help = "posix file descriptors",
+	 .handler = &command_posix_file},
 };
+
+DECLARE_COMMAND_TABLE(cmds_posix, cmd_posix);

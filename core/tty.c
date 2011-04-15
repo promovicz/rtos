@@ -151,7 +151,8 @@ tty_remove_at(struct tty *t, off_t p)
 }
 
 void
-docmd(struct tty *t, const char *cmd)
+dotokenize(struct tty *t, const char *cmd,
+		   void (*handler)(struct tty *t, int argc, char **argv))
 {
 	char *tok[512];
 	char buf[512];
@@ -177,12 +178,34 @@ docmd(struct tty *t, const char *cmd)
 		}
 	}
 
-	tty_writechr(t, '\n');
+	handler(t, toknum, tok);
+}
 
+void
+docmd(struct tty *t, int argc, char **argv)
+{
+	tty_writechr(t, '\n');
 	fflush(stdout);
 
 	if(t->t_command_handler) {
-		t->t_command_handler(t, toknum, tok);
+		t->t_command_handler(t, argc, argv);
+	} else {
+		tty_writestr(t, "No command handler!\n");
+	}
+
+	fflush(stdout);
+}
+
+void
+dohelp(struct tty *t, int argc, char **argv)
+{
+	tty_writechr(t, '\n');
+	fflush(stdout);
+
+	if(t->t_command_help_handler) {
+		t->t_command_help_handler(t, argc, argv);
+	} else {
+		tty_writestr(t, "No help handler!\n");
 	}
 
 	fflush(stdout);
@@ -239,7 +262,10 @@ tty_feed_escape(struct tty *t, int c)
 void
 tty_feed_plain(struct tty *t, int c)
 {
-	if(isgraph(c) || (c == ' ')) {
+	if(c == '?') {
+		dotokenize(t, &t->t_line[t->t_start], &dohelp);
+		tty_redraw(t);
+	} else if(isgraph(c) || (c == ' ')) {
 		if(tty_insert_at(t, c, t->t_posn)) {
 			t->t_posn++;
 			tty_redraw(t);
@@ -276,7 +302,7 @@ tty_feed_plain(struct tty *t, int c)
 			break;
 		case CTRL('m'):
 			if(strlen(&t->t_line[t->t_start])) {
-				docmd(t, &t->t_line[t->t_start]);
+				dotokenize(t, &t->t_line[t->t_start], &docmd);
 			} else {
 				tty_writechr(t, '\n');
 			}
@@ -318,9 +344,10 @@ tty_finish(struct tty *t)
 }
 
 void
-tty_command_handler(struct tty *t, tty_command_handler_t handler)
+tty_command_handler(struct tty *t, tty_command_handler_t handler, tty_command_handler_t help)
 {
 	t->t_command_handler = handler;
+	t->t_command_help_handler = help;
 }
 
 #if 0

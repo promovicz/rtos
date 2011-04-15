@@ -34,10 +34,21 @@ int command_lpc_ssp(struct cli *c, int argc, char **argv)
 }
 
 struct command cmd_lpc[] = {
-	{"pin", "pin connect block",             &command_lpc_pin},
-	{"pll", "phase-locked loops",            &command_lpc_pll},
-	{"vic", "vectored interrupt controller", &command_lpc_vic},
-	{"spi", "standard spi interface",        &command_lpc_spi},
-	{"ssp", "fast spi interface",            &command_lpc_ssp},
-	{NULL},
+	{.name = "pin",
+	 .help = "pin connect block",            
+	 .handler = &command_lpc_pin},
+	{.name = "pll",
+	 .help = "phase-locked loops",
+	 .handler = &command_lpc_pll},
+	{.name = "vic",
+	 .help = "vectored interrupt controller",
+	 .handler = &command_lpc_vic},
+	{.name = "spi",
+	 .help = "standard spi interface",
+	 .handler = &command_lpc_spi},
+	{.name = "ssp",
+	 .help = "fast spi interface",
+	 .handler = &command_lpc_ssp},
 };
+
+DECLARE_COMMAND_TABLE(cmds_lpc, cmd_lpc);

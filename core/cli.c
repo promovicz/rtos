@@ -1,56 +1,100 @@
 
 #include "cli.h"
 
-int cli_execute(struct cli *c, int argc, char **argv)
+#include <string.h>
+#include <stdio.h>
+
+static struct command *
+cli_find(struct command_table *t, char *token)
 {
 	int i;
-	struct command *cmd = c->rootcmd;
 
-	if(argc <= 0) {
-		printf("No command given.\n");
-		return 1;
+	for(i = 0; i < t->cmdc; i++) {
+		struct command *c = t->cmds + i;
+		if(!strcmp(token, c->name)) {
+			fflush(stdout);
+			return c;
+		}
 	}
 
-	for(i = 0; i <= argc; i++) {
-		int found = 0;
-		while(cmd->name) {
-			if(i < argc) {
-				if(!strcmp(cmd->name, argv[i])) {
-					found = 1;
-					break;
-				}
-			} else {
-				if(!strlen(cmd->name)) {
-					found = 1;
-					break;
-				}
-			}
-			cmd++;
-		}
-		if(found) {
+	return NULL;
+}
+
+static void indent(int level)
+{
+	int i;
+	for(i = 0; i < level; i++) {
+		printf("  ");
+	}
+}
+
+static void printtable(struct command_table *t, int level)
+{
+	int i;
+	for(i = 0; i < t->cmdc; i++) {
+		struct command *c = t->cmds + i;
+		indent(level);
+		printf("%s - %s\n", c->name, c->help);
+	}
+}
+
+int cli_help(struct cli *c, int argc, char **argv)
+{
+	int i;
+	struct command_table *t = c->commands;
+
+	for(i = 0; i < argc; i++) {
+		struct command *cmd = cli_find(t, argv[i]);
+		if(cmd) {
+			indent(i);
+			printf("%s - %s\n", cmd->name, cmd->help);
 			if(cmd->handler) {
-				if(i < argc) {
-					return cmd->handler(c, argc - i - 1, argv + i + 1);
-				} else {
-					return cmd->handler(c, 0, NULL);
-				}
-			} else if(cmd->children) {
-				cmd = cmd->children;
+				printf("command is complete.");
+				return 0;
+			} else if (cmd->children) {
+				t = cmd->children;
 			} else {
-				printf("Stub command.\n");
+				printf("invalid command table entry.\n");
 				return 1;
 			}
 		} else {
-			if(i < argc) {
-				printf("Unknown command.\n");
-			} else {
-				printf("Incomplete command.\n");
-			}
+			indent(i);
+			printf("%s unknown, options:\n", argv[i]);
+			printtable(t, i + 1);
 			return 1;
 		}
 	}
 
-	printf("Unknown command.");
+	indent(i);
+	printf("options:\n");
+	printtable(t, i + 1);
+
 	return 1;
 }
 
+int cli_execute(struct cli *c, int argc, char **argv)
+{
+	int i;
+	struct command_table *t = c->commands;
+
+	for(i = 0; i < argc; i++) {
+		struct command *cmd = cli_find(t, argv[i]);
+
+		if(cmd) {
+			if(cmd->handler) {
+				return cmd->handler(c, argc - i - 1, argv + i + 1);
+			} else if (cmd->children) {
+				t = cmd->children;
+			} else {
+				printf("invalid command table entry.\n");
+				return 1;
+			}
+		} else {
+			printf("unknown command.\n");
+			return 1;
+		}
+	}
+
+	printf("incomplete command\n");
+	return 1;
+}

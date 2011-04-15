@@ -255,10 +255,21 @@ void mem_command(struct tty *t, int argc, char **argv)
 #endif
 
 struct command cmd_mem[] = {
-	{"dump",     "dump memory at given address",      &command_mem_dump},
-	{"disasm",   "disassemble code at given address", &command_mem_disasm},
-	{"copy",     "copy memory from place to place",   &command_mem_copy},
-	{"regions",  "display physical memory regions",   &command_mem_regions},
-	{"sections", "display system memory sections",    &command_mem_sections},
-	{NULL},
+	{.name = "dump",
+	 .help = "dump memory at given address",
+	 .handler = &command_mem_dump},
+	{.name = "disasm",
+	 .help = "disassemble code at given address",
+	 .handler = &command_mem_disasm},
+	{.name = "copy",
+	 .help = "copy memory from place to place",
+	 .handler = &command_mem_copy},
+	{.name = "regions",
+	 .help = "display physical memory regions",
+	 .handler = &command_mem_regions},
+	{.name = "sections",
+	 .help = "display system memory sections",
+	 .handler = &command_mem_sections},
 };
+
+DECLARE_COMMAND_TABLE(cmds_mem, cmd_mem);

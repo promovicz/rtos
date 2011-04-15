@@ -50,8 +50,15 @@ int command_system_halt(struct cli *c, int argc, char **argv)
 }
 
 struct command cmd_system[] = {
-	{"status", "report system status", &command_system_status, NULL},
-	{"reset",  "reset the system",     &command_system_reset,  NULL},
-	{"halt",   "halt the system",      &command_system_halt,   NULL},
-	{NULL},
+	{.name = "status",
+	 .help = "report system status",
+	 .handler = &command_system_status},
+	{.name = "reset", 
+	 .help = "reset the system",
+	 .handler = &command_system_reset},
+	{.name = "halt",
+	 .help = "halt the system",
+	 .handler = &command_system_halt},
 };
+
+DECLARE_COMMAND_TABLE(cmds_system, cmd_system);

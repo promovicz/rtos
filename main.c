@@ -188,56 +188,61 @@ int command_scpm(struct cli *c, int argc, char **argv)
 	return 0;
 }
 
-struct command cmd[] = {
+struct command cmd_root[] = {
 	{
 		.name = "system",
 		.help = "system",
 		.handler = NULL,
-		.children = cmd_system
+		.children = &cmds_system
 	},
 	{
 		.name = "posix", 
 		.help = "posix emulator",
 		.handler = NULL,
-		.children = cmd_posix
+		.children = &cmds_posix
 	},
 	{
 		.name = "gpio",
 		.help = "gpio pins",
 		.handler = NULL,
-		.children = cmd_gpio
+		.children = &cmds_gpio
 	},
+#if 0
 	{
 		.name = "gps",
 		.help = "gps receiver",
 		.handler = NULL,
-		.children = cmd_gps
+		.children = &cmds_gps
 	},
 	{
 		.name = "nmea",
 		.help = "nmea receiver",
 		.handler = NULL,
-		.children = cmd_nmea
+		.children = &cmds_nmea
 	},
+#endif
 	{
 		.name = "mem",
 		.help = "memory operations",
 		.handler = NULL,
-		.children = cmd_mem
+		.children = &cmds_mem
 	},
 	{
 		.name = "lpc",
 		.help = "lpc platform",
 		.handler = NULL,
-		.children = cmd_lpc
+		.children = &cmds_lpc
 	},
+#if 0
 	{
 		.name = "scpm",
 		.help = "scp measure",
 		.handler = &command_scpm,
 	},
-	{.name = NULL}
+#endif
 };
+
+DECLARE_COMMAND_TABLE(cmds_root, cmd_root);
 
 struct cli c;
 
@@ -246,6 +251,13 @@ void command_handler(struct tty *t, int argc, char **argv)
 	led_stat2(0);
 
 	cli_execute(&c, argc, argv);
+}
+
+void help_handler(struct tty *t, int argc, char **argv)
+{
+	led_stat2(0);
+
+	cli_help(&c, argc, argv);
 }
 
 void csel_scp(bool_t yeah)
@@ -295,7 +307,7 @@ void nmea_hook(const char *raw, size_t nbytes)
 
 int main (void)
 {
-	c.rootcmd = cmd;
+	c.commands = &cmds_root;
 
 	system_init();
 
@@ -358,7 +370,7 @@ int main (void)
 	nmea_sentence_hook(&nmea_hook);
 
 	tty_init(&tser);
-	tty_command_handler(&tser, &command_handler);
+	tty_command_handler(&tser, &command_handler, &help_handler);
 
 	scp_init();
 
