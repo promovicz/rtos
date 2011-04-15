@@ -1,11 +1,8 @@
 #ifndef CORE_CLOCK_H
 #define CORE_CLOCK_H
 
-typedef uint32_t freq_t;
+#include <core/common.h>
 
-struct clock {
-	/* parent clock */
-	struct clock *parent;
-};
+typedef uint32_t freq_t;
 
 #endif /* !CORE_CLOCK_H */

@@ -42,5 +42,10 @@ void timer_match_handler(int t, timer_match_t m,
 
 void timer_irq(int t);
 
+#define DEFINE_TIMER_VECTOR(vname, timer)			\
+	static interrupt_handler void vname (void) {	\
+		timer_irq(timer);							\
+		vic_ack();									\
+	};
 
 #endif /* !TIMER_H */

@@ -1,6 +1,8 @@
 #ifndef CORE_SYSTEM_H
 #define CORE_SYSTEM_H
 
+#include <core/common.h>
+
 void system_init(void);
 void system_kick(void);
 void system_reset(void);

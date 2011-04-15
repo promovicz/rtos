@@ -1,12 +1,9 @@
 #ifndef CORE_CLI_H
 #define CORE_CLI_H
 
-#include <core/defines.h>
-#include <core/types.h>
+#include <core/common.h>
 
-struct cli {
-	struct command_table *commands;
-};
+struct cli;
 
 typedef int (*command_handler_t) (struct cli *c, int argc, char **argv);
 
@@ -28,6 +25,13 @@ struct command_table {
 		.cmds = &commands[0],					\
 		.cmdc = array_size(commands),			\
 	}
+
+
+struct cli {
+	struct command_table *commands;
+};
+
+extern struct command_table cli_system_commands;
 
 int cli_help(struct cli *c, int argc, char **argv);
 int cli_execute(struct cli *c, int argc, char **argv);

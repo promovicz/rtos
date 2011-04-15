@@ -1,6 +1,10 @@
 
 #include "logomatic.h"
 
+#include <core/tick.h>
+#include <core/timer.h>
+
+#include <lpc/vic.h>
 #include <lpc/pll.h>
 #include <lpc/mam.h>
 #include <lpc/vpb.h>
@@ -9,10 +13,38 @@
 #include <lpc/rtc.h>
 #include <lpc/eint.h>
 #include <lpc/gpio.h>
+#include <lpc/uart.h>
+#include <lpc/timer.h>
 #include <lpc/pinsel.h>
 
 #define GPIO_LED_STAT1 11
 #define GPIO_LED_STAT2 2
+
+
+#define INTV_STOP     0
+DEFINE_EINT_VECTOR(eint1_vector, EINT1);
+
+#define	INTV_USB	  1
+/* APP */
+
+#define INTV_UART0    2
+DEFINE_UART_VECTOR(uart0_vector, 0);
+
+#define INTV_UART1    3
+DEFINE_UART_VECTOR(uart1_vector, 1);
+
+#define INTV_TIMER0   4
+DEFINE_TIMER_VECTOR(timer0_vector, 0);
+
+#define INTV_TIMER1   5
+DEFINE_TIMER_VECTOR(timer1_vector, 1);
+
+
+static void timer_tick (always_unused int t, always_unused timer_match_t m)
+{
+	tick_handler();
+}
+
 
 static void led_init(void)
 {
@@ -29,7 +61,6 @@ void led_stat1(bool_t lit)
 		gpio_pin_low(GPIO_LED_STAT1);
 	} else {
 		gpio_pin_high(GPIO_LED_STAT1);
-
 	}
 }
 
@@ -42,7 +73,36 @@ void led_stat2(bool_t lit)
 	}
 }
 
-void board_init(void)
+
+stop_handler_t the_stop_handler;
+
+void set_stop_handler(stop_handler_t handler)
+{
+	the_stop_handler = handler;
+}
+
+static void stop_handler(int eint)
+{
+	led_stat2(1);
+
+	if(the_stop_handler) {
+		the_stop_handler();
+	}
+}
+
+
+void heartbeat_function (always_unused struct timer *t, tick_t now)
+{
+	tick_t second = now / 1000;
+	bool_t odd = second & 1 ? BOOL_TRUE : BOOL_FALSE;
+
+	led_stat1(odd);
+}
+
+DEFINE_PERIODIC_TIMER(heartbeat, heartbeat_function, 1 * TICK_SECOND);
+
+
+void board_early_init(void)
 {
 	// enable status leds early for debugging
 	led_init();
@@ -59,25 +119,44 @@ void board_init(void)
 	// initialize the real time clock
 	rtc_init();
 
+	// STOP button
+	pin_set_function(PIN3, PIN_FUNCTION_EINT1);
+	eint_configure(EINT1, 1, 0);
+	eint_handler(EINT1, &stop_handler);
+	vic_configure(INTV_STOP, INT_EINT1, &eint1_vector);
+	vic_enable(INT_EINT1);
+
+	// TIMER0 at 1 MHz, MR0 at 1000 Hz
+	timer_init(TIMER0);
+	timer_prescale(TIMER0, 60);
+	timer_match_configure(TIMER0, MR0, 1000, TIMER_MATCH_INTERRUPT|TIMER_MATCH_RESET);
+	timer_match_handler(TIMER0, MR0, &timer_tick);
+	timer_enable(TIMER0, BOOL_TRUE);
+	vic_configure(INTV_TIMER0, INT_TIMER0, &timer0_vector);
+	vic_enable(INT_TIMER0);
+
+	// TIMER1
+	timer_init(TIMER1);
+	timer_prescale(TIMER1, 60);
+	timer_enable(TIMER1, BOOL_TRUE);
+	vic_configure(INTV_TIMER1, INT_TIMER1, &timer1_vector);
+
 	// UART0
 	pin_set_function(PIN0, PIN_FUNCTION_UART0_TXD);
 	pin_set_function(PIN1, PIN_FUNCTION_UART0_RXD);
+	uart_init(0, 38400);
+	vic_configure(INTV_UART0, INT_UART0, &uart0_vector);
+	vic_enable(INT_UART0);
 
 	// UART1
 	pin_set_function(PIN8, PIN_FUNCTION_UART1_TXD);
 	pin_set_function(PIN9, PIN_FUNCTION_UART1_RXD);
+	uart_init(1, 9600);
+	vic_configure(INTV_UART1, INT_UART1, &uart1_vector);
+	vic_enable(INT_UART1);
+}
 
-	// STOP button
-	pin_set_function(PIN3, PIN_FUNCTION_EINT1);
-	eint_configure(EINT1, 1, 0);
-
-	// MMC
-	pin_set_function(PIN4, PIN_FUNCTION_SPI_SCK);
-	pin_set_function(PIN5, PIN_FUNCTION_SPI_MISO);
-	pin_set_function(PIN6, PIN_FUNCTION_SPI_MOSI);
-
-	// SCP pressure sensor
-	pin_set_function(PIN17, PIN_FUNCTION_SSP_SCK);
-	pin_set_function(PIN18, PIN_FUNCTION_SSP_MISO);
-	pin_set_function(PIN19, PIN_FUNCTION_SSP_MOSI);
+void board_init(void)
+{
+	START_PERIODIC_TIMER(heartbeat);
 }

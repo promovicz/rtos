@@ -1,5 +1,5 @@
-#ifndef BIKE_DEFINES_H
-#define BIKE_DEFINES_H
+#ifndef CORE_DEFINES_H
+#define CORE_DEFINES_H
 
 #define always_inline __attribute__((always_inline))
 
@@ -14,4 +14,4 @@
 
 #define array_size(arr) (sizeof(arr) / sizeof((arr)[0]))
 
-#endif /* !BIKE_DEFINES_H */
+#endif /* !CORE_DEFINES_H */

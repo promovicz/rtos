@@ -1,54 +1,32 @@
+#ifndef CORE_DEVICE_H
+#define CORE_DEVICE_H
 
-enum {
-	DEVICE_CLASS_GPIO,
-	DEVICE_CLASS_UART,
-};
+#include <core/common.h>
+
+#include <core/list.h>
+
+typedef enum {
+	DEVICE_CLASS_NONE,
+} device_class_t;
+
+typedef void (*device_report_cb_t) (struct device *dev);
 
 struct device {
 	char *name;
-	int class;
+	device_class_t class;
 
-	struct file_operations *operations;
+	device_report_cb_t report_cb;
+
+	int uses;
+	struct llist_head list;
 };
 
+struct device *device_find(const char *name);
 
+void device_add(struct device *dev);
 
-typedef int (*spi_config_cb) (struct spi_device *dev,
-							  struct spi_config *cfg);
+void device_report(struct device *dev);
 
-typedef int (*spi_transfer_cb) (struct spi_device *dev,
-								size_t nbytes,
-								const char *srcbuf,
-								char *dstbuf);
+void device_report_all(void);
 
-struct spi_master {
-};
-
-
-typedef int (*uart_config_cb) ();
-
-typedef int (*uart_flush_cb) ();
-
-typedef int (*uart_push_cb) ();
-typedef int (*uart_pull_cb) ();
-
-struct uart_device {
-};
-
-
-typedef int (*gpio_config_cb) ();
-
-typedef int (*gpio_get_cb) ();
-typedef int (*gpio_set_cb) ();
-
-typedef int (*gpio_wait_cb) ();
-
-struct gpio_device {
-};
-
-
-struct file *device_open(struct device *dev);
-
-struct device *device_by_name(const char *name);
-
-int register_device(struct device *dev);
+#endif /* !CORE_DEVICE_H */

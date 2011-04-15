@@ -4,6 +4,43 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <commands/commands.h>
+
+static struct command system_commands[] = {
+	{
+		.name = "sys",
+		.help = "system status and control",
+		.handler = NULL,
+		.children = &cmds_sys
+	},
+	{
+		.name = "posix", 
+		.help = "posix emulator",
+		.handler = NULL,
+		.children = &cmds_posix
+	},
+	{
+		.name = "gpio",
+		.help = "gpio pins",
+		.handler = NULL,
+		.children = &cmds_gpio
+	},
+	{
+		.name = "mem",
+		.help = "memory operations",
+		.handler = NULL,
+		.children = &cmds_mem
+	},
+	{
+		.name = "lpc",
+		.help = "lpc platform",
+		.handler = NULL,
+		.children = &cmds_lpc
+	},
+};
+
+DECLARE_COMMAND_TABLE(cli_system_commands, system_commands);
+
 static struct command *
 cli_find(struct command_table *t, char *token)
 {

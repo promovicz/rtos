@@ -8,6 +8,7 @@
 #include "serial_fifo.h"
 
 #include <core/defines.h>
+#include <core/device.h>
 
 static inline always_inline uint8_t readb(volatile uint8_t *a)
 {
@@ -38,16 +39,40 @@ char u1_rxbuf[VCOM_FIFO_SIZE];
 char u1_txbuf[VCOM_FIFO_SIZE];
 
 struct uart {
+	struct device dev;
 	void *base;
+
 	fifo_t rxfifo;
 	char *rxbuf;
+	int rxmaxfill;
+	int rxcount;
+
 	fifo_t txfifo;
 	char *txbuf;
+	int txmaxfill;
+	int txcount;
 };
 
+static void uart_device_report(struct device *dev)
+{
+	struct uart *u = container_of(dev, struct uart, dev);
+	printf(" uart %s rxcount %d rxmaxfill %d txcount %d txmaxfill %d\n",
+		   dev->name, u->rxcount, u->rxmaxfill, u->txcount, u->txmaxfill);
+}
+
 struct uart uarts[2] = {
-	{base: UART0_BASE, rxbuf: &u0_rxbuf, txbuf: &u0_txbuf},
-	{base: UART1_BASE, rxbuf: &u1_rxbuf, txbuf: &u1_txbuf},
+	{
+	dev: {name: "uart0", report_cb: &uart_device_report},
+		base: UART0_BASE,
+		rxbuf: &u0_rxbuf,
+		txbuf: &u0_txbuf
+	},
+	{
+	dev: {name: "uart1", report_cb: &uart_device_report},
+		base: UART1_BASE,
+		rxbuf: &u1_rxbuf,
+		txbuf: &u1_txbuf
+	},
 };
 
 struct uart_regs {
@@ -213,6 +238,7 @@ static inline uint8_t uart_reg_read(uart_t uart, enum uart_reg r)
 
 void uart_init(uart_t uart, uart_baud_t baudrate)
 {
+	struct uart *u = &uarts[uart];
 	uint16_t div = (60000000 / (16 * baudrate));
 
 	uart_reg_write(uart, LCR, LCR_WL_8|LCR_SB_1|LCR_PAR_NONE);
@@ -230,6 +256,13 @@ void uart_init(uart_t uart, uart_baud_t baudrate)
 	fifo_init(&uarts[uart].txfifo, uarts[uart].txbuf);
 
 	uart_reg_write(uart, IER, IER_RBR);
+
+	device_add(&uarts[uart].dev);
+
+	u->txmaxfill = 0;
+	u->txcount = 0;
+	u->rxmaxfill = 0;
+	u->rxcount = 0;
 }
 
 void uart_irq(uart_t uart)
@@ -303,8 +336,10 @@ int uart_tx_nonblocking(uart_t uart, const void *buf, size_t nbytes)
 
 int uart_tx_fifo(uart_t uart, const void *buf, size_t nbytes)
 {
+	struct uart *u = &uarts[uart];
 	bool_t starting, success;
 	size_t done, donedirect;
+	int avail;
 	uint32_t m;
 	uint8_t c;
 	uint8_t ier;
@@ -335,6 +370,13 @@ int uart_tx_fifo(uart_t uart, const void *buf, size_t nbytes)
 		ier |= IER_THRE;
 		uart_reg_write(uart, IER, ier);
 	}
+
+	avail = fifo_avail(&u->txfifo);
+	if(avail > u->txmaxfill) {
+		u->txmaxfill = avail;
+	}
+
+	u->txcount += done;
 
 	restoreIRQ(m);
 
@@ -372,11 +414,18 @@ int uart_rx_nonblocking(uart_t uart, void *buf, size_t nbytes)
 
 int uart_rx_fifo(uart_t uart, void *buf, size_t nbytes)
 {
+	struct uart *u = &uarts[uart];
 	uint8_t *cbuf = (uint8_t *)buf;
+	int avail;
 	size_t done;
 	uint32_t m;
 
 	m = disableIRQ();
+
+	avail = fifo_avail(&u->rxfifo);
+	if(avail > u->rxmaxfill) {
+		u->rxmaxfill = avail;
+	}
 
 	for(done = 0; done < nbytes; done++) {
 		bool_t r = fifo_get(&uarts[uart].rxfifo, &cbuf[done]);
@@ -384,6 +433,8 @@ int uart_rx_fifo(uart_t uart, void *buf, size_t nbytes)
 			break;
 		}
 	}
+
+	u->rxcount += done;
 
 	restoreIRQ(m);
 

@@ -39,7 +39,13 @@ enum pcon_pconp_bits {
 #define PCON_BASE (0xE01FC0C0)
 #define PCON_REGS ((volatile struct pcon_regs*)PCON_BASE)
 
+void pcon_idle(void)
+{
+	PCON_REGS->PCON |= PCON_IDL;
+}
+
 void pcon_power_down(void)
 {
-	PCON_REGS->PCON |= PCON_PD;
+	PCON_REGS->PCON |=
+		PCON_PD | PCON_PDDISBOD | PCON_BODPDM;
 }

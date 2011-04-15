@@ -1,7 +1,7 @@
 #ifndef CORE_TICK_H
 #define CORE_TICK_H
 
-#include <core/types.h>
+#include <core/common.h>
 
 #define TICK_HZ (1000)
 

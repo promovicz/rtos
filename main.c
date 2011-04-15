@@ -51,6 +51,7 @@
 #include <core/tty.h>
 #include <core/cli.h>
 #include <core/tick.h>
+#include <core/timer.h>
 
 #include <board/logomatic.h>
 
@@ -66,8 +67,6 @@
 #include <lpc/wdt.h>
 
 #include <posix/control.h>
-
-#include <commands/commands.h>
 
 #include "type.h"
 #include "debug.h"
@@ -101,148 +100,17 @@ static interrupt_handler void DefIntHandler(void)
 	vic_ack();
 }
 
-static interrupt_handler void UART0IntHandler(void)
-{
-	uart_irq(0);
-	vic_ack();
-}
-
-static interrupt_handler void UART1IntHandler(void)
-{
-	uart_irq(1);
-	vic_ack();
-}
-
 static interrupt_handler void USBIntHandler(void)
 {
 	USBHwISR();
 	vic_ack();
 }
 
-static interrupt_handler void Timer0IntHandler(void)
-{
-	timer_irq(0);
-	vic_ack();
-}
-
-static interrupt_handler void Timer1IntHandler(void)
-{
-	timer_irq(1);
-	vic_ack();
-}
-
-static interrupt_handler void e0IntHandler(void)
-{
-	eint_irq(0);
-	vic_ack();
-}
-
-static interrupt_handler void e1IntHandler(void)
-{
-	eint_irq(1);
-	vic_ack();
-}
-
-static interrupt_handler void e2IntHandler(void)
-{
-	eint_irq(2);
-	vic_ack();
-}
-
-static interrupt_handler void e3IntHandler(void)
-{
-	eint_irq(3);
-	vic_ack();
-}
-
-
 int icount[2];
 
 int consirq = 0;
 
 struct tty tser;
-
-void t0match(int t, timer_match_t m)
-{
-	tick_handler();
-
-	tick_t time = tick_get();
-	if(!(time%TICK_SECOND)) {
-		led_stat1((time/TICK_SECOND)&1);
-	}
-}
-
-void stop_handler(int eint)
-{
-	led_stat2(1);
-}
-
-void scp_drdy_handler(int eint)
-{
-	scp_irq();
-}
-
-int command_scpm(struct cli *c, int argc, char **argv)
-{
-	scp_measure();
-	return 0;
-}
-
-struct command cmd_root[] = {
-	{
-		.name = "system",
-		.help = "system",
-		.handler = NULL,
-		.children = &cmds_system
-	},
-	{
-		.name = "posix", 
-		.help = "posix emulator",
-		.handler = NULL,
-		.children = &cmds_posix
-	},
-	{
-		.name = "gpio",
-		.help = "gpio pins",
-		.handler = NULL,
-		.children = &cmds_gpio
-	},
-#if 0
-	{
-		.name = "gps",
-		.help = "gps receiver",
-		.handler = NULL,
-		.children = &cmds_gps
-	},
-	{
-		.name = "nmea",
-		.help = "nmea receiver",
-		.handler = NULL,
-		.children = &cmds_nmea
-	},
-#endif
-	{
-		.name = "mem",
-		.help = "memory operations",
-		.handler = NULL,
-		.children = &cmds_mem
-	},
-	{
-		.name = "lpc",
-		.help = "lpc platform",
-		.handler = NULL,
-		.children = &cmds_lpc
-	},
-#if 0
-	{
-		.name = "scpm",
-		.help = "scp measure",
-		.handler = &command_scpm,
-	},
-#endif
-};
-
-DECLARE_COMMAND_TABLE(cmds_root, cmd_root);
 
 struct cli c;
 
@@ -260,105 +128,18 @@ void help_handler(struct tty *t, int argc, char **argv)
 	cli_help(&c, argc, argv);
 }
 
-void csel_scp(bool_t yeah)
-{
-	if(yeah) {
-		gpio_pin_low(CSEL_SCP);
-	} else {
-		gpio_pin_high(CSEL_SCP);
-	}
-}
-
-void csel_nrf(bool_t yeah)
-{
-	if(yeah) {
-		gpio_pin_low(CSEL_NRF);
-	} else {
-		gpio_pin_high(CSEL_NRF);
-	}
-}
-
-void ce_nrf(bool_t yeah)
-{
-	if(yeah) {
-		gpio_pin_low(CE_NRF);
-	} else {
-		gpio_pin_high(CE_NRF);
-	}
-}
-
-void csel_mmc(bool_t yeah)
-{
-	if(yeah) {
-		gpio_pin_low(CSEL_MMC);
-	} else {
-		gpio_pin_high(CSEL_MMC);
-	}
-}
-
 int u0 = -1, u1 = -1;
-
-void nmea_hook(const char *raw, size_t nbytes)
-{
-	if(u0 != -1) {
-		write(u0, raw, nbytes);
-	}
-}
 
 int main (void)
 {
-	c.commands = &cmds_root;
+	c.commands = &cli_system_commands;
 
 	system_init();
 
-	uart_init(0, 38400);
-	uart_init(1, 9600);
-
-	ssp_init();
-	ssp_clock(100000);
-	ssp_enable(TRUE);
-
 	vcom_init();
 
-	vic_configure(INTV_STOP, INT_EINT1, &e1IntHandler);
 	vic_configure(INTV_USB, INT_USB, &USBIntHandler);
-	vic_configure(INTV_UART0, INT_UART0, &UART0IntHandler);
-	vic_configure(INTV_UART1, INT_UART1, &UART1IntHandler);
-	vic_configure(INTV_TIMER0, INT_TIMER0, &Timer0IntHandler);
-	vic_configure(INTV_TIMER1, INT_TIMER1, &Timer1IntHandler);
-	vic_configure(INTV_SCP_DRDY, INT_EINT3, &e3IntHandler);
-
-	gpio_pin_high(CSEL_SCP);
-	gpio_pin_set_direction(CSEL_SCP, BOOL_TRUE);
-	gpio_pin_high(CSEL_MMC);
-	gpio_pin_set_direction(CSEL_MMC, BOOL_TRUE);
-
-	gpio_pin_high(CSEL_NRF);
-	gpio_pin_set_direction(CSEL_NRF, BOOL_TRUE);
-	gpio_pin_high(CE_NRF);
-	gpio_pin_set_direction(CE_NRF, BOOL_TRUE);
-
-
-	eint_handler(EINT1, &stop_handler);
-
-	pin_set_function(PIN30, PIN_FUNCTION_EINT3);
-	eint_configure(EINT3, 1, 1);
-	eint_handler(EINT3, &scp_drdy_handler);
-
-	vic_enable(INT_EINT1);
 	vic_enable(INT_USB);
-	vic_enable(INT_UART0);
-	vic_enable(INT_UART1);
-	vic_enable(INT_TIMER0);
-	vic_enable(INT_EINT3);
-
-	timer_init(TIMER0);
-	timer_prescale(TIMER0, 60);
-
-	timer_match_configure(TIMER0, MR0, 1000, TIMER_MATCH_INTERRUPT|TIMER_MATCH_RESET);
-	timer_match_handler(TIMER0, MR0, &t0match);
-
-	timer_enable(TIMER0, TRUE);
 
 	enableIRQ();
 
@@ -366,13 +147,8 @@ int main (void)
 
 	posix_console_enable();
 
-	nmea_init();
-	nmea_sentence_hook(&nmea_hook);
-
 	tty_init(&tser);
 	tty_command_handler(&tser, &command_handler, &help_handler);
-
-	scp_init();
 
 	u0 = uart_open(0);
 	u1 = uart_open(1);
@@ -397,9 +173,10 @@ int main (void)
 
 		res = read(u1, buf, sizeof(buf));
 		if(res > 0) {
-			nmea_process(buf, res);
+			write(u1, buf, res);
 		}
 
+		//system_idle();
 		usleep(10000);
 	}
 

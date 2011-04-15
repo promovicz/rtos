@@ -1,8 +1,8 @@
 
-#ifndef PARSE_H
-#define PARSE_H
+#ifndef CORE_PARSE_H
+#define CORE_PARSE_H
 
-#include <core/types.h>
+#include <core/common.h>
 
 bool_t scan_bool(const char *str, bool_t *res);
 
@@ -19,4 +19,4 @@ bool_t scan_uint32(const char *str, uint32_t *res);
 
 bool_t scan_ptr(const char *str, void **res);
 
-#endif /* !PARSE_H */
+#endif /* !CORE_PARSE_H */

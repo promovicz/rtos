@@ -20,4 +20,10 @@ int uart_rx_fifo(uart_t uart, void *buf, size_t nbytes);
 int uart_rx_blocking(uart_t uart, void *buf, size_t nbytes);
 int uart_rx_nonblocking(uart_t uart, void *buf, size_t nbytes);
 
+#define DEFINE_UART_VECTOR(vname, uart)				\
+	static interrupt_handler void vname (void) {	\
+		uart_irq(uart);								\
+		vic_ack();									\
+	};
+
 #endif /* !BIKE_UART_H */

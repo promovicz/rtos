@@ -1,16 +1,19 @@
 
 #include "commands.h"
 
-#include <lpc/gpio.h>
+#include <stdio.h>
 
-void gpio_status(int pin)
+#include <lpc/gpio.h>
+#include <lpc/pinsel.h>
+
+static void gpio_status(int pin)
 {
 	printf("gpio%d is %s state %s\n", pin,
 		   gpio_pin_get_direction(pin)?"output":"input",
 		   gpio_pin_get(pin)?"high":"low");
 }
 
-void gpio_status_all(void)
+static void gpio_status_all(void)
 {
 	int i;
 	for(i = 0; i < 32; i++) { // XXX MAX
@@ -20,37 +23,7 @@ void gpio_status_all(void)
 	}
 }
 
-void gpio_command(struct tty *t, int argc, char **argv)
-{
-	long int pin;
-	if(argc) {
-		if(!strcmp("status", argv[0])) {
-		} else if (!strcmp("output", argv[0])) {
-		} else if (!strcmp("input", argv[0])) {
-			if(argc > 1) {
-				if(scan_dec(argv[1], &pin)) {
-					gpio_pin_set_direction(pin, BOOL_FALSE);
-				}
-			}
-		} else if (!strcmp("high", argv[0])) {
-			if(argc > 1) {
-				if(scan_dec(argv[1], &pin)) {
-					gpio_pin_high(pin);
-				}
-			}
-		} else if (!strcmp("low", argv[0])) {
-			if(argc > 1) {
-				if(scan_dec(argv[1], &pin)) {
-					gpio_pin_low(pin);
-				}
-			}
-		}
-	} else {
-		gpio_status_all();
-	}
-}
-
-int command_gpio_status(struct cli *c, int argc, char **argv)
+int command_gpio_status(maybe_unused struct cli *c, int argc, char **argv)
 {
 	long int pin;
 
@@ -68,7 +41,7 @@ int command_gpio_status(struct cli *c, int argc, char **argv)
 	return 1;
 }
 
-int command_gpio_input(struct cli *c, int argc, char **argv)
+int command_gpio_input(maybe_unused struct cli *c, int argc, char **argv)
 {
 	long int pin;
 
@@ -83,7 +56,7 @@ int command_gpio_input(struct cli *c, int argc, char **argv)
 	return 1;
 }
 
-int command_gpio_output(struct cli *c, int argc, char **argv)
+int command_gpio_output(maybe_unused struct cli *c, int argc, char **argv)
 {
 	long int pin;
 
@@ -98,7 +71,7 @@ int command_gpio_output(struct cli *c, int argc, char **argv)
 	return 1;
 }
 
-int command_gpio_high(struct cli *c, int argc, char **argv)
+int command_gpio_high(maybe_unused struct cli *c, int argc, char **argv)
 {
 	long int pin;
 
@@ -113,7 +86,7 @@ int command_gpio_high(struct cli *c, int argc, char **argv)
 	return 1;
 }
 
-int command_gpio_low(struct cli *c, int argc, char **argv)
+int command_gpio_low(maybe_unused struct cli *c, int argc, char **argv)
 {
 	long int pin;
 

@@ -1,7 +1,7 @@
 #ifndef POSIX_FILE_H
 #define POSIX_FILE_H
 
-#include <core/types.h>
+#include <posix/common.h>
 
 #include <fcntl.h>
 #include <errno.h>
@@ -49,6 +49,12 @@ struct file {
 	};
 };
 
+/* "table" of all file descriptors */
+extern struct file *open_fds[MAXFDS];
+
+/* pre-allocated descriptor structures */
+extern struct file open_files[MAXFILES];
+
 /* initializer for the file subsystem */
 void file_table_init(void);
 
@@ -57,8 +63,13 @@ void file_table_report(void);
 
 /* file object operations */
 struct file *file_alloc();
+
 int file_ref(struct file *fd);
 int file_unref(struct file *fd);
+int file_sync(struct file *fd);
+off_t file_seek(struct file * fd, off_t offset, int whence);
+size_t file_read(struct file * fd, void *buf, size_t count);
+size_t file_write(struct file * fd, const void *buf, size_t count);
 int file_close(struct file *fd);
 
 /* file descriptor operations */

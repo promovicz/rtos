@@ -3,6 +3,7 @@
 
 #include <core/types.h>
 
+void pcon_idle(void);
 void pcon_power_down(void);
 
 #endif /* !LPC_PCON_H */

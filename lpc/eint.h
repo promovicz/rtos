@@ -18,4 +18,10 @@ void eint_configure(int eint, bool_t edge, bool_t high_rising);
 void eint_handler(int eint, eint_handler_t handler);
 void eint_irq(int eint);
 
+#define DEFINE_EINT_VECTOR(vname, eint)				\
+	static interrupt_handler void vname (void) {	\
+		eint_irq(eint);								\
+		vic_ack();									\
+	};
+
 #endif /* !LPC_EINT_H */

@@ -1,6 +1,8 @@
 #ifndef CORE_TTY_H
 #define CORE_TTY_H
 
+#include <core/common.h>
+
 #include <sys/types.h>
 
 #define TTY_WIDTH  80

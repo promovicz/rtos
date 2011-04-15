@@ -5,7 +5,7 @@
 #include <core/tty.h>
 #include <core/parse.h>
 
-extern struct command_table cmds_system;
+extern struct command_table cmds_sys;
 extern struct command_table cmds_posix;
 extern struct command_table cmds_gpio;
 extern struct command_table cmds_nmea;

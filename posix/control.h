@@ -1,6 +1,8 @@
 #ifndef POSIX_CONTROL_H
 #define POSIX_CONTROL_H
 
+#include <posix/common.h>
+
 #include "file.h"
 #include "memory.h"
 
