@@ -7,7 +7,7 @@ OBJCOPY=$(CROSS)objcopy
 OBJDUMP=$(CROSS)objdump
 
 CFLAGS_CONFIG=-gdwarf-2 -Os -ffunction-sections -nostdlib
-CFLAGS_TARGET=-mcpu=arm7tdmi -mfloat-abi=soft
+CFLAGS_TARGET=-mcpu=arm7tdmi -mfloat-abi=soft -marm
 CFLAGS_WARNINGS=-Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align -Wimplicit -Wunused -Wredundant-decls -Wnested-externs -Wbad-function-cast -Wsign-compare -Waggregate-return
 
 CFLAGS=$(CFLAGS_CONFIG) $(CFLAGS_TARGET) $(CFLAGS_WARNINGS) $(INCLUDEFLAGS) $(DEFINE)
@@ -19,7 +19,7 @@ LDSCRIPT=bike.lds
 LIBS=lpcusb-trunk/target/usbstack.a dietlibc/bin-arm/dietlibc.a
 
 LOGOMATICOBJS=board/logomatic.o
-COREOBJS=core/tick.o core/tty.o core/parse.o core/system.o core/cli.o core/device.o core/timer.o
+COREOBJS=core/tick.o core/tty.o core/parse.o core/system.o core/cli.o core/device.o core/timer.o core/clock.o
 LPCOBJS=lpc/scb.o lpc/pll.o lpc/mam.o lpc/vpb.o lpc/vic.o lpc/pinsel.o lpc/timer.o lpc/gpio.o lpc/rtc.o lpc/ssp.o lpc/spi.o lpc/uart.o lpc/device.o lpc/eint.o lpc/pin.o lpc/pcon.o lpc/wdt.o lpc/reset.o
 SENSOROBJ=sensor/scp.o sensor/nmea.o
 CMDOBJS=commands/gpio.o commands/mem.o commands/sys.o commands/nmea.o commands/posix.o commands/gps.o commands/lpc.o

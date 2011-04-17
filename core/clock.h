@@ -3,6 +3,19 @@
 
 #include <core/common.h>
 
-typedef uint32_t freq_t;
+#include <core/device.h>
+
+struct clock_device {
+	struct device dev;
+	nanosecs_t resolution;
+	nanosecs_t (*read) (struct clock_device *dev);
+};
+
+void clock_select(void);
+
+nanosecs_t clock_get_time      (void);
+nanosecs_t clock_get_resolution(void);
+
+void clock_report(void);
 
 #endif /* !CORE_CLOCK_H */

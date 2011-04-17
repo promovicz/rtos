@@ -57,11 +57,11 @@ SECTIONS
 	__heap_end = __stacks_start;
 
 	/* USB DMA RAM */
-	. = ORIGIN(ram_usb_dma);
+	. = ORIGIN(ram_usbdma);
 
 	.usbdma (NOLOAD) :
 	{
 		*(.usbdma)
-	} > ram_usb_dma
+	} > ram_usbdma
 
 }

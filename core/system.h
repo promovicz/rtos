@@ -4,7 +4,11 @@
 #include <core/common.h>
 
 void system_init(void);
+
 void system_kick(void);
+
+void system_idle(void);
+
 void system_reset(void);
 void system_halt(void);
 

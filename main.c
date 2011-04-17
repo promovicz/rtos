@@ -46,6 +46,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <sys/ucontext.h>
 
 #include <core/defines.h>
 #include <core/tty.h>
@@ -130,6 +131,59 @@ void help_handler(struct tty *t, int argc, char **argv)
 
 int u0 = -1, u1 = -1;
 
+int hit = 0;
+int bang = 0;
+
+ucontext_t ou;
+	uint8_t stk[512];
+
+
+
+void foo(void)
+{
+	int u = 0;
+
+	hit = 1;
+	printf("Otherland!\n");
+	printf("u is at %p\n", &u);
+
+	mcontext_t *mcp = &ou.uc_mcontext;
+	stack_t *sp = &ou.uc_stack;
+	mstack_t *state;
+
+	state = mcp->mc_sp;
+
+	printf("rst is %8.8p\n", state);
+	printf("rpc is %8.8p\n", state->ms_pc);
+
+	fflush(stdout);
+
+	setcontext(&ou);
+}
+
+void bar(void)
+{
+	int u = 0;
+
+	bang = 1;
+	printf("Otherland2!\n");
+	printf("u is at %p\n", &u);
+
+	mcontext_t *mcp = &ou.uc_mcontext;
+	stack_t *sp = &ou.uc_stack;
+	mstack_t *state;
+
+	state = mcp->mc_sp;
+
+	printf("rst is %8.8p\n", state);
+	printf("rpc is %8.8p\n", state->ms_pc);
+
+	fflush(stdout);
+
+	setcontext(&ou);
+}
+
+
 int main (void)
 {
 	c.commands = &cli_system_commands;
@@ -169,6 +223,42 @@ int main (void)
 		res = read(u0, buf, sizeof(buf));
 		if(res > 0) {
 			write(u0, buf, res);
+
+			printf("chk %d!\n", res);
+
+			if(!hit) {
+				printf("stk is at %p\n", &stk);
+				fflush(stdout);
+
+				ucontext_t u;
+				u.uc_stack.ss_sp = &stk;
+				u.uc_stack.ss_size = sizeof(stk);
+				u.uc_link = NULL;
+				makecontext(&u, &foo, 0);
+
+				printf("swap1!\n");
+				swapcontext(&ou, &u);
+
+				printf("back1!\n");
+			}
+			else if(!bang) {
+				printf("stk is at %p\n", &stk);
+				fflush(stdout);
+
+				ucontext_t u;
+				u.uc_stack.ss_sp = &stk;
+				u.uc_stack.ss_size = sizeof(stk);
+				u.uc_link = NULL;
+				makecontext(&u, &bar, 0);
+
+				printf("swap2!\n");
+				swapcontext(&ou, &u);
+
+				printf("back2!\n");
+			}
+
+			printf("done!\n");
+
 		}
 
 		res = read(u1, buf, sizeof(buf));
@@ -176,8 +266,8 @@ int main (void)
 			write(u1, buf, res);
 		}
 
-		//system_idle();
-		usleep(10000);
+		system_idle();
+		//usleep(10000);
 	}
 
 	return 0;

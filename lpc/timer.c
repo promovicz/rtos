@@ -143,6 +143,11 @@ void timer_enable(int t, bool_t enable)
 	}
 }
 
+uint32_t timer_read(int t)
+{
+	return timers[t]->TC;
+}
+
 void timer_prescale(int t, uint32_t prescale)
 {
 	timers[t]->PR = prescale;

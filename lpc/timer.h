@@ -15,6 +15,7 @@ void timer_reset(int t);
 void timer_enable(int t, bool_t enable);
 void timer_prescale(int t, uint32_t prescale);
 
+uint32_t timer_read(int t);
 
 /* MATCHING UNIT CONFIG AND OPERATION */
 

@@ -1,7 +1,7 @@
 
 #include "device.h"
 
-const struct device devs[] = {
+const struct lpc_device devs[] = {
 	{"ad0"},
 	{"ad1"},
 	{"da"},

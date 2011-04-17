@@ -20,23 +20,17 @@
 #define GPIO_LED_STAT1 11
 #define GPIO_LED_STAT2 2
 
-
 #define INTV_STOP     0
-DEFINE_EINT_VECTOR(eint1_vector, EINT1);
-
 #define	INTV_USB	  1
-/* APP */
-
 #define INTV_UART0    2
-DEFINE_UART_VECTOR(uart0_vector, 0);
-
 #define INTV_UART1    3
-DEFINE_UART_VECTOR(uart1_vector, 1);
-
 #define INTV_TIMER0   4
-DEFINE_TIMER_VECTOR(timer0_vector, 0);
-
 #define INTV_TIMER1   5
+
+DEFINE_EINT_VECTOR(eint1_vector, EINT1);
+DEFINE_UART_VECTOR(uart0_vector, 0);
+DEFINE_UART_VECTOR(uart1_vector, 1);
+DEFINE_TIMER_VECTOR(timer0_vector, 0);
 DEFINE_TIMER_VECTOR(timer1_vector, 1);
 
 
@@ -102,6 +96,19 @@ void heartbeat_function (always_unused struct timer *t, tick_t now)
 DEFINE_PERIODIC_TIMER(heartbeat, heartbeat_function, 1 * TICK_SECOND);
 
 
+static nanosecs_t clktimer_read (struct clock_device *clock)
+{
+	return timer_read(TIMER1) * NANOSECS_USEC;
+}
+
+struct clock_device clktimer = {
+	.dev = { .name = "clktimer",
+			 .class = DEVICE_CLASS_CLOCK },
+	.resolution = 1 * NANOSECS_USEC,
+	.read = &clktimer_read,
+};
+
+
 void board_early_init(void)
 {
 	// enable status leds early for debugging
@@ -139,7 +146,7 @@ void board_early_init(void)
 	timer_init(TIMER1);
 	timer_prescale(TIMER1, 60);
 	timer_enable(TIMER1, BOOL_TRUE);
-	vic_configure(INTV_TIMER1, INT_TIMER1, &timer1_vector);
+	device_add(&clktimer.dev);
 
 	// UART0
 	pin_set_function(PIN0, PIN_FUNCTION_UART0_TXD);

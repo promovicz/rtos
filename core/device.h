@@ -5,9 +5,15 @@
 
 #include <core/list.h>
 
+struct device;
+
 typedef enum {
 	DEVICE_CLASS_NONE,
+	DEVICE_CLASS_CLOCK,
+	DEVICE_CLASS_STREAM,
 } device_class_t;
+
+typedef void (*device_cb_t) (struct device *dev, void *cookie);
 
 typedef void (*device_report_cb_t) (struct device *dev);
 
@@ -21,7 +27,11 @@ struct device {
 	struct llist_head list;
 };
 
-struct device *device_find(const char *name);
+const char *device_class_name(device_class_t class);
+
+struct device *device_by_name(const char *name);
+
+int device_foreach_of_class(device_class_t class, void *cookie, device_cb_t callback);
 
 void device_add(struct device *dev);
 

@@ -3,6 +3,8 @@
 
 #include "pin.h"
 
+void pin_enable_debug(void);
+
 int pin_set_function(int pin, int function);
 
 bool_t pin_is_gpio(int pin);

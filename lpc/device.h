@@ -1,7 +1,7 @@
 #ifndef LPC_DEVICE_H
 #define LPC_DEVICE_H
 
-struct device {
+struct lpc_device {
 	char *name;
 };
 

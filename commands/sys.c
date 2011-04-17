@@ -35,6 +35,9 @@ int command_sys_stat(struct cli *c, int argc, char **argv)
 		   wdt_enabled()?"enabled":"disabled",
 		   wdt_reset_enabled()?"enabled":"disabled");
 
+	clock_report();
+	system_report();
+
 	return 0;
 }
 
@@ -50,7 +53,7 @@ int command_sys_time(struct cli *c, int argc, char **argv)
 int command_sys_dev(struct cli *c, int argc, char **argv)
 {
 	if(argc == 1) {
-		struct device *dev = device_find(argv[0]);
+		struct device *dev = device_by_name(argv[0]);
 		if(dev) {
 			device_report(dev);
 			return 0;

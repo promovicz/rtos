@@ -56,22 +56,26 @@ struct uart {
 static void uart_device_report(struct device *dev)
 {
 	struct uart *u = container_of(dev, struct uart, dev);
-	printf(" uart %s rxcount %d rxmaxfill %d txcount %d txmaxfill %d\n",
-		   dev->name, u->rxcount, u->rxmaxfill, u->txcount, u->txmaxfill);
+	printf(" rx count %d maxfill %d\n",
+		   u->rxcount, u->rxmaxfill);
+	printf(" tx count %d maxfill %d\n",
+		   u->txcount, u->txmaxfill);
 }
 
 struct uart uarts[2] = {
-	{
-	dev: {name: "uart0", report_cb: &uart_device_report},
-		base: UART0_BASE,
-		rxbuf: &u0_rxbuf,
-		txbuf: &u0_txbuf
+	{ .dev = { .name = "uart0",
+			   .class = DEVICE_CLASS_STREAM,
+			   .report_cb = &uart_device_report },
+	  .base = UART0_BASE,
+	  .rxbuf = &u0_rxbuf,
+	  .txbuf = &u0_txbuf
 	},
-	{
-	dev: {name: "uart1", report_cb: &uart_device_report},
-		base: UART1_BASE,
-		rxbuf: &u1_rxbuf,
-		txbuf: &u1_txbuf
+	{ .dev = { .name = "uart1",
+			   .class = DEVICE_CLASS_STREAM,
+			   .report_cb = &uart_device_report },
+	  .base = UART1_BASE,
+	  .rxbuf = &u1_rxbuf,
+	  .txbuf = &u1_txbuf
 	},
 };
 

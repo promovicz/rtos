@@ -7,7 +7,13 @@
 
 struct pinsel_regs {
 	uint32_t SELECT[2];
+	uint32_t _pad0[3];
 	uint32_t DBGTRACE;
+};
+
+enum dbgsel_bits {
+	DBGSEL_ENABLE_DEBUG = (1<<2),
+	DBGSEL_ENABLE_TRACE = (1<<3),
 };
 
 #define PINSEL_BASE (0xE002C000)
@@ -15,6 +21,11 @@ struct pinsel_regs {
 
 #define PIN_REGSEL(p) (p/16)
 #define PIN_PINSEL(p) (p%16)
+
+void pin_enable_debug(void)
+{
+	PINSEL->DBGTRACE |= DBGSEL_ENABLE_DEBUG;
+}
 
 int pin_set_function(int pin, int function)
 {
