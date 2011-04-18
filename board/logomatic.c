@@ -85,15 +85,15 @@ static void stop_handler(int eint)
 }
 
 
-void heartbeat_function (always_unused struct timer *t, tick_t now)
+void heartbeat_function (always_unused struct timer *t, nanosecs_t now)
 {
-	tick_t second = now / 1000;
+	nanosecs_t second = now / NANOSECS_SEC;
 	bool_t odd = second & 1 ? BOOL_TRUE : BOOL_FALSE;
 
 	led_stat1(odd);
 }
 
-DEFINE_PERIODIC_TIMER(heartbeat, heartbeat_function, 1 * TICK_SECOND);
+DEFINE_PERIODIC_TIMER(heartbeat, heartbeat_function, 0.5 * NANOSECS_SEC);
 
 
 static nanosecs_t clktimer_read (struct clock_device *clock)
@@ -107,6 +107,77 @@ struct clock_device clktimer = {
 	.resolution = 1 * NANOSECS_USEC,
 	.read = &clktimer_read,
 };
+
+
+
+#define LPC_TIMER TIMER0
+#define LPC_TIMER_MR MR0
+
+static int lpc_timer_initialize (struct timer_device *dev);
+static int lpc_timer_program (struct timer_device *dev, int mode, nanosecs_t delta);
+
+struct timer_device lpc_timer = {
+	.dev = { .name = "systimer",
+			 .class = DEVICE_CLASS_TIMER },
+	.features = TIMER_FEAT_ONESHOT | TIMER_FEAT_PERIODIC,
+	.min_delta = 10 * NANOSECS_USEC,
+	.max_delta = 10 * NANOSECS_SEC,
+	.initialize = &lpc_timer_initialize,
+	.program = &lpc_timer_program,
+};
+
+static void lpc_timer_match (always_unused int t, always_unused timer_match_t m) {
+	if(lpc_timer.callback) {
+		lpc_timer.callback(&lpc_timer);
+	}
+}
+
+static int lpc_timer_initialize (struct timer_device *dev) {
+	timer_init(LPC_TIMER);
+	timer_prescale(LPC_TIMER, 60);
+	timer_reset(LPC_TIMER);
+	timer_match_handler(LPC_TIMER, LPC_TIMER_MR, &lpc_timer_match);
+	timer_match_configure(LPC_TIMER, LPC_TIMER_MR, 1000, 0);
+
+	dev->program(dev, TIMER_MODE_DISABLED, 0);
+
+	return 0;
+}
+
+static int lpc_timer_program (struct timer_device *dev, int mode, nanosecs_t delta) {
+	uint32_t delta_cycles = delta / NANOSECS_USEC;
+	uint32_t match_cycles;
+
+	/* always stop first */
+	timer_enable(LPC_TIMER, BOOL_FALSE);
+
+	match_cycles = timer_read(LPC_TIMER) + delta_cycles;
+
+	/* adjust timer config */
+	switch(mode) {
+	case TIMER_MODE_DISABLED:
+		timer_match_configure(LPC_TIMER, LPC_TIMER_MR, 1000, 0);
+		break;
+	case TIMER_MODE_ONESHOT:
+		timer_match_configure(LPC_TIMER, LPC_TIMER_MR,
+							  match_cycles,
+							  TIMER_MATCH_INTERRUPT|TIMER_MATCH_STOP);
+		timer_enable(LPC_TIMER, BOOL_TRUE);
+		break;
+	case TIMER_MODE_PERIODIC:
+		timer_match_configure(LPC_TIMER, LPC_TIMER_MR,
+							  match_cycles,
+							  TIMER_MATCH_INTERRUPT|TIMER_MATCH_RESET);
+		timer_enable(LPC_TIMER, BOOL_TRUE);
+		break;
+	default:
+		return -1;
+	}
+
+	/* all good */
+	return 0;
+}
+
 
 
 void board_early_init(void)
@@ -133,16 +204,12 @@ void board_early_init(void)
 	vic_configure(INTV_STOP, INT_EINT1, &eint1_vector);
 	vic_enable(INT_EINT1);
 
-	// TIMER0 at 1 MHz, MR0 at 1000 Hz
-	timer_init(TIMER0);
-	timer_prescale(TIMER0, 60);
-	timer_match_configure(TIMER0, MR0, 1000, TIMER_MATCH_INTERRUPT|TIMER_MATCH_RESET);
-	timer_match_handler(TIMER0, MR0, &timer_tick);
-	timer_enable(TIMER0, BOOL_TRUE);
+	// TIMER0 as system timer
+	device_add(&lpc_timer.dev);
 	vic_configure(INTV_TIMER0, INT_TIMER0, &timer0_vector);
 	vic_enable(INT_TIMER0);
 
-	// TIMER1
+	// TIMER1 as clock timer
 	timer_init(TIMER1);
 	timer_prescale(TIMER1, 60);
 	timer_enable(TIMER1, BOOL_TRUE);

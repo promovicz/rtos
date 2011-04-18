@@ -14,23 +14,26 @@
 volatile bool_t     timestamp_flag;
 volatile nanosecs_t timestamp_time;
 
-void timestamp_function(always_unused struct timer *t, tick_t now)
+void timestamp_function(always_unused struct timer *t, nanosecs_t now)
 {
 	if(!timestamp_flag) {
 		timestamp_flag = 1;
-		timestamp_time = clock_get_time();
+		timestamp_time = now;
 	}
 }
 
-DEFINE_PERIODIC_TIMER(timestamp, timestamp_function, 60*TICK_SECOND);
+DEFINE_PERIODIC_TIMER(timestamp, timestamp_function, 60*NANOSECS_SEC);
 
 void system_init(void)
 {
 	board_early_init();
 
-	tick_init();
+	clock_select();
+	timer_select();
 
 	wdt_init(BOOL_TRUE);
+
+	enableIRQ();
 
 	board_init();
 
@@ -70,7 +73,6 @@ void system_idle(void)
 	if(diff < idle_min) {
 		idle_min = diff;
 	}
-	
 }
 
 void system_reset(void)

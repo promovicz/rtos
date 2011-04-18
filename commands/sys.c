@@ -6,7 +6,7 @@
 
 #include <core/device.h>
 #include <core/system.h>
-#include <core/tick.h>
+#include <core/clock.h>
 
 #include <lpc/reset.h>
 
@@ -20,14 +20,14 @@ const char const *resetnames[] = {
 
 int command_sys_stat(struct cli *c, int argc, char **argv)
 {
-	tick_t tick;
+	nanosecs_t now;
 	int rescause;
 
 	printf("rtos version primordial\n");
 
-	tick = tick_get();
+	now = clock_get_time();
 	rescause = reset_cause();
-	printf("running for %d.%03d secs, reset by %s\n", tick/1000, tick%1000, resetnames[rescause]);
+	printf("running for %lld.%09lld secs, reset by %s\n", now/NANOSECS_SEC, now%NANOSECS_SEC, resetnames[rescause]);
 
 	rtc_report();
 
@@ -35,7 +35,6 @@ int command_sys_stat(struct cli *c, int argc, char **argv)
 		   wdt_enabled()?"enabled":"disabled",
 		   wdt_reset_enabled()?"enabled":"disabled");
 
-	clock_report();
 	system_report();
 
 	return 0;
@@ -43,10 +42,11 @@ int command_sys_stat(struct cli *c, int argc, char **argv)
 
 int command_sys_time(struct cli *c, int argc, char **argv)
 {
-	tick_t now = tick_get();
+	nanosecs_t now = clock_get_time();
 	
-	printf("system running for %d.%03d secs\n", now/1000, now%1000);
+	printf("system running for %lld.%09lld secs\n", now/NANOSECS_SEC, now%NANOSECS_SEC);
 
+	clock_report();
 	timer_report();
 }
 

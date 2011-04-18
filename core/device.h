@@ -10,6 +10,7 @@ struct device;
 typedef enum {
 	DEVICE_CLASS_NONE,
 	DEVICE_CLASS_CLOCK,
+	DEVICE_CLASS_TIMER,
 	DEVICE_CLASS_STREAM,
 } device_class_t;
 

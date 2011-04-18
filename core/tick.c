@@ -24,7 +24,6 @@ void tick_init(void)
 	tickcounter = 0;
 
 	device_add(&clktick.dev);
-	clock_select();
 }
 
 tick_t tick_get(void)
@@ -41,6 +40,4 @@ void tick_delay(tick_t duration)
 void tick_handler(void)
 {
 	tickcounter++;
-
-	timer_drive();
 }

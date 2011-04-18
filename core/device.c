@@ -9,6 +9,7 @@ LLIST_HEAD(all_devices);
 static char *device_class_names[] = {
 	"none",
 	"clock",
+	"timer",
 	"stream"
 };
 

@@ -1,5 +1,6 @@
 
 #include <core/defines.h>
+#include <core/timer.h>
 #include <core/tick.h>
 
 #include <errno.h>
@@ -7,7 +8,7 @@
 
 int __libc_nanosleep(const struct timespec *req, struct timespec *rem)
 {
-	tick_t t;
+	nanosecs_t t;
 
 	if(!req) {
 		errno = EFAULT;
@@ -28,13 +29,13 @@ int __libc_nanosleep(const struct timespec *req, struct timespec *rem)
 		return -1;
 	}
 
-	t = req->tv_sec * TICK_SECOND + req->tv_nsec / 1000000;
+	t = req->tv_sec * NANOSECS_SEC + req->tv_nsec;
 
 	if(t < 1) {
 		t = 1;
 	}
 
-	tick_delay(t);
+	timer_sleep(t);
 
 	return 0;
 }

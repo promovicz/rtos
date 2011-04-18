@@ -16,6 +16,8 @@ void clock_select(void);
 nanosecs_t clock_get_time      (void);
 nanosecs_t clock_get_resolution(void);
 
+void clock_delay(nanosecs_t delay);
+
 void clock_report(void);
 
 #endif /* !CORE_CLOCK_H */

@@ -41,6 +41,9 @@ void timer_match_configure(int t, timer_match_t m,
 void timer_match_handler(int t, timer_match_t m,
 						 timer_match_handler_t handler);
 
+uint32_t timer_read_match_value(int t, timer_match_t m);
+uint32_t timer_read_match_actions(int t, timer_match_t m);
+
 void timer_irq(int t);
 
 #define DEFINE_TIMER_VECTOR(vname, timer)			\

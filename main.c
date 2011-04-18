@@ -195,8 +195,6 @@ int main (void)
 	vic_configure(INTV_USB, INT_USB, &USBIntHandler);
 	vic_enable(INT_USB);
 
-	enableIRQ();
-
 	vcom_connect(BOOL_TRUE);
 
 	posix_console_enable();
@@ -266,8 +264,8 @@ int main (void)
 			write(u1, buf, res);
 		}
 
-		system_idle();
-		//usleep(10000);
+		//system_idle();
+		usleep(10000);
 	}
 
 	return 0;

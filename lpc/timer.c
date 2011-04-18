@@ -174,6 +174,17 @@ void timer_match_configure(int t, timer_match_t mr, uint32_t value, timer_match_
 	}
 }
 
+uint32_t timer_read_match_value(int t, timer_match_t mr)
+{
+	return timers[t]->MR[mr];
+}
+
+uint32_t timer_read_match_actions(int t, timer_match_t mr)
+{
+	uint8_t mshift = mr*3;
+	return (timers[t]->MCR >> mshift) & 0x03;
+}
+
 void timer_match_handler(int t, timer_match_t m, timer_match_handler_t h)
 {
 	timer_match_handlers[t][m] = h;

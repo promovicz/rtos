@@ -14,9 +14,9 @@ static void clock_device_report(struct device *dev)
 		printf(" active system clock\n");
 	}
 
-	printf(" time at %lld.%09lld secs\n",
+	printf(" time %lld.%09lld secs\n",
 		   now / NANOSECS_SEC, now % NANOSECS_SEC);
-	printf(" resolution is %lld nsecs\n", res);
+	printf(" resolution %lld nsecs\n", res);
 }
 
 static void clock_propose(struct device *dev, void *cookie)
@@ -51,16 +51,22 @@ nanosecs_t clock_get_resolution(void)
 	return the_system_clock->resolution;
 }
 
+void clock_delay(nanosecs_t delay)
+{
+	nanosecs_t end = clock_get_time() + delay;
+	while(clock_get_time() < end) { }
+}
+
 void clock_report(void)
 {
-	printf("advanced system clock is %s\n", the_system_clock?"enabled":"disabled");
 	if(the_system_clock) {
 		nanosecs_t now = clock_get_time();
 		nanosecs_t res = clock_get_resolution();
-		printf("time source is device %s\n", the_system_clock->dev.name);
-		printf("current time is %8lld.%09lld sec\n",
-			   now / NANOSECS_SEC, now % NANOSECS_SEC);
-		printf("current resolution is %9lld nsec\n",
+		printf("active clock is %s:\n", the_system_clock->dev.name);
+		printf("  time %lld.%09lld secs\n",
+			   now / NANOSECS_SEC,
+			   now % NANOSECS_SEC);
+		printf("  resolution %lld nsecs\n",
 			   res);
 	}
 }
