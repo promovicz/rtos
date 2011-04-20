@@ -1,6 +1,8 @@
 
+#include <core/file.h>
+
 #include <posix/control.h>
-#include <posix/file.h>
+
 
 bool_t console_enabled;
 int    console_level;

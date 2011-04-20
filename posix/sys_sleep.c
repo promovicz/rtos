@@ -1,7 +1,7 @@
 
-#include <core/defines.h>
+#include <core/common.h>
+
 #include <core/timer.h>
-#include <core/tick.h>
 
 #include <errno.h>
 #include <time.h>

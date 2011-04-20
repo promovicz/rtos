@@ -30,7 +30,7 @@ static inline void __set_cpsr(unsigned val)
   asm volatile (" msr  cpsr, %0" : /* no outputs */ : "r" (val)  );	
 }
 
-unsigned disableIRQ(void)
+unsigned irq_disable(void)
 {
   unsigned _cpsr;
 
@@ -39,16 +39,16 @@ unsigned disableIRQ(void)
   return _cpsr;
 }
 
-unsigned restoreIRQ(unsigned oldCPSR)
+unsigned irq_restore(unsigned old_cpsr)
 {
   unsigned _cpsr;
 
   _cpsr = __get_cpsr();
-  __set_cpsr((_cpsr & ~IRQ_MASK) | (oldCPSR & IRQ_MASK));
+  __set_cpsr((_cpsr & ~IRQ_MASK) | (old_cpsr & IRQ_MASK));
   return _cpsr;
 }
 
-unsigned enableIRQ(void)
+unsigned irq_enable(void)
 {
   unsigned _cpsr;
 
@@ -57,7 +57,7 @@ unsigned enableIRQ(void)
   return _cpsr;
 }
 
-unsigned disableFIQ(void)
+unsigned fiq_disable(void)
 {
   unsigned _cpsr;
 
@@ -66,16 +66,16 @@ unsigned disableFIQ(void)
   return _cpsr;
 }
 
-unsigned restoreFIQ(unsigned oldCPSR)
+unsigned fiq_restore(unsigned old_cpsr)
 {
   unsigned _cpsr;
 
   _cpsr = __get_cpsr();
-  __set_cpsr((_cpsr & ~FIQ_MASK) | (oldCPSR & FIQ_MASK));
+  __set_cpsr((_cpsr & ~FIQ_MASK) | (old_cpsr & FIQ_MASK));
   return _cpsr;
 }
 
-unsigned enableFIQ(void)
+unsigned fiq_enable(void)
 {
   unsigned _cpsr;
 

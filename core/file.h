@@ -1,7 +1,7 @@
-#ifndef POSIX_FILE_H
-#define POSIX_FILE_H
+#ifndef CORE_FILE_H
+#define CORE_FILE_H
 
-#include <posix/common.h>
+#include <core/common.h>
 
 #include <fcntl.h>
 #include <errno.h>
@@ -17,6 +17,7 @@ struct file;
 struct file_operations;
 
 /* function pointer types for operations */
+typedef int (*fop_open_t) (struct file * fd);
 typedef int (*fop_sync_t) (struct file * fd);
 typedef off_t(*fop_seek_t) (struct file * fd, off_t offset, int whence);
 typedef ssize_t(*fop_read_t) (struct file * fd, void *buf, size_t size);
@@ -25,6 +26,7 @@ typedef int (*fop_close_t) (struct file * fd);
 
 /* structure describing operations for file */
 struct file_operations {
+	fop_open_t fop_open;
 	fop_sync_t fop_sync;
 	fop_seek_t fop_seek;
 	fop_read_t fop_read;
@@ -46,6 +48,7 @@ struct file {
 	union {
 		void *f_cookie_ptr;
 		int f_cookie_int;
+		struct device *f_device;
 	};
 };
 
@@ -76,4 +79,4 @@ int file_close(struct file *fd);
 int fd_alloc(struct file *file);
 struct file *file_for_fd(int fd);
 
-#endif /* !POSIX_FILE_H */
+#endif /* !CORE_FILE_H */

@@ -1,7 +1,7 @@
 
 #include <core/defines.h>
 
-#include <posix/file.h>
+#include <core/file.h>
 
 #include <sys/epoll.h>
 

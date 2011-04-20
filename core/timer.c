@@ -77,14 +77,14 @@ void sleep_done(struct timer *t, nanosecs_t now)
 {
 }
 
-DEFINE_TIMER(sleep, sleep_done);
+DEFINE_TIMER(sleeper, sleep_done);
 
 void timer_sleep(nanosecs_t duration)
 {
 	if(the_system_timer) {
 		nanosecs_t start = clock_get_time();
 		nanosecs_t progress;
-		timer_add_relative(&sleep, duration);
+		timer_add_relative(&sleeper, duration);
 		do {
 			system_idle();
 			progress = clock_get_time() - start;

@@ -3,7 +3,7 @@
 
 #include <posix/common.h>
 
-#include "file.h"
+#include <core/file.h>
 #include "memory.h"
 
 void posix_init(void);

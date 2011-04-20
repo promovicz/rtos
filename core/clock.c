@@ -1,6 +1,8 @@
 
 #include "clock.h"
 
+#include <stdio.h>
+
 struct clock_device *the_system_clock = NULL;
 
 static void clock_device_report(struct device *dev)

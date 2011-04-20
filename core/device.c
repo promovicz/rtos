@@ -48,12 +48,48 @@ int device_foreach_of_class(device_class_t class, void *cookie, device_cb_t call
 
 void device_add(struct device *dev)
 {
+	dev->uses = 0;
+
 	llist_add_tail(&dev->list, &all_devices);
+}
+
+int device_open(const char *name, int flags)
+{
+	struct device *d;
+	struct file *f;
+	int res;
+
+	d = device_by_name(name);
+	if(!d) {
+		return -ENOENT;
+	}
+
+	if(!d->fops) {
+		return -EINVAL;
+	}
+
+	f = file_alloc();
+	if(!f) {
+		return -ENOMEM;
+	}
+
+	f->f_name = d->name;
+	f->f_flags = flags;
+	f->f_ops = d->fops;
+
+	f->f_device = d;
+
+	res = f->f_ops->fop_open(f);
+	if(res < 0) {
+		return res;
+	}
+
+	return fd_alloc(f);
 }
 
 void device_report(struct device *dev)
 {
-	printf("dev %s class %s\n", dev->name, device_class_name(dev->class));
+	printf("dev %s class %s uses %d\n", dev->name, device_class_name(dev->class), dev->uses);
 	if(dev->report_cb) {
 		dev->report_cb(dev);
 	}

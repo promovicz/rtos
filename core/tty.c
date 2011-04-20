@@ -349,38 +349,3 @@ tty_command_handler(struct tty *t, tty_command_handler_t handler, tty_command_ha
 	t->t_command_handler = handler;
 	t->t_command_help_handler = help;
 }
-
-#if 0
-int
-main(void)
-{
-	struct tty t;
-
-	struct termios o, r;
-	cfmakeraw(&r);
-	tcgetattr(0, &o);
-	tcsetattr(0, TCSANOW, &r);
-
-	int quit = 0;
-
-	tty_init(&t);
-
-	while(!quit) {
-		int c = getchar();
-		switch(c) {
-		case CTRL('d'):
-			quit = 1;
-			break;
-		default:
-			tty_feed(&t, c);
-			break;
-		}
-	}
-
-	tty_finish(&t);
-
-	tcsetattr(0, TCSANOW, &o);
-
-	return 0;
-}
-#endif

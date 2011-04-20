@@ -1,7 +1,6 @@
 
 #include "logomatic.h"
 
-#include <core/tick.h>
 #include <core/timer.h>
 
 #include <lpc/vic.h>

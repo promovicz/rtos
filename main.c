@@ -51,7 +51,6 @@
 #include <core/defines.h>
 #include <core/tty.h>
 #include <core/cli.h>
-#include <core/tick.h>
 #include <core/timer.h>
 
 #include <board/logomatic.h>
@@ -202,8 +201,8 @@ int main (void)
 	tty_init(&tser);
 	tty_command_handler(&tser, &command_handler, &help_handler);
 
-	u0 = uart_open(0);
-	u1 = uart_open(1);
+	u0 = device_open("uart0", O_RDWR);
+	u1 = device_open("uart1", O_RDWR);
 
 	int i;
 	uint8_t chr;

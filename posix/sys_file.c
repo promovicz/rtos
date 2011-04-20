@@ -1,5 +1,5 @@
 
-#include "file.h"
+#include <core/file.h>
 
 /* dummy open implementation */
 int __libc_open(const char *pathname, int flags, ...)

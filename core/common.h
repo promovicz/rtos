@@ -3,5 +3,6 @@
 
 #include <core/types.h>
 #include <core/defines.h>
+#include <core/list.h>
 
 #endif /* !CORE_COMMON_H */

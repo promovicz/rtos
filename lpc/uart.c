@@ -40,6 +40,7 @@ char u1_txbuf[VCOM_FIFO_SIZE];
 
 struct uart {
 	struct device dev;
+	int index;
 	void *base;
 
 	fifo_t rxfifo;
@@ -62,17 +63,59 @@ static void uart_device_report(struct device *dev)
 		   u->txcount, u->txmaxfill);
 }
 
+static int uart_open(struct file *file)
+{
+	struct device *dev = file->f_device;
+	struct uart *u = container_of(dev, struct uart, dev);
+
+	file->f_cookie_int = u->index;
+
+	dev->uses++;
+
+	return 0;
+}
+
+static int uart_close(struct file *file)
+{
+	struct device *dev = file->f_device;
+
+	dev->uses--;
+
+	return 0;
+}
+
+static int uart_write(struct file *f, const void *buf, size_t nbytes)
+{
+	return uart_tx_fifo(f->f_cookie_int, buf, nbytes);
+}
+
+static int uart_read(struct file *f, void *buf, size_t nbytes)
+{
+	return uart_rx_fifo(f->f_cookie_int, buf, nbytes);
+}
+
+struct file_operations uart_operations = {
+	.fop_open = &uart_open,
+	.fop_write = &uart_write,
+	.fop_read = &uart_read,
+	.fop_close = &uart_close,
+};
+
 struct uart uarts[2] = {
 	{ .dev = { .name = "uart0",
 			   .class = DEVICE_CLASS_STREAM,
+			   .fops = &uart_operations,
 			   .report_cb = &uart_device_report },
+	  .index = 0,
 	  .base = UART0_BASE,
 	  .rxbuf = &u0_rxbuf,
 	  .txbuf = &u0_txbuf
 	},
 	{ .dev = { .name = "uart1",
 			   .class = DEVICE_CLASS_STREAM,
+			   .fops = &uart_operations,
 			   .report_cb = &uart_device_report },
+	  .index = 1,
 	  .base = UART1_BASE,
 	  .rxbuf = &u1_rxbuf,
 	  .txbuf = &u1_txbuf
@@ -350,7 +393,7 @@ int uart_tx_fifo(uart_t uart, const void *buf, size_t nbytes)
 
 	done = donedirect = 0;
 
-	m = disableIRQ();
+	m = irq_disable();
 
 	starting = readb(UART_REG(uart, LSR)) & LSR_TEMT;
 
@@ -382,7 +425,7 @@ int uart_tx_fifo(uart_t uart, const void *buf, size_t nbytes)
 
 	u->txcount += done;
 
-	restoreIRQ(m);
+	irq_restore(m);
 
 	return done;
 }
@@ -424,7 +467,7 @@ int uart_rx_fifo(uart_t uart, void *buf, size_t nbytes)
 	size_t done;
 	uint32_t m;
 
-	m = disableIRQ();
+	m = irq_disable();
 
 	avail = fifo_avail(&u->rxfifo);
 	if(avail > u->rxmaxfill) {
@@ -440,7 +483,7 @@ int uart_rx_fifo(uart_t uart, void *buf, size_t nbytes)
 
 	u->rxcount += done;
 
-	restoreIRQ(m);
+	irq_restore(m);
 
 	return done;
 }

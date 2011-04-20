@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#include <posix/file.h>
+#include <core/file.h>
 #include <posix/control.h>
 
 int command_posix_status(struct cli *c, int argc, char **argv)

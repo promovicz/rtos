@@ -33,7 +33,7 @@ void system_init(void)
 
 	wdt_init(BOOL_TRUE);
 
-	enableIRQ();
+	irq_enable();
 
 	board_init();
 

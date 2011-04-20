@@ -70,7 +70,7 @@
  *    previous value of CPSR
  *
  *****************************************************************************/
-unsigned disableIRQ(void);
+unsigned irq_disable(void);
 
 /******************************************************************************
  *
@@ -86,7 +86,7 @@ unsigned disableIRQ(void);
  *    previous value of CPSR
  *
  *****************************************************************************/
-unsigned enableIRQ(void);
+unsigned irq_enable(void);
 
 /******************************************************************************
  *
@@ -103,7 +103,7 @@ unsigned enableIRQ(void);
  *    previous value of CPSR
  *
  *****************************************************************************/
-unsigned restoreIRQ(unsigned oldCPSR);
+unsigned irq_restore(unsigned old_cpsr);
 
 /******************************************************************************
  *
@@ -119,7 +119,7 @@ unsigned restoreIRQ(unsigned oldCPSR);
  *    previous value of CPSR
  *
  *****************************************************************************/
-unsigned disableFIQ(void);
+unsigned fiq_disable(void);
 
 /******************************************************************************
  *
@@ -135,7 +135,7 @@ unsigned disableFIQ(void);
  *    previous value of CPSR
  *
  *****************************************************************************/
-unsigned enableFIQ(void);
+unsigned fiq_enable(void);
 
 /******************************************************************************
  *
@@ -152,6 +152,6 @@ unsigned enableFIQ(void);
  *    previous value of CPSR
  *
  *****************************************************************************/
-unsigned restoreFIQ(unsigned oldCPSR);
+unsigned fiq_restore(unsigned old_cpsr);
 
 #endif
