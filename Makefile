@@ -8,9 +8,10 @@ OBJDUMP=$(CROSS)objdump
 
 CFLAGS_CONFIG=-gdwarf-2 -Os -ffunction-sections -nostdlib
 CFLAGS_TARGET=-mcpu=arm7tdmi -mfloat-abi=soft -marm
-CFLAGS_WARNINGS=-Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align -Wimplicit -Wunused -Wredundant-decls -Wnested-externs -Wbad-function-cast -Wsign-compare -Waggregate-return
+CFLAGS_BUILTIN=-fno-builtin-execl -fno-builtin-execle
+CFLAGS_WARNINGS=-Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align -Wimplicit -Wno-unused -Wredundant-decls -Wnested-externs -Wbad-function-cast -Wsign-compare -Waggregate-return
 
-CFLAGS=$(CFLAGS_CONFIG) $(CFLAGS_TARGET) $(CFLAGS_WARNINGS) $(INCLUDEFLAGS) $(DEFINE)
+CFLAGS=$(CFLAGS_CONFIG) $(CFLAGS_TARGET) $(CFLAGS_BUILTIN) $(CFLAGS_WARNINGS) $(INCLUDEFLAGS) $(DEFINE)
 ASFLAGS=-D__ASSEMBLY__ $(DEFINE) $(INCLUDEFLAGS)
 LDFLAGS=-static -static-libgcc -nostartfiles -nostdlib -nodefaultlibs -Wl,--gc-sections -Wl,--cref
 
@@ -33,12 +34,19 @@ DEFINE=-DLPC214x -DNDEBUG
 DEPS=$(OBJS:.o=.p)
 LSTS=$(OBJS:.o=.lst)
 
+TAGSRCS=$(shell find . -name '*.c' -or -name '*.h')
+
 .DELETE_ON_ERROR:
 
-all: depend bike.elf bike.hex bike.bin bike.size bike.lst
+all: depend tags bike.elf bike.hex bike.bin bike.size bike.lst
+
+tags: TAGS
 
 depend: $(DEPS)
 
+TAGS: $(TAGSRCS)
+	@echo "Regenerating tags file..."
+	@etags $(TAGSRCS)
 
 dietlibc/bin-arm/dietlibc.a dietlibc/bin-arm/libm.a:
 	export CROSS=$(CROSS) && cd dietlibc && make clean && make all
@@ -55,7 +63,7 @@ bike.size: bike.elf
 	$(SIZE) bike.elf | tee bike.size
 
 clean:
-	rm -f $(DEPS) $(OBJS) $(LSTS) bike.elf bike.map bike.bin bike.hex bike.lst bike.size
+	rm -f $(DEPS) $(OBJS) $(LSTS) bike.elf bike.map bike.bin bike.hex bike.lst bike.size TAGS
 .PHONY: clean
 
 cleanlibs:
