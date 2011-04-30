@@ -52,6 +52,7 @@
 #include <core/tty.h>
 #include <core/cli.h>
 #include <core/timer.h>
+#include <core/system.h>
 
 #include <board/logomatic.h>
 
@@ -150,10 +151,10 @@ void foo(void)
 	stack_t *sp = &ou.uc_stack;
 	mstack_t *state;
 
-	state = mcp->mc_sp;
+	state = (mstack_t *)mcp->mc_sp;
 
-	printf("rst is %8.8p\n", state);
-	printf("rpc is %8.8p\n", state->ms_pc);
+	printf("rst is %p\n", state);
+	printf("rpc is %p\n", (uint32_t *)state->ms_pc);
 
 	fflush(stdout);
 
@@ -172,10 +173,10 @@ void bar(void)
 	stack_t *sp = &ou.uc_stack;
 	mstack_t *state;
 
-	state = mcp->mc_sp;
+	state = (mstack_t *)mcp->mc_sp;
 
-	printf("rst is %8.8p\n", state);
-	printf("rpc is %8.8p\n", state->ms_pc);
+	printf("rst is %p\n", state);
+	printf("rpc is %p\n", (uint32_t *)state->ms_pc);
 
 	fflush(stdout);
 
