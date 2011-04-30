@@ -1,6 +1,8 @@
 
 #include "system.h"
 
+#include <stdio.h>
+
 #include <board/logomatic.h>
 
 #include <lpc/pcon.h>

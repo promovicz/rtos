@@ -1,6 +1,8 @@
 
 #include "vic.h"
 
+#include <stdio.h>
+
 // XXX: LPC2148 specific
 #define VECT_COUNT (16)
 
