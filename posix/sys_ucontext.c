@@ -5,9 +5,9 @@
 
 extern void _mcontext_entry(void);
 
-extern void _mcontext_get(void **sp);
-extern void _mcontext_set(void **sp);
-extern void _mcontext_swap(void **osp, void **sp);
+extern void _mcontext_get(void *sp);
+extern void _mcontext_set(const void *sp);
+extern void _mcontext_swap(void *osp, void *sp);
 
 int getcontext(ucontext_t *ucp) {
 	_mcontext_get(&ucp->uc_mcontext.mc_sp);
@@ -23,22 +23,25 @@ void makecontext(ucontext_t *ucp, void (*func)(), int argc, ...) {
 	mcontext_t *mcp = &ucp->uc_mcontext;
 	stack_t *sp = &ucp->uc_stack;
 	mstack_t *state;
+	unsigned char *isp;
 
-	mcp->mc_sp =
-		((uint8_t *)sp->ss_sp)
+	/* XXX: does not handle cast alignment issues */
+	isp = ((unsigned char *)sp->ss_sp)
 		+ sp->ss_size
 		- sizeof(mstack_t);
 
-	state = mcp->mc_sp;
+	mcp->mc_sp = (uint32_t *)isp;
+
+	state = (mstack_t*)mcp->mc_sp;
 
 	memset(state, 0, sizeof(*state));
 
-	state->ms_r4 = ucp->uc_link;
-	state->ms_pc = func;
+	state->ms_r4 = (uint32_t)ucp->uc_link;
+	state->ms_pc = (uint32_t)func;
 	//state->ms_pc = &_mcontext_entry;
 
-	printf("st is %8.8p\n", state);
-	printf("pc is %8.8p\n", state->ms_pc);
+	printf("st is %p\n", (void*)state);
+	printf("pc is %p\n", (void*)state->ms_pc);
 }
 
 
