@@ -165,19 +165,19 @@ void ssp_loopback(bool_t enable)
 
 void ssp_clock(uint32_t f)
 {
-	uint32_t div = HalSysGetPCLK() / f;
+	uint32_t dvdr = HalSysGetPCLK() / f;
 
-	if(div < 2) {
-		div = 2; // XXX
+	if(dvdr < 2) {
+		dvdr = 2; // XXX
 	}
-	if(div > 254) {
-		div = 254; // XXX
+	if(dvdr > 254) {
+		dvdr = 254; // XXX
 	}
 
-	div++;
-	div &= ~1;
+	dvdr++;
+	dvdr &= ~1;
 
-	SSP->CPSR = div & 0xFF;
+	SSP->CPSR = dvdr & 0xFF;
 }
 
 uint8_t ssp_transfer(uint8_t t)
