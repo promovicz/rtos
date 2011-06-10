@@ -1,5 +1,5 @@
 
-#include "logomatic.h"
+#include "board.h"
 
 #include <core/timer.h>
 
@@ -181,6 +181,8 @@ static int lpc_timer_program (struct timer_device *dev, int mode, nanosecs_t del
 
 void board_early_init(void)
 {
+	scb_init();
+
 	// enable status leds early for debugging
 	led_init();
 

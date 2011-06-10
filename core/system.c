@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#include <board/logomatic.h>
+#include <board/logomatic/board.h>
 
 #include <lpc/pcon.h>
 #include <lpc/wdt.h>

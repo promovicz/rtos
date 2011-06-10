@@ -31,3 +31,7 @@ enum mem_map_bits {
 #define MEM ((volatile struct mem_regs*)MEM_BASE)
 
 
+void scb_init (void)
+{
+	MEM->MAP = LPC_MEMMAP;
+}

@@ -54,7 +54,7 @@
 #include <core/timer.h>
 #include <core/system.h>
 
-#include <board/logomatic.h>
+#include <board/logomatic/board.h>
 
 #include <lpc/vic.h>
 #include <lpc/pll.h>
