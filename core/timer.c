@@ -2,6 +2,7 @@
 #include "timer.h"
 
 #include <core/clock.h>
+#include <core/system.h>
 
 #include <lpc/timer.h>
 

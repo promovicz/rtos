@@ -3,12 +3,10 @@
 
 #include "memory.h"
 
-#include "armVIC.h"
-
 #include "serial_fifo.h"
 
-#include <core/defines.h>
 #include <core/device.h>
+#include <core/irq.h>
 
 static inline always_inline uint8_t readb(volatile uint8_t *a)
 {

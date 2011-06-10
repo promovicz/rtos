@@ -72,7 +72,6 @@
 #include "type.h"
 #include "debug.h"
 #include "lpc214x.h"
-#include "armVIC.h"
 #include "hal.h"
 #include "vcom.h"
 #include "serial_fifo.h"

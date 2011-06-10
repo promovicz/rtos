@@ -58,8 +58,12 @@ int command_gps_reset(struct cli *c, int argc, char **argv)
 }
 
 struct command cmd_gps[] = {
-	{"status", "report status of gps receiver", &command_gps_status},
-	{"reset",  "reset gps receiver",            &command_gps_reset},
-	{"",       NULL,                            &command_gps_status},
-	{NULL},
+	{.name = "stat",
+	 .help = "report gps receiver status",
+	 .handler = &command_gps_status},
+	{.name = "reset",
+	 .help = "reset gps receiver",
+	 .handler = &command_gps_reset},
 };
+
+DECLARE_COMMAND_TABLE(cmds_gps, cmd_gps);

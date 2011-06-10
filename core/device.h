@@ -48,6 +48,7 @@ int device_foreach_of_class(device_class_t class, void *cookie, device_cb_t call
 /* register given device */
 void device_add(struct device *dev);
 
+/* open given device */
 int device_open(const char *name, int flags);
 
 /* reporting functions */
