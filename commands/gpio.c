@@ -102,19 +102,19 @@ int command_gpio_low(maybe_unused struct cli *c, int argc, char **argv)
 }
 
 struct command cmd_gpio[] = {
-	{.name = "status",
+	{.name = "stat",
 	 .help = "examine pin status",
 	 .handler = &command_gpio_status},
-	{.name = "input",
+	{.name = "in",
 	 .help = "make pin an input",
 	 .handler = &command_gpio_input},
-	{.name = "output",
+	{.name = "out",
 	 .help = "make pin an output",
 	 .handler = &command_gpio_output},
-	{.name = "high",
+	{.name = "hi",
 	 .help = "set pin to high",
 	 .handler = &command_gpio_high},
-	{.name = "low",
+	{.name = "lo",
 	 .help = "set pin to low",
 	 .handler = &command_gpio_low},
 };

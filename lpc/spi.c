@@ -71,36 +71,7 @@ uint8_t spi_transfer(uint8_t t)
 	return r;
 }
 
-void spi_command(struct tty *t, int argc, char **argv)
+void spi_enable_trace(bool_t enable)
 {
-	int i;
-	char *end;
-	uint8_t rb, tb;
-	bool_t flag;
-	if(argc) {
-		if(!strcmp("speak", argv[0])) {
-			if(argc > 1) {
-				printf("exchanging %d words:\n", argc - 1);
-				csel_mmc(1);
-				for(i = 1; i < argc; i++) {
-					if(scan_byte(argv[i], &tb)) {
-						rb = spi_transfer(tb);
-						printf(" %02x -> %02x\n", tb, rb);
-					} else {
-						printf(" %s invalid\n", argv[i]);
-						break;
-					}
-				}
-				csel_mmc(0);
-			}
-		} else if (!strcmp("trace", argv[0])) {
-			if(argc > 1) {
-				if(scan_bool(argv[1], &flag)) {
-					spi.trace = flag;
-				}
-			} else {
-				spi.trace = 1;
-			}
-		}
-	}
+	spi.trace = enable ? BOOL_TRUE : BOOL_FALSE;
 }

@@ -197,38 +197,7 @@ uint8_t ssp_transfer(uint8_t t)
 	return r;
 }
 
-extern void csel_scp(bool_t yeah);
-
-void ssp_command(struct tty *t, int argc, char **argv)
+void ssp_enable_trace(bool_t enable)
 {
-	int i;
-	char *end;
-	uint8_t rb, tb;
-	bool_t flag;
-	if(argc) {
-		if(!strcmp("speak", argv[0])) {
-			if(argc > 1) {
-				printf("exchanging %d words:\n", argc - 1);
-				csel_scp(1);
-				for(i = 1; i < argc; i++) {
-					if(scan_byte(argv[i], &tb)) {
-						rb = ssp_transfer(tb);
-						printf(" %02x -> %02x\n", tb, rb);
-					} else {
-						printf(" %s invalid\n", argv[i]);
-						break;
-					}
-				}
-				csel_scp(0);
-			}
-		} else if (!strcmp("trace", argv[0])) {
-			if(argc > 1) {
-				if(scan_bool(argv[1], &flag)) {
-					ssp.trace = flag;
-				}
-			} else {
-				ssp.trace = 1;
-			}
-		}
-	}
+	ssp.trace = enable ? BOOL_TRUE : BOOL_FALSE;
 }

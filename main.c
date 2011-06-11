@@ -91,9 +91,18 @@
 #define CE_NRF 25
 
 #define CSEL_NRF 28
-#define CSEL_SCP 29
-#define CSEL_MMC 7
+#define CSEL_SCP 20
+#define CSEL_MMC 29
 
+void csel_scp(bool_t yeah)
+{
+	gpio_pin_set(CSEL_SCP, yeah ? 0 : 1);
+}
+
+void csel_mmc(bool_t yeah)
+{
+	gpio_pin_set(CSEL_MMC, yeah ? 0 : 1);
+}
 
 static interrupt_handler void DefIntHandler(void)
 {
@@ -134,7 +143,7 @@ int hit = 0;
 int bang = 0;
 
 ucontext_t ou;
-	uint8_t stk[512];
+uint8_t stk[512];
 
 
 
@@ -186,6 +195,9 @@ void bar(void)
 int main (void)
 {
 	c.commands = &cli_system_commands;
+
+	gpio_pin_set(CSEL_SCP, 1);
+	gpio_pin_set_direction(CSEL_SCP, BOOL_TRUE);
 
 	system_init();
 
@@ -263,8 +275,8 @@ int main (void)
 			write(u1, buf, res);
 		}
 
-		//system_idle();
-		usleep(10000);
+		system_idle();
+		//usleep(10000);
 	}
 
 	return 0;

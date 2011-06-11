@@ -9,6 +9,9 @@
 #include <core/clock.h>
 
 #include <lpc/reset.h>
+#include <lpc/rtc.h>
+#include <lpc/wdt.h>
+#include <lpc/timer.h>
 
 const char const *resetnames[] = {
 	"powerup",

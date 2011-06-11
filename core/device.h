@@ -36,6 +36,16 @@ struct device {
 	struct llist_head list;
 };
 
+/* use counting */
+static void device_use(struct device *dev)
+{
+	dev->uses++;
+}
+static void device_unuse(struct device *dev)
+{
+	dev->uses--;
+}
+
 /* translate class enum to string */
 const char *device_class_name(device_class_t class);
 

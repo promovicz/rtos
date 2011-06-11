@@ -11,6 +11,8 @@
 #include <lpc/pin.h>
 #include <lpc/spi.h>
 #include <lpc/rtc.h>
+#include <lpc/ssp.h>
+#include <lpc/spi.h>
 #include <lpc/eint.h>
 #include <lpc/gpio.h>
 #include <lpc/uart.h>
@@ -240,4 +242,12 @@ void board_init(void)
 {
 	/* start the periodic heartbeat timer */
 	START_PERIODIC_TIMER(heartbeat);
+	/* SPI interfaces */
+	ssp_init();
+	ssp_clock(400000);
+	ssp_enable(BOOL_TRUE);
+	pin_set_function(PIN17, PIN_FUNCTION_SSP_SCK);
+	pin_set_function(PIN18, PIN_FUNCTION_SSP_MISO);
+	pin_set_function(PIN19, PIN_FUNCTION_SSP_MOSI);
+	//pin_set_function(PIN17, PIN_FUNCTION_SSP_);
 }
