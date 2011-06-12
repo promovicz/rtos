@@ -25,9 +25,9 @@ LPCOBJS=lpc/scb.o lpc/pll.o lpc/mam.o lpc/vpb.o lpc/vic.o lpc/pinsel.o lpc/timer
 SENSOROBJ=sensor/scp.o sensor/nmea.o
 CMDOBJS=commands/gpio.o commands/mem.o commands/sys.o commands/nmea.o commands/posix.o commands/gps.o commands/lpc.o
 POSIXOBJS=posix/process.o posix/epoll.o posix/file_console.o posix/signal.o posix/memory.o posix/control.o
-POSIXSYS=posix/sys_errno.o posix/sys_errlist.o posix/sys_file.o posix/sys_sleep.o posix/sys_mcontext.o posix/sys_ucontext.o
+POSIXSYS=posix/sys_errno.o posix/sys_errlist.o posix/sys_file.o posix/sys_sleep.o posix/sys_mcontext.o posix/sys_ucontext.o posix/sys_sysconf.o posix/sys_mmap.o posix/sys_munmap.o posix/sys_mremap.o posix/sys_getpagesize.o
 DISARMOBJS=libdisarm/src/libdisarm/args.o libdisarm/src/libdisarm/print.o libdisarm/src/libdisarm/parser.o
-OBJS=start.o $(COREOBJS) $(LPCOBJS) $(CMDOBJS) $(LOGOMATICOBJS) $(POSIXOBJS) $(POSIXSYS) halsys.o main.o serial_fifo.o vcom.o
+OBJS=start.o $(COREOBJS) $(LPCOBJS) $(CMDOBJS) $(LOGOMATICOBJS) $(POSIXOBJS) $(POSIXSYS) $(DISARMOBJS) halsys.o main.o serial_fifo.o vcom.o
 INCLUDEFLAGS=-Iinclude -Ilpcusb-trunk/target -Idietlibc/include -Ilibdisarm/src -I.
 DEFINE=-DLPC214x -DNDEBUG -DLPC_MEMMAP=MEM_MAP_USER_RAM
 

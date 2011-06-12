@@ -42,7 +42,6 @@ static void hexdump(const uint8_t *data, unsigned int len)
 
 static void disassemble(const uint32_t *base, unsigned int len)
 {
-#if 0
 	da_addr_t addr = base;
 	int n;
 
@@ -62,7 +61,6 @@ static void disassemble(const uint32_t *base, unsigned int len)
 
 		addr += sizeof(da_word_t);
 	}
-#endif
 }
 
 struct mem_region {
