@@ -67,8 +67,8 @@ clean:
 .PHONY: clean
 
 cleanlibs:
-	rm -f dietlibc/bin-arm/dietlibc.a dietlibc/bin-arm/libm.a
-	rm -f lpcusb-trunk/target/usbstack.a
+	rm -rf dietlibc/bin-arm
+	rm -f lpcusb-trunk/target/usbstack.a lpsusb-trunk/target/*.o
 .PHONY: cleanlibs
 
 ##### GENERIC RULES #####
