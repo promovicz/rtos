@@ -1,7 +1,7 @@
 
 #include "scp.h"
 
-#include <core/tick.h>
+#include <core/clock.h>
 
 #include <lpc/ssp.h>
 

@@ -2,7 +2,7 @@
 #include "nmea.h"
 #include "gps.h"
 
-#include <core/types.h>
+#include <core/clock.h>
 
 #include <stdio.h>
 #include <stdlib.h>
