@@ -14,10 +14,12 @@ SECTIONS
 	.text :
 	{
 		__text_start = .;
+		*(.startup)
 		*(.text) *(.text.*)
 		*(.rodata) *(.rodata.*)
 		*(.glue_7)
 		*(.glue_7t)
+		*(.note.gnu.build-id)
 		_etext = .;
 	} > flash
 	. = ALIGN(4);
@@ -32,7 +34,7 @@ SECTIONS
 	{
 		__data_start = .;
 		_data = .;
-		*(.startup)
+		*(.vectors)
 		*(.data) *(.data.*)
 		_edata = .;
 	} > ram AT > flash

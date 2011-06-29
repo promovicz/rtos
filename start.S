@@ -35,7 +35,7 @@
 
 # Exception Vectors
 
-.section .startup
+.section .vectors
 .global _entry
 _entry:
 .global _vectors
@@ -53,7 +53,7 @@ _vectors:
 #endif
                 ldr     PC, FIQ_Addr
 
-.section .startup
+.section .vectors
 .global _vector_table
 _vector_table:
 Reset_Addr:     .word   Reset_Handler		/* defined in this module below  */
@@ -67,7 +67,7 @@ FIQ_Addr:       .word   FIQ_Routine			/* defined in main.c  */
 
 # Reset Handler
 
-.section .text
+.section .startup
 		
 .func Reset_Handler
 .global Reset_Handler
