@@ -1,6 +1,8 @@
 
 #include <core/defines.h>
 
+#include <core/system.h>
+
 #include <sys/types.h>
 
 #include <stdio.h>
@@ -8,9 +10,9 @@
 
 void _exit(int status)
 {
-	printf("halted with status %d\n", status);
+	printf("Exit with status %d\n", status);
 	fflush(stdout);
-	while(1) {}
+	while(1) { }
 }
 
 void exit(int status)
