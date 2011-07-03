@@ -1,9 +1,11 @@
 #ifndef POSIX_MEMORY_H
 #define POSIX_MEMORY_H
 
+#include "common.h"
+
 #include "control.h"
 
-#define PAGESIZE 512
+#define PAGESIZE ((size_t)512)
 
 enum {
 	PAGE_FLAG_ALLOC = (1<<0),

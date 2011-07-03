@@ -1,4 +1,6 @@
 
+#include "memory.h"
+
 #include "control.h"
 
 #include <core/defines.h>
@@ -8,9 +10,6 @@
 #include <stdio.h>
 
 #include <sys/mman.h>
-
-#define PAGESIZE 512
-
 
 extern void __heap_start, __heap_end;
 
@@ -82,8 +81,8 @@ void posix_memory_report(void)
 		}
 	}
 
-	printf("memory avail: %z bytes in %z pages of %z bytes\n",
+	printf("memory avail: %zu bytes in %zu pages of %zu bytes\n",
 		   pagecount * PAGESIZE, pagecount, PAGESIZE);
-	printf("memory used: %z of %z bytes\n",
+	printf("memory used: %zu of %zu bytes\n",
 		   used * PAGESIZE, free * PAGESIZE);
 }
