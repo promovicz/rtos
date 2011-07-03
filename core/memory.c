@@ -197,20 +197,16 @@ void memory_report(void)
 		}
 	}
 
-	printf("memory avail: %zu bytes in %zu pages of %zu bytes\n",
-		   pagecount * PAGESIZE, pagecount, PAGESIZE);
-	printf("memory used: %zu of %zu bytes\n",
-		   used * PAGESIZE, free * PAGESIZE);
+	printf("memory used: %zu of %zu bytes (%zu of %zu pages)\n",
+			used * PAGESIZE, pagecount * PAGESIZE, used, pagecount);
+	printf("memory free: %zu bytes (%zu pages)\n",
+			free * PAGESIZE, free);
 
-	printf("page usage:\n");
+	printf("used pages:\n");
 	for(i = 0; i < pagecount; i++) {
 		char *pa = membase + i * PAGESIZE;
 		if(pagetable[i].flags & PAGE_FLAG_ALLOC) {
 			printf(" page at 0x%p is used by %s\n", pa, pagetable[i].user);
-		} else {
-#if 0
-			printf(" page at 0x%p is free\n", pa);
-#endif
 		}
 	}
 }
