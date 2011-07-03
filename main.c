@@ -72,13 +72,15 @@
 #include "type.h"
 #include "debug.h"
 #include "lpc214x.h"
-#include "hal.h"
 #include "vcom.h"
 #include "serial_fifo.h"
 
 #include <sensor/scp.h>
+#include <sensor/nmea.h>
 
 #include <sys/mman.h>
+
+#include <usbapi.h>
 
 #define INTV_STOP     0
 #define	INTV_USB	  1
@@ -143,52 +145,62 @@ int hit = 0;
 int bang = 0;
 
 ucontext_t ou;
-uint8_t stk[512];
 
 
+ucontext_t nmea_context;
+uint8_t nmea_stack[1024];
 
-void foo(void)
+void nmea_main (void)
 {
-	int u = 0;
+	char buf[64];
+	int r;
 
-	hit = 1;
-	printf("Otherland!\n");
-	printf("u is at %p\n", &u);
+	nmea_init();
 
-	mcontext_t *mcp = &ou.uc_mcontext;
-	stack_t *sp = &ou.uc_stack;
-	mstack_t *state;
-
-	state = (mstack_t *)mcp->mc_sp;
-
-	printf("rst is %p\n", state);
-	printf("rpc is %p\n", (uint32_t *)state->ms_pc);
-
-	fflush(stdout);
-
-	setcontext(&ou);
+	while(1) {
+		r = read(u0, &buf, sizeof(buf));
+		if(r > 0) {
+			nmea_process(&buf[0], r);
+		}
+		swapcontext(&nmea_context, &ou);
+	}
 }
 
-void bar(void)
+ucontext_t rimu_context;
+uint8_t rimu_stack[1024];
+
+void rimu_main (void)
 {
-	int u = 0;
+	uint8_t buf[64];
+	int r;
 
-	bang = 1;
-	printf("Otherland2!\n");
-	printf("u is at %p\n", &u);
+	{
+		uint8_t cmd_raw = '4';
+		write(u1, &cmd_raw, 1);
+	}
 
-	mcontext_t *mcp = &ou.uc_mcontext;
-	stack_t *sp = &ou.uc_stack;
-	mstack_t *state;
+	while(1) {
+		r = read(u1, &buf, sizeof(buf));
+		if(r > 0) {
+		}
+		swapcontext(&rimu_context, &ou);
+	}
+}
 
-	state = (mstack_t *)mcp->mc_sp;
+void rimu_proc_init (void)
+{
+	rimu_context.uc_stack.ss_sp = &rimu_stack;
+	rimu_context.uc_stack.ss_size = sizeof(rimu_stack);
+	rimu_context.uc_link = NULL;
+	makecontext(&rimu_context, &rimu_main, 0);
+}
 
-	printf("rst is %p\n", state);
-	printf("rpc is %p\n", (uint32_t *)state->ms_pc);
-
-	fflush(stdout);
-
-	setcontext(&ou);
+void nmea_proc_init (void)
+{
+	nmea_context.uc_stack.ss_sp = &nmea_stack;
+	nmea_context.uc_stack.ss_size = sizeof(nmea_stack);
+	nmea_context.uc_link = NULL;
+	makecontext(&nmea_context, &nmea_main, 0);
 }
 
 
@@ -216,6 +228,9 @@ int main (void)
 	u0 = device_open("uart0", O_RDWR);
 	u1 = device_open("uart1", O_RDWR);
 
+	nmea_proc_init();
+	rimu_proc_init();
+
 	int i;
 	uint8_t chr;
 	char buf[64];
@@ -229,54 +244,15 @@ int main (void)
 
 		fflush(stdout);
 
-		res = read(u0, buf, sizeof(buf));
-		if(res > 0) {
-			write(u0, buf, res);
+		swapcontext(&ou, &nmea_context);
 
-			printf("chk %d!\n", res);
+		fflush(stdout);
 
-			if(!hit) {
-				printf("stk is at %p\n", &stk);
-				fflush(stdout);
+		swapcontext(&ou, &rimu_context);
 
-				ucontext_t u;
-				u.uc_stack.ss_sp = &stk;
-				u.uc_stack.ss_size = sizeof(stk);
-				u.uc_link = NULL;
-				makecontext(&u, &foo, 0);
-
-				printf("swap1!\n");
-				swapcontext(&ou, &u);
-
-				printf("back1!\n");
-			}
-			else if(!bang) {
-				printf("stk is at %p\n", &stk);
-				fflush(stdout);
-
-				ucontext_t u;
-				u.uc_stack.ss_sp = &stk;
-				u.uc_stack.ss_size = sizeof(stk);
-				u.uc_link = NULL;
-				makecontext(&u, &bar, 0);
-
-				printf("swap2!\n");
-				swapcontext(&ou, &u);
-
-				printf("back2!\n");
-			}
-
-			printf("done!\n");
-
-		}
-
-		res = read(u1, buf, sizeof(buf));
-		if(res > 0) {
-			write(u1, buf, res);
-		}
+		fflush(stdout);
 
 		system_idle();
-		//usleep(10000);
 	}
 
 	return 0;
