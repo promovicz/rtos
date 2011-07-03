@@ -108,11 +108,11 @@ void scp_init(void)
 		scp_reset();
 	}
 
-	tick_delay(50);
+	clock_delay(50*NANOSECS_MSEC);
 
 	int i = 0;
 	do {
-		tick_delay(10);
+		clock_delay(10*NANOSECS_MSEC);
 		r = scp_read_r8(STATUS);
 		if(i++ > 10) {
 			printf("scp init failed\n");
@@ -132,7 +132,7 @@ void scp_waitidle(void)
 {
 	uint8_t r;
 	do {
-		tick_delay(10);
+		clock_delay(10*NANOSECS_MSEC);
 		r = scp_read_r8(OPERATION);
 	} while(r != OPERATION_IDLE);
 }
@@ -152,7 +152,7 @@ void scp_waitdata(void)
 	irqflag = 0;
 
 	do {
-		tick_delay(10);
+		clock_delay(10*NANOSECS_MSEC);
 		r = scp_read_r8(STATUS);
 	} while (!(r&STATUS_DATAREADY));
 #if 0

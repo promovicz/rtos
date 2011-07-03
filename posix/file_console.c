@@ -3,11 +3,13 @@
 
 #include <posix/control.h>
 
+#include "vcom.h"
+
 
 bool_t console_enabled;
 int    console_level;
 
-static int console_write(struct file *f, const void *buf, size_t nbytes)
+static ssize_t console_write(struct file *f, const void *buf, size_t nbytes)
 {
 	if(console_enabled) {
 		return vcom_tx_fifo(buf, nbytes);
@@ -16,7 +18,7 @@ static int console_write(struct file *f, const void *buf, size_t nbytes)
 	}
 }
 
-static int console_read(struct file *f, void *buf, size_t nbytes)
+static ssize_t console_read(struct file *f, void *buf, size_t nbytes)
 {
 	if(console_enabled) {
 		return vcom_rx_fifo(buf, nbytes);

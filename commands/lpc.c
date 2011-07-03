@@ -30,7 +30,7 @@ int command_lpc_vic(struct cli *c, int argc, char **argv)
 extern void csel_mmc(bool_t yeah);
 extern void csel_scp(bool_t yeah);
 
-void command_lpc_spi(struct cli *t, int argc, char **argv)
+int command_lpc_spi(struct cli *t, int argc, char **argv)
 {
 	int i;
 	char *end;
@@ -62,9 +62,10 @@ void command_lpc_spi(struct cli *t, int argc, char **argv)
 			}
 		}
 	}
+	return 0;
 }
 
-void command_lpc_ssp(struct cli *t, int argc, char **argv)
+int command_lpc_ssp(struct cli *t, int argc, char **argv)
 {
 	int i;
 	char *end;
@@ -96,6 +97,7 @@ void command_lpc_ssp(struct cli *t, int argc, char **argv)
 			}
 		}
 	}
+	return 0;
 }
 
 

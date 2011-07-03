@@ -72,7 +72,7 @@ void posix_memory_init(void)
 
 void posix_memory_report(void)
 {
-	int i, free, used;
+	size_t i, free, used;
 	free = 0; used = 0;
 	for(i = 0; i < pagecount; i++) {
 		if(pagetable[i].flags & PAGE_FLAG_ALLOC) {
@@ -82,8 +82,8 @@ void posix_memory_report(void)
 		}
 	}
 
-	printf("memory avail: %d bytes in %d pages of %d bytes\n",
-		   pagecount*PAGESIZE, pagecount, PAGESIZE);
-	printf("memory used: %d of %d bytes\n",
-		   used*PAGESIZE, free*PAGESIZE);
+	printf("memory avail: %z bytes in %z pages of %z bytes\n",
+		   pagecount * PAGESIZE, pagecount, PAGESIZE);
+	printf("memory used: %z of %z bytes\n",
+		   used * PAGESIZE, free * PAGESIZE);
 }

@@ -107,7 +107,7 @@ enum ctcr_bits {
 #define TIMER1_REGS ((volatile struct timer_regs*)TIMER1_BASE)
 
 
-static struct timer_regs * const timers[] = {TIMER0_REGS, TIMER1_REGS};
+static volatile struct timer_regs * const timers[] = {TIMER0_REGS, TIMER1_REGS};
 
 static timer_match_handler_t timer_match_handlers[2][4] = {{0,0,0,0},{0,0,0,0}};
 

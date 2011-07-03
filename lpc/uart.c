@@ -8,6 +8,8 @@
 #include <core/device.h>
 #include <core/irq.h>
 
+#include <stdio.h>
+
 static inline always_inline uint8_t readb(volatile uint8_t *a)
 {
 	return *a;
@@ -24,17 +26,17 @@ static inline always_inline void writeb(uint8_t v, volatile uint8_t *a)
 #define REG_DLAB1  0x0100
 
 /* base addresses of uarts */
-#define UART0_BASE   0xe000c000
-#define UART1_BASE   0xe0010000
+#define UART0_BASE   ((void*)0xe000c000)
+#define UART1_BASE   ((void*)0xe0010000)
 
 /* register address computation */
 #define UART_REG(u,r) ((volatile uint8_t*)(((uint8_t*)uarts[u].base) + ((r) & ~(REG_FLAGS))))
 
 /* state structures */
-char u0_rxbuf[VCOM_FIFO_SIZE];
-char u0_txbuf[VCOM_FIFO_SIZE];
-char u1_rxbuf[VCOM_FIFO_SIZE];
-char u1_txbuf[VCOM_FIFO_SIZE];
+unsigned char u0_rxbuf[VCOM_FIFO_SIZE];
+unsigned char u0_txbuf[VCOM_FIFO_SIZE];
+unsigned char u1_rxbuf[VCOM_FIFO_SIZE];
+unsigned char u1_txbuf[VCOM_FIFO_SIZE];
 
 struct uart {
 	struct device dev;
@@ -42,12 +44,12 @@ struct uart {
 	void *base;
 
 	fifo_t rxfifo;
-	char *rxbuf;
+	unsigned char *rxbuf;
 	int rxmaxfill;
 	int rxcount;
 
 	fifo_t txfifo;
-	char *txbuf;
+	unsigned char *txbuf;
 	int txmaxfill;
 	int txcount;
 };
@@ -82,12 +84,12 @@ static int uart_close(struct file *file)
 	return 0;
 }
 
-static int uart_write(struct file *f, const void *buf, size_t nbytes)
+static ssize_t uart_write(struct file *f, const void *buf, size_t nbytes)
 {
 	return uart_tx_fifo(f->f_cookie_int, buf, nbytes);
 }
 
-static int uart_read(struct file *f, void *buf, size_t nbytes)
+static ssize_t uart_read(struct file *f, void *buf, size_t nbytes)
 {
 	return uart_rx_fifo(f->f_cookie_int, buf, nbytes);
 }
@@ -106,8 +108,8 @@ struct uart uarts[2] = {
 			   .report_cb = &uart_device_report },
 	  .index = 0,
 	  .base = UART0_BASE,
-	  .rxbuf = &u0_rxbuf,
-	  .txbuf = &u0_txbuf
+	  .rxbuf = &u0_rxbuf[0],
+	  .txbuf = &u0_txbuf[0]
 	},
 	{ .dev = { .name = "uart1",
 			   .class = DEVICE_CLASS_STREAM,
@@ -115,8 +117,8 @@ struct uart uarts[2] = {
 			   .report_cb = &uart_device_report },
 	  .index = 1,
 	  .base = UART1_BASE,
-	  .rxbuf = &u1_rxbuf,
-	  .txbuf = &u1_txbuf
+	  .rxbuf = &u1_rxbuf[0],
+	  .txbuf = &u1_txbuf[0]
 	},
 };
 

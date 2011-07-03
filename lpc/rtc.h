@@ -19,10 +19,12 @@ typedef enum {
 	RTC_SOURCE_GPS,
 } rtc_source_t;
 
-void rtc_init();
+void rtc_init(void);
 
 void rtc_indicate_time(rtc_source_t source, rtc_hour_t h, rtc_minute_t m, rtc_second_t s);
 
 void rtc_indicate_date(rtc_source_t source, rtc_year_t year, rtc_month_t month, rtc_dom_t dom);
+
+void rtc_report(void);
 
 #endif /* !LPC_RTC_H */

@@ -35,8 +35,8 @@ typedef struct {
 	U8		*buf;
 } fifo_t;
 
-void fifo_init(fifo_t *fifo, U8 *buf);
-BOOL fifo_put(fifo_t *fifo, U8 c);
-BOOL fifo_get(fifo_t *fifo, U8 *pc);
+void fifo_init(fifo_t *fifo, unsigned char *buf);
+BOOL fifo_put(fifo_t *fifo, unsigned char c);
+BOOL fifo_get(fifo_t *fifo, unsigned char *pc);
 int  fifo_avail(fifo_t *fifo);
 int	 fifo_free(fifo_t *fifo);

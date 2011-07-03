@@ -144,10 +144,12 @@ bool_t scan_uint32(const char *str, uint32_t *res)
 bool_t scan_ptr(const char *str, void **res)
 {
 	long long int v;
+	uintptr_t p;
 
 	if(scan_lhex(str, &v)) {
 		if(v >= 0 && v <= UINT32_MAX) {
-			*res = v & 0xFFFFFFFF;
+			p = v & UINTPTR_MAX;
+			*res = (void*)p;
 			return BOOL_TRUE;
 		}
 	}

@@ -69,7 +69,7 @@ void pin_report(void)
 		uint8_t reg = i / 16;
 		uint8_t pin = i % 16;
 		uint8_t v = (PINSEL->SELECT[reg] >> (pin * 2)) & 0x03;
-		const struct pin_function *f = &(pins[i].functions[v]);
+		f = &(pins[i].functions[v]);
 
 		printf("%s\t*%s.%s", pins[i].name, device_name(f->device), f->name ? f->name : "reserved");
 

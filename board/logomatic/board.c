@@ -42,6 +42,7 @@ struct clock_device clktimer = {
 	.dev = { .name = "clktimer",
 			 .class = DEVICE_CLASS_CLOCK },
 	.resolution = 1 * NANOSECS_USEC,
+	.range = UINT32_MAX * NANOSECS_USEC,
 	.read = &clktimer_read,
 };
 

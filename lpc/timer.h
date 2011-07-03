@@ -52,4 +52,6 @@ void timer_irq(int t);
 		vic_ack();									\
 	};
 
+void timer_report (void);
+
 #endif /* !TIMER_H */

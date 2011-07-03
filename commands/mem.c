@@ -1,13 +1,17 @@
 
 #include "commands.h"
 
+#include <ctype.h>
+#include <string.h>
+
 #include <libdisarm/disarm.h>
 
 static void hexdump(const uint8_t *data, unsigned int len)
 {
 	const uint8_t *bufptr = data;
 	const uint8_t const *endptr = bufptr + len;
-	int n, m, i, hexchr;
+	unsigned int n, m, o, p;
+	int hexchr;
 
 	for (n=0; n < len; n+=32, bufptr += 32) {
 		hexchr = 0;
@@ -20,8 +24,8 @@ static void hexdump(const uint8_t *data, unsigned int len)
 			hexchr+=2;
 		}
 		bufptr -= m;
-		int n = 71 - hexchr;
-		for(i = 0; i < n; i++) {
+		p = 71 - hexchr;
+		for(o = 0; p < p; p++) {
 			putchar(' ');
 		}
 
@@ -42,8 +46,8 @@ static void hexdump(const uint8_t *data, unsigned int len)
 
 static void disassemble(const uint32_t *base, unsigned int len)
 {
-	da_addr_t addr = base;
-	int n;
+	da_addr_t addr = ((da_addr_t)base);
+	unsigned int n;
 
 	for(n=0; n < len/4; n++) {
 		da_word_t data = *((const uint32_t*)addr);
@@ -165,7 +169,7 @@ int command_mem_copy(struct cli *c, int argc, char **argv)
 			return 1;
 		}
 
-		printf("copying %d bytes to %08x from %08x\n", len, (uint32_t)dst, (uint32_t)src);
+		printf("copying %ld bytes to %p from %p\n", len, (void*)dst, (void*)src);
 		memcpy(dst, src, len);
 
 		return 0;
@@ -187,6 +191,7 @@ int command_mem_regions(struct cli *c, int argc, char **argv)
 			   mr->start + mr->size - 1);
 		mr++;
 	}
+	return 0;
 }
 
 int command_mem_sections(struct cli *c, int argc, char **argv)
@@ -194,13 +199,14 @@ int command_mem_sections(struct cli *c, int argc, char **argv)
 	printf("system sections:\n");
 	struct mem_section *ms = sections;
 	while(ms->name) {
-		printf(" %8s: %08x bytes at %08x - %08x\n",
+		printf(" %8s: %p bytes at %p - %p\n",
 			   ms->name,
-			   ms->end - ms->start,
-			   ms->start,
-			   ms->end);
+			   ((void*)(((uintptr_t)ms->end) - ((uintptr_t)ms->start))),
+			   ((void*)ms->start),
+			   ((void*)ms->end));
 		ms++;
 	}
+	return 0;
 }
 
 #if 0
