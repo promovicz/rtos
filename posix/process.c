@@ -10,9 +10,15 @@
 
 void _exit(int status)
 {
+	nanosecs_t waitstart = system_get_time();
 	printf("Exit with status %d\n", status);
 	fflush(stdout);
-	while(1) { }
+	while((system_get_time() - waitstart) < NANOSECS_SEC) {
+		system_kick();
+		system_idle();
+	}
+	while(1) {
+	}
 }
 
 void exit(int status)

@@ -1,6 +1,7 @@
 
 #include <sys/types.h>
 
+#include <errno.h>
 #include <signal.h>
 
 int __rt_sigprocmask(int how, const sigset_t *set, sigset_t *oldsetm, long nr)
@@ -15,5 +16,6 @@ int rt_sigprocmask(int how, const sigset_t *set, sigset_t *oldsetm, long nr)
 
 int kill(pid_t pid, int sig)
 {
-	return 0;
+	errno = EOPNOTSUPP;
+	return -1;
 }
