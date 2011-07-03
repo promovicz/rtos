@@ -1,9 +1,9 @@
 
 #include "ssp.h"
 
-#include "hal.h"
-
 #include <core/parse.h>
+
+#include <lpc/pll.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -165,7 +165,7 @@ void ssp_loopback(bool_t enable)
 
 void ssp_clock(uint32_t f)
 {
-	uint32_t dvdr = HalSysGetPCLK() / f;
+	uint32_t dvdr = pll_get_frequency(PLL_CORE) / f;
 
 	if(dvdr < 2) {
 		dvdr = 2; // XXX

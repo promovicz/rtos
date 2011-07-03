@@ -28,6 +28,8 @@ void pll_configure(int pll, const struct pll_configuration *cfg);
 void pll_lock_blocking(int pll);
 void pll_connect(int pll);
 
+freq_t pll_get_frequency(int pll);
+
 void pll_report(void);
 
 #endif /* !LPC_PLL_H */

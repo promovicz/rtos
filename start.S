@@ -57,12 +57,12 @@ _vectors:
 .global _vector_table
 _vector_table:
 Reset_Addr:     .word   Reset_Handler		/* defined in this module below  */
-Undef_Addr:     .word   UNDEF_Routine		/* defined in main.c  */
-SWI_Addr:       .word   SWI_Routine			/* defined in main.c  */
-PAbt_Addr:      .word   UNDEF_Routine		/* defined in main.c  */
-DAbt_Addr:      .word   UNDEF_Routine		/* defined in main.c  */
-IRQ_Addr:       .word   IRQ_Routine			/* defined in main.c  */
-FIQ_Addr:       .word   FIQ_Routine			/* defined in main.c  */
+Undef_Addr:     .word   stub_undef		/* defined in main.c  */
+SWI_Addr:       .word   stub_swi			/* defined in main.c  */
+PAbt_Addr:      .word   stub_undef		/* defined in main.c  */
+DAbt_Addr:      .word   stub_undef		/* defined in main.c  */
+IRQ_Addr:       .word   stub_irq			/* defined in main.c  */
+FIQ_Addr:       .word   stub_fiq			/* defined in main.c  */
                 .word   0					/* rounds the vectors and ISR addresses to 64 bytes total  */
 
 # Reset Handler

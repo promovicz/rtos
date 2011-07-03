@@ -135,14 +135,26 @@ void pll_connect(int pll)
 	pll_feed(pll);
 }
 
+freq_t pll_get_frequency(int pll)
+{
+	freq_t f;
+	uint16_t s = plls[pll]->STAT;
+
+	if(s & PLL_STAT_PLLC) {
+		uint8_t m = PLL_STAT_GET_MSEL(s);
+
+		f = xtal_frequency() * m;
+	} else {
+		f = xtal_frequency();
+	}
+
+	return f;
+}
+
 static void pll_print(int pll)
 {
 	uint16_t s = plls[pll]->STAT;
-
-	uint8_t m = PLL_STAT_GET_MSEL(s);
-	uint8_t d = PLL_STAT_GET_PSEL(s);
-
-	uint32_t f = xtal_frequency() * m;
+	freq_t f = pll_get_frequency(pll);
 
 	const char *state = "disabled";
 	if(s&PLL_STAT_PLLE) {
@@ -155,7 +167,7 @@ static void pll_print(int pll)
 		}
 	}
 
-	printf("pll %d %s, cco %d Hz (div %d), out %d Hz (mul %d)\n", pll, state, f*d, d, f, m);
+	printf("pll %d %s, frequency %u Hz\n", pll, state, f);
 }
 
 void pll_report(void)
