@@ -1,5 +1,7 @@
 
-#include "memory.h"
+#include "common.h"
+
+#include <core/memory.h>
 
 #include <unistd.h>
 

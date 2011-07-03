@@ -25,14 +25,27 @@
 	THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "type.h"
 #include "serial_fifo.h"
 
-void fifo_init(fifo_t *fifo, unsigned char *buf)
+#include <stdlib.h>
+
+#include <core/memory.h>
+
+static void *fifo_buf_alloc(size_t size)
 {
+	if(size % PAGESIZE) {
+		return malloc(size);
+	} else {
+		return memory_alloc_pages(size / PAGESIZE, "fifo");
+	}
+}
+
+void fifo_init(fifo_t *fifo, size_t size)
+{
+	fifo->size = size;
 	fifo->head = 0;
 	fifo->tail = 0;
-	fifo->buf = buf;
+	fifo->buf = fifo_buf_alloc(size);
 }
 
 
@@ -41,16 +54,16 @@ bool_t fifo_put(fifo_t *fifo, unsigned char c)
 	int next;
 	
 	// check if FIFO has room
-	next = (fifo->head + 1) % VCOM_FIFO_SIZE;
+	next = (fifo->head + 1) % fifo->size;
 	if (next == fifo->tail) {
 		// full
-		return FALSE;
+		return BOOL_FALSE;
 	}
 	
 	fifo->buf[fifo->head] = c;
 	fifo->head = next;
 	
-	return TRUE;
+	return BOOL_TRUE;
 }
 
 
@@ -60,26 +73,26 @@ bool_t fifo_get(fifo_t *fifo, unsigned char *pc)
 	
 	// check if FIFO has data
 	if (fifo->head == fifo->tail) {
-		return FALSE;
+		return BOOL_FALSE;
 	}
 	
-	next = (fifo->tail + 1) % VCOM_FIFO_SIZE;
+	next = (fifo->tail + 1) % fifo->size;
 	
 	*pc = fifo->buf[fifo->tail];
 	fifo->tail = next;
 
-	return TRUE;
+	return BOOL_TRUE;
 }
 
 
 int fifo_avail(fifo_t *fifo)
 {
-	return (VCOM_FIFO_SIZE + fifo->head - fifo->tail) % VCOM_FIFO_SIZE;
+	return (fifo->size + fifo->head - fifo->tail) % fifo->size;
 }
 
 
 int fifo_free(fifo_t *fifo)
 {
-	return (VCOM_FIFO_SIZE - 1 - fifo_avail(fifo));
+	return (fifo->size - 1 - fifo_avail(fifo));
 }
 

@@ -7,6 +7,7 @@
 
 #include <core/device.h>
 #include <core/irq.h>
+#include <core/memory.h>
 
 #include <stdio.h>
 
@@ -33,23 +34,16 @@ static inline always_inline void writeb(uint8_t v, volatile uint8_t *a)
 #define UART_REG(u,r) ((volatile uint8_t*)(((uint8_t*)uarts[u].base) + ((r) & ~(REG_FLAGS))))
 
 /* state structures */
-unsigned char u0_rxbuf[VCOM_FIFO_SIZE];
-unsigned char u0_txbuf[VCOM_FIFO_SIZE];
-unsigned char u1_rxbuf[VCOM_FIFO_SIZE];
-unsigned char u1_txbuf[VCOM_FIFO_SIZE];
-
 struct uart {
 	struct device dev;
 	int index;
 	void *base;
 
 	fifo_t rxfifo;
-	unsigned char *rxbuf;
 	int rxmaxfill;
 	int rxcount;
 
 	fifo_t txfifo;
-	unsigned char *txbuf;
 	int txmaxfill;
 	int txcount;
 };
@@ -108,8 +102,6 @@ struct uart uarts[2] = {
 			   .report_cb = &uart_device_report },
 	  .index = 0,
 	  .base = UART0_BASE,
-	  .rxbuf = &u0_rxbuf[0],
-	  .txbuf = &u0_txbuf[0]
 	},
 	{ .dev = { .name = "uart1",
 			   .class = DEVICE_CLASS_STREAM,
@@ -117,8 +109,6 @@ struct uart uarts[2] = {
 			   .report_cb = &uart_device_report },
 	  .index = 1,
 	  .base = UART1_BASE,
-	  .rxbuf = &u1_rxbuf[0],
-	  .txbuf = &u1_txbuf[0]
 	},
 };
 
@@ -299,8 +289,8 @@ void uart_init(uart_t uart, uart_baud_t baudrate)
 
 	uart_reg_write(uart, FCR, FCR_ENABLE|FCR_RX_TRIG_1);
 
-	fifo_init(&uarts[uart].rxfifo, uarts[uart].rxbuf);
-	fifo_init(&uarts[uart].txfifo, uarts[uart].txbuf);
+	fifo_init(&uarts[uart].rxfifo, 128);
+	fifo_init(&uarts[uart].txfifo, 128);
 
 	uart_reg_write(uart, IER, IER_RBR);
 

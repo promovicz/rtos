@@ -12,12 +12,6 @@ int command_posix_status(struct cli *c, int argc, char **argv)
 	return 0;
 }
 
-int command_posix_memory(struct cli *c, int argc, char **argv)
-{
-	posix_memory_report();
-	return 0;
-}
-
 int command_posix_file(struct cli *c, int argc, char **argv)
 {
 	file_table_report();
@@ -28,9 +22,6 @@ struct command cmd_posix[] = {
 	{.name = "status",
 	 .help = "posix emulator status",
 	 .handler = &command_posix_status},
-	{.name = "memory",
-	 .help = "posix memory allocation",
-	 .handler = &command_posix_memory},
 	{.name = "file",
 	 .help = "posix file descriptors",
 	 .handler = &command_posix_file},

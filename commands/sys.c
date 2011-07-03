@@ -3,10 +3,12 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <core/device.h>
 #include <core/system.h>
 #include <core/clock.h>
+#include <core/memory.h>
 
 #include <lpc/reset.h>
 #include <lpc/rtc.h>
@@ -76,6 +78,12 @@ int command_sys_dev(struct cli *c, int argc, char **argv)
 	return 1;
 }
 
+int command_sys_mem(struct cli * c, int argc, char **argv)
+{
+	memory_report();
+	return 0;
+}
+
 int command_sys_reset(struct cli *c, int argc, char **argv)
 {
 	system_reset();
@@ -98,6 +106,9 @@ struct command cmd_sys[] = {
 	{.name = "dev",
 	 .help = "report device status",
 	 .handler = &command_sys_dev},
+	{.name = "mem",
+	 .help = "posix memory allocation",
+	 .handler = &command_sys_mem},
 	{.name = "reset", 
 	 .help = "reset the system",
 	 .handler = &command_sys_reset},

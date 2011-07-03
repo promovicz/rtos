@@ -20,11 +20,11 @@ LDSCRIPT=board/logomatic/booted.lds
 LIBS=lpcusb-trunk/target/usbstack.a dietlibc/bin-arm/dietlibc.a
 
 LOGOMATICOBJS=board/logomatic/board.o
-COREOBJS=core/tty.o core/parse.o core/system.o core/cli.o core/device.o core/timer.o core/clock.o core/file.o core/irq.o
+COREOBJS=core/tty.o core/parse.o core/system.o core/cli.o core/device.o core/timer.o core/clock.o core/file.o core/irq.o core/memory.o
 LPCOBJS=lpc/scb.o lpc/pll.o lpc/mam.o lpc/vpb.o lpc/vic.o lpc/pinsel.o lpc/timer.o lpc/gpio.o lpc/rtc.o lpc/ssp.o lpc/spi.o lpc/uart.o lpc/device.o lpc/eint.o lpc/pin.o lpc/pcon.o lpc/wdt.o lpc/reset.o lpc/stubs.o
 SENSOROBJ=sensor/scp.o sensor/nmea.o
 CMDOBJS=commands/gpio.o commands/mem.o commands/sys.o commands/nmea.o commands/posix.o commands/gps.o commands/lpc.o
-POSIXOBJS=posix/process.o posix/epoll.o posix/file_console.o posix/signal.o posix/memory.o posix/control.o
+POSIXOBJS=posix/process.o posix/epoll.o posix/file_console.o posix/signal.o posix/control.o
 POSIXSYS=posix/sys_errno.o posix/sys_errlist.o posix/sys_file.o posix/sys_sleep.o posix/sys_mcontext.o posix/sys_ucontext.o posix/sys_sysconf.o posix/sys_mmap.o posix/sys_munmap.o posix/sys_mremap.o posix/sys_getpagesize.o
 DISARMOBJS=libdisarm/src/libdisarm/args.o libdisarm/src/libdisarm/print.o libdisarm/src/libdisarm/parser.o
 OBJS=start.o $(COREOBJS) $(LPCOBJS) $(CMDOBJS) $(LOGOMATICOBJS) $(POSIXOBJS) $(SENSOROBJ) $(POSIXSYS) $(DISARMOBJS) main.o serial_fifo.o vcom.o

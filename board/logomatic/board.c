@@ -235,14 +235,14 @@ void board_early_init(void)
 	time_init();
 	/* initialize stop button */
 	stop_init();
-	/* initialize UARTs */
-	uarts_init();
 }
 
 void board_init(void)
 {
 	/* start the periodic heartbeat timer */
 	START_PERIODIC_TIMER(heartbeat);
+	/* initialize UARTs */
+	uarts_init();
 	/* SPI interfaces */
 	ssp_init();
 	ssp_clock(400000);

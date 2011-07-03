@@ -1,5 +1,7 @@
 
-#include "memory.h"
+#include "common.h"
+
+#include <core/memory.h>
 
 #include <errno.h>
 #include <stdio.h>
@@ -26,13 +28,8 @@ int munmap(void *addr, size_t length)
 	}
 
 	count = length / PAGESIZE;
-	start = ((uint32_t)addr - (uint32_t)membase) / PAGESIZE;
 
-	printf("unmapping %d pages at %p\n", count, membase + start * PAGESIZE);
-
-	for(i = 0; i < count; i++) {
-		pagetable[start + i].flags &= ~PAGE_FLAG_ALLOC;
-	}
+	memory_free_pages(addr, count, "posix");
 
 	return 0;
 }

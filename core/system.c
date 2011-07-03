@@ -11,6 +11,7 @@
 #include <core/irq.h>
 #include <core/timer.h>
 #include <core/clock.h>
+#include <core/memory.h>
 
 #include <posix/control.h>
 
@@ -35,6 +36,8 @@ void system_init(void)
 	timer_select();
 
 	wdt_init(BOOL_TRUE);
+
+	memory_init();
 
 	irq_enable();
 
