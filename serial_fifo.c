@@ -36,7 +36,7 @@ void fifo_init(fifo_t *fifo, unsigned char *buf)
 }
 
 
-BOOL fifo_put(fifo_t *fifo, unsigned char c)
+bool_t fifo_put(fifo_t *fifo, unsigned char c)
 {
 	int next;
 	
@@ -54,7 +54,7 @@ BOOL fifo_put(fifo_t *fifo, unsigned char c)
 }
 
 
-BOOL fifo_get(fifo_t *fifo, unsigned char *pc)
+bool_t fifo_get(fifo_t *fifo, unsigned char *pc)
 {
 	int next;
 	
