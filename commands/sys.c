@@ -28,7 +28,7 @@ int command_sys_stat(struct cli *c, int argc, char **argv)
 
 	printf("rtos version primordial\n");
 
-	now = clock_get_time();
+	now = system_get_time();
 	rescause = reset_cause();
 	printf("running for %lld.%09lld secs, reset by %s\n", now/NANOSECS_SEC, now%NANOSECS_SEC, resetnames[rescause]);
 
@@ -45,12 +45,14 @@ int command_sys_stat(struct cli *c, int argc, char **argv)
 
 int command_sys_time(struct cli *c, int argc, char **argv)
 {
-	nanosecs_t now = clock_get_time();
+	nanosecs_t now = system_get_time();
 	
 	printf("system running for %lld.%09lld secs\n", now/NANOSECS_SEC, now%NANOSECS_SEC);
 
 	clock_report();
 	timer_report();
+
+	return 0;
 }
 
 int command_sys_dev(struct cli *c, int argc, char **argv)

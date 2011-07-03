@@ -9,7 +9,7 @@ OBJDUMP=$(CROSS)objdump
 CFLAGS_CONFIG=-gdwarf-2 -Os -ffunction-sections -nostdlib
 CFLAGS_TARGET=-mcpu=arm7tdmi -mfloat-abi=soft -marm
 CFLAGS_BUILTIN=-fno-builtin-execl -fno-builtin-execle
-CFLAGS_WARNINGS=-Wall -Wextra -Wshadow -Wpointer-arith -Wno-cast-align -Wimplicit -Wno-unused -Wredundant-decls -Wnested-externs -Wbad-function-cast -Wsign-compare -Waggregate-return
+CFLAGS_WARNINGS=-Wall -Wextra -Wshadow -Wpointer-arith -Wno-cast-align -Wimplicit -Wno-unused -Wredundant-decls -Wnested-externs -Wbad-function-cast -Wsign-compare -Waggregate-return -Wno-format-extra-args
 
 CFLAGS=$(CFLAGS_CONFIG) $(CFLAGS_TARGET) $(CFLAGS_BUILTIN) $(CFLAGS_WARNINGS) $(INCLUDEFLAGS) $(DEFINE)
 ASFLAGS=-D__ASSEMBLY__ $(DEFINE) $(INCLUDEFLAGS)
@@ -27,7 +27,7 @@ CMDOBJS=commands/gpio.o commands/mem.o commands/sys.o commands/nmea.o commands/p
 POSIXOBJS=posix/process.o posix/epoll.o posix/file_console.o posix/signal.o posix/memory.o posix/control.o
 POSIXSYS=posix/sys_errno.o posix/sys_errlist.o posix/sys_file.o posix/sys_sleep.o posix/sys_mcontext.o posix/sys_ucontext.o posix/sys_sysconf.o posix/sys_mmap.o posix/sys_munmap.o posix/sys_mremap.o posix/sys_getpagesize.o
 DISARMOBJS=libdisarm/src/libdisarm/args.o libdisarm/src/libdisarm/print.o libdisarm/src/libdisarm/parser.o
-OBJS=start.o $(COREOBJS) $(LPCOBJS) $(CMDOBJS) $(LOGOMATICOBJS) $(POSIXOBJS) $(POSIXSYS) $(DISARMOBJS) halsys.o main.o serial_fifo.o vcom.o
+OBJS=start.o $(COREOBJS) $(LPCOBJS) $(CMDOBJS) $(LOGOMATICOBJS) $(POSIXOBJS) $(SENSOROBJ) $(POSIXSYS) $(DISARMOBJS) halsys.o main.o serial_fifo.o vcom.o
 INCLUDEFLAGS=-Iinclude -Ilpcusb-trunk/target -Idietlibc/include -Ilibdisarm/src -I.
 DEFINE=-DLPC214x -DNDEBUG -DLPC_MEMMAP=MEM_MAP_USER_RAM
 

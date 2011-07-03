@@ -37,6 +37,18 @@ static struct command system_commands[] = {
 		.handler = NULL,
 		.children = &cmds_lpc
 	},
+	{
+		.name = "nmea",
+		.help = "nmea node",
+		.handler = NULL,
+		.children = &cmds_nmea
+	},
+	{
+		.name = "gps",
+		.help = "gps receiver",
+		.handler = NULL,
+		.children = &cmds_gps
+	},
 };
 
 DECLARE_COMMAND_TABLE(cli_system_commands, system_commands);

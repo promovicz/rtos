@@ -8,6 +8,7 @@
 #include <lpc/pcon.h>
 #include <lpc/wdt.h>
 
+#include <core/irq.h>
 #include <core/timer.h>
 #include <core/clock.h>
 
@@ -44,12 +45,20 @@ void system_init(void)
 	START_PERIODIC_TIMER(timestamp);
 }
 
+nanosecs_t system_get_time (void)
+{
+	if(current_system_clock) {
+		return clock_get_time(current_system_clock);
+	}
+	return 0;
+}
+
 void system_kick(void)
 {
 	wdt_kick();
 
 	if(timestamp_flag) {
-		nanosecs_t now = clock_get_time();
+		nanosecs_t now = system_get_time();
 		printf("\n[%8lld.%09lld] --- timestamp %lld.%09lld ---\n",
 			   now / NANOSECS_SEC,
 			   now % NANOSECS_SEC,
@@ -65,9 +74,9 @@ nanosecs_t idle_max = 0;
 void system_idle(void)
 {
 	nanosecs_t start, end, diff;
-	start = clock_get_time();
+	start = system_get_time();
 	pcon_idle();
-	end = clock_get_time();
+	end = system_get_time();
 	diff = end - start;
 	if(diff > idle_max) {
 		idle_max = diff;
