@@ -30,13 +30,14 @@
 #define VCOM_FIFO_SIZE	1024
 
 typedef struct {
+	char *name;
 	size_t size;
 	int		head;
 	int 	tail;
 	unsigned char	*buf;
 } fifo_t;
 
-void fifo_init(fifo_t *fifo, size_t size);
+void fifo_init(fifo_t *fifo, const char *name, size_t size);
 bool_t fifo_put(fifo_t *fifo, unsigned char c);
 bool_t fifo_get(fifo_t *fifo, unsigned char *pc);
 int  fifo_avail(fifo_t *fifo);

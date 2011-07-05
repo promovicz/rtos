@@ -289,8 +289,8 @@ void uart_init(uart_t uart, uart_baud_t baudrate)
 
 	uart_reg_write(uart, FCR, FCR_ENABLE|FCR_RX_TRIG_1);
 
-	fifo_init(&uarts[uart].rxfifo, 128);
-	fifo_init(&uarts[uart].txfifo, 128);
+	fifo_init(&uarts[uart].rxfifo, "uart.rx", 128);
+	fifo_init(&uarts[uart].txfifo, "uart.tx", 128);
 
 	uart_reg_write(uart, IER, IER_RBR);
 

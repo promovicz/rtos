@@ -31,21 +31,22 @@
 
 #include <core/memory.h>
 
-static void *fifo_buf_alloc(size_t size)
+static void *fifo_buf_alloc(const char *name, size_t size)
 {
 	if(size % PAGESIZE) {
 		return malloc(size);
 	} else {
-		return memory_alloc_pages(size / PAGESIZE, "fifo");
+		return memory_alloc_pages(size / PAGESIZE, name);
 	}
 }
 
-void fifo_init(fifo_t *fifo, size_t size)
+void fifo_init(fifo_t *fifo, const char *name, size_t size)
 {
+	fifo->name = name ? (char*)name : "fifo";
 	fifo->size = size;
 	fifo->head = 0;
 	fifo->tail = 0;
-	fifo->buf = fifo_buf_alloc(size);
+	fifo->buf = fifo_buf_alloc(fifo->name, size);
 }
 
 

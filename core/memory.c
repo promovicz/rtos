@@ -206,7 +206,7 @@ void memory_report(void)
 	for(i = 0; i < pagecount; i++) {
 		char *pa = membase + i * PAGESIZE;
 		if(pagetable[i].flags & PAGE_FLAG_ALLOC) {
-			printf(" page at 0x%p is used by %s\n", pa, pagetable[i].user);
+			printf(" page %p user %s\n", pa, pagetable[i].user);
 		}
 	}
 }

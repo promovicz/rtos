@@ -368,8 +368,8 @@ void vcom_init(void)
 	// register device event handler
 	USBHwRegisterDevIntHandler(USBDevIntHandler);
 
-	fifo_init(&txfifo, VCOM_FIFO_SIZE);
-	fifo_init(&rxfifo, VCOM_FIFO_SIZE);
+	fifo_init(&txfifo, "vcom.tx", VCOM_FIFO_SIZE);
+	fifo_init(&rxfifo, "vcom.rx", VCOM_FIFO_SIZE);
 	fBulkInBusy = FALSE;
 	fChainDone = TRUE;
 }
