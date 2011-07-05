@@ -184,11 +184,11 @@ int command_mem_regions(struct cli *c, int argc, char **argv)
 	struct mem_region *mr = regions;
 	printf("physical regions:\n");
 	while(mr->name) {
-		printf(" %8s: %08x bytes at %08x - %08x\n",
+		printf(" %s: %d bytes at %p - %p\n",
 			   mr->name,
 			   mr->size,
-			   mr->start,
-			   mr->start + mr->size - 1);
+			   (void*)mr->start,
+			   (void*)(((uintptr_t)mr->start) + mr->size - 1));
 		mr++;
 	}
 	return 0;
@@ -199,11 +199,11 @@ int command_mem_sections(struct cli *c, int argc, char **argv)
 	printf("system sections:\n");
 	struct mem_section *ms = sections;
 	while(ms->name) {
-		printf(" %8s: %p bytes at %p - %p\n",
+		printf(" %s: %zu bytes at %p - %p\n",
 			   ms->name,
-			   ((void*)(((uintptr_t)ms->end) - ((uintptr_t)ms->start))),
-			   ((void*)ms->start),
-			   ((void*)ms->end));
+			   ((uintptr_t)ms->end) - ((uintptr_t)ms->start),
+			   (void*)ms->start,
+			   (void*)ms->end);
 		ms++;
 	}
 	return 0;
