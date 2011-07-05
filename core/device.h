@@ -14,6 +14,7 @@ typedef enum {
 	DEVICE_CLASS_CLOCK,
 	DEVICE_CLASS_TIMER,
 	DEVICE_CLASS_STREAM,
+	DEVICE_CLASS_BLOCK,
 } device_class_t;
 
 /* iteration callbacks */

@@ -10,7 +10,8 @@ static char *device_class_names[] = {
 	"none",
 	"clock",
 	"timer",
-	"stream"
+	"stream",
+	"block",
 };
 
 const char *device_class_name(device_class_t class)
