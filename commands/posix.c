@@ -14,7 +14,7 @@ int command_posix_status(struct cli *c, int argc, char **argv)
 
 int command_posix_file(struct cli *c, int argc, char **argv)
 {
-	file_table_report();
+	// XXX file_table_report();
 	return 0;
 }
 

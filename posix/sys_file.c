@@ -1,6 +1,49 @@
 
 #include <core/file.h>
 
+/* "table" of all file descriptors */
+struct file *open_fds[MAXFDS];
+
+void fd_init(void)
+{
+	memset(open_fds, 0, sizeof(open_fds));
+}
+
+int fd_alloc(struct file *file)
+{
+	int i;
+	for (i = 0; i < MAXFDS; i++) {
+		if (!open_fds[i]) {
+			file_ref(file);
+			open_fds[i] = file;
+			return i;
+		}
+	}
+
+	errno = EMFILE;
+	return -1;
+}
+
+struct file *file_for_fd(int fd)
+{
+	if (fd < 0) {
+		errno = EBADF;
+		return NULL;
+	}
+
+	if (fd >= MAXFDS) {
+		errno = EBADF;
+		return NULL;
+	}
+
+	if (!open_fds[fd]) {
+		errno = EBADF;
+		return NULL;
+	}
+
+	return open_fds[fd];
+}
+
 /* dummy open implementation */
 int __libc_open(const char *pathname, int flags, ...)
 {
