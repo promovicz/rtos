@@ -17,7 +17,7 @@ LDFLAGS=-static -static-libgcc -nostartfiles -nostdlib -nodefaultlibs -Wl,--gc-s
 
 LDSCRIPT=board/logomatic/booted.lds
 
-LIBS=lpcusb-trunk/target/usbstack.a dietlibc/bin-arm/dietlibc.a
+LIBS=pkg/lpcusb/target/usbstack.a pkg/dietlibc/bin-arm/dietlibc.a
 
 LOGOMATICOBJS=board/logomatic/booted.o board/logomatic/board.o board/logomatic/microsd.o
 COREOBJS=core/tty.o core/parse.o core/system.o core/cli.o core/device.o core/timer.o core/clock.o core/file.o core/irq.o core/memory.o # core/filesystem.o
@@ -27,9 +27,9 @@ CMDOBJS=commands/gpio.o commands/mem.o commands/sys.o commands/nmea.o commands/p
 FATOBJS=fat/fat16.o fat/partition.o fat/rootdir.o fat/sd_raw.o
 POSIXOBJS=posix/process.o posix/epoll.o posix/file_console.o posix/signal.o posix/control.o
 POSIXSYS=posix/sys_errno.o posix/sys_errlist.o posix/sys_file.o posix/sys_sleep.o posix/sys_mcontext.o posix/sys_ucontext.o posix/sys_sysconf.o posix/sys_mmap.o posix/sys_munmap.o posix/sys_mremap.o posix/sys_getpagesize.o
-DISARMOBJS=libdisarm/src/libdisarm/args.o libdisarm/src/libdisarm/print.o libdisarm/src/libdisarm/parser.o
+DISARMOBJS=pkg/libdisarm/src/libdisarm/args.o pkg/libdisarm/src/libdisarm/print.o pkg/libdisarm/src/libdisarm/parser.o
 OBJS=$(COREOBJS) $(LPCOBJS) $(CMDOBJS) $(LOGOMATICOBJS) $(POSIXOBJS) $(SENSOROBJ) $(POSIXSYS) $(DISARMOBJS) $(FATOBJS) main.o serial_fifo.o vcom.o
-INCLUDEFLAGS=-Iinclude -Ilpcusb-trunk/target -Idietlibc/include -Ilibdisarm/src -I.
+INCLUDEFLAGS=-Iinclude -Ipkg/lpcusb/target -Ipkg/dietlibc/include -Ipkg/libdisarm/src -I.
 DEFINE=-DLPC214x -DNDEBUG -DLPC_MEMMAP=MEM_MAP_USER_RAM
 
 DEPS=$(OBJS:.o=.p)
@@ -49,11 +49,11 @@ TAGS: $(TAGSRCS)
 	@echo "Regenerating tags file..."
 	@etags $(TAGSRCS)
 
-dietlibc/bin-arm/dietlibc.a dietlibc/bin-arm/libm.a:
-	export CROSS=$(CROSS) && cd dietlibc && make clean && make all
+pkg/dietlibc/bin-arm/dietlibc.a pkg/dietlibc/bin-arm/libm.a:
+	export CROSS=$(CROSS) && cd pkg/dietlibc && make clean && make all
 
-lpcusb-trunk/target/usbstack.a:
-	export CROSS=$(CROSS) && cd lpcusb-trunk/target && make clean && make depend && make lib
+pkg/lpcusb/target/usbstack.a:
+	export CROSS=$(CROSS) && cd pkg/lpcusb/target && make clean && make depend && make lib
 
 bike.elf bike.map: $(OBJS) $(LIBS) $(LDSCRIPT)
 	$(CC) $(LDFLAGS) -T $(LDSCRIPT) \
