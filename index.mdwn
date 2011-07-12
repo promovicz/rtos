@@ -1,3 +1,4 @@
 
-RTOS
+This is a real time operating system for 32-bit microcontrollers.
+
 
