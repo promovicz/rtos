@@ -1,0 +1,9 @@
+[submodule "pkg/dietlibc"]
+	path = pkg/dietlibc
+	url = git://github.com/promovicz/dietlibc.git
+[submodule "pkg/lpcusb"]
+	path = pkg/lpcusb
+	url = git://github.com/promovicz/lpcusb.git
+[submodule "pkg/libdisarm"]
+	path = pkg/libdisarm
+	url = git://github.com/promovicz/libdisarm.git
