@@ -109,8 +109,8 @@ enum ctcr_bits {
 
 static volatile struct timer_regs * const timers[] = {TIMER0_REGS, TIMER1_REGS};
 
+static timer_capture_handler_t timer_capture_handlers[2][4] = {{0,0,0,0},{0,0,0,0}};
 static timer_match_handler_t timer_match_handlers[2][4] = {{0,0,0,0},{0,0,0,0}};
-
 
 void timer_init(int t)
 {
@@ -197,6 +197,13 @@ void timer_irq_match(int t, timer_match_t m)
 	}
 }
 
+void timer_irq_capture(int t, timer_capture_t c)
+{
+	if(timer_capture_handlers[t][c]) {
+		timer_capture_handlers[t][c](t, c);
+	}
+}
+
 void timer_irq(int t)
 {
 	uint32_t f = timers[t]->IR;
@@ -215,12 +222,16 @@ void timer_irq(int t)
 	}
 
 	if(f&IR_CR0) {
+		timer_irq_capture(t, 0);
 	}
 	if(f&IR_CR1) {
+		timer_irq_capture(t, 1);
 	}
 	if(f&IR_CR2) {
+		timer_irq_capture(t, 2);
 	}
 	if(f&IR_CR3) {
+		timer_irq_capture(t, 3);
 	}
 
 	timers[t]->IR = f;

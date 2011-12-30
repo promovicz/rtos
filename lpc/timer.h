@@ -17,6 +17,17 @@ void timer_prescale(int t, uint32_t prescale);
 
 uint32_t timer_read(int t);
 
+/* CAPTURE UNIT CONFIG AND OPERATION */
+
+typedef enum {
+	CR0 = 0,
+	CR1 = 1,
+	CR2 = 2,
+	CR3 = 3,
+} timer_capture_t;
+
+typedef void (*timer_capture_handler_t) (int t, timer_capture_t cr);
+
 /* MATCHING UNIT CONFIG AND OPERATION */
 
 typedef enum {
