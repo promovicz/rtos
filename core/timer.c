@@ -59,12 +59,15 @@ static void timer_propose(struct device *dev, void *cookie)
 	if(the_system_timer) {
 		if(timer->min_delta < the_system_timer->min_delta) {
 			timer_shutdown();
+			device_unuse(&the_system_timer->dev);
 			the_system_timer = timer;
 			timer_initialize();
+			device_use(dev);
 		}
 	} else {
 		the_system_timer = timer;
 		timer_initialize();
+		device_use(dev);
 	}
 }
 

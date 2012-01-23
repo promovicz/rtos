@@ -47,7 +47,11 @@ static void clock_propose(struct device *dev, void *cookie)
 	clock->previous_system_time = prevsystime;
 	clock->previous_value = clock->read(clock);
 
+	if(current_system_clock) {
+		device_unuse(&current_system_clock->dev);
+	}
 	current_system_clock = clock;
+	device_use(dev);
 }
 
 void clock_select(void)
