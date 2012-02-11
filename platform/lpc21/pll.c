@@ -3,7 +3,7 @@
 
 #include <core/defines.h>
 
-#include <lpc/xtal.h>
+#include <platform/lpc21/xtal.h>
 
 #include <stdio.h>
 

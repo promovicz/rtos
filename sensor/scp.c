@@ -3,7 +3,7 @@
 
 #include <core/clock.h>
 
-#include <lpc/ssp.h>
+#include <platform/lpc21/ssp.h>
 
 #include <stdio.h>
 

@@ -5,13 +5,11 @@
 
 #include <board/logomatic/board.h>
 
-#include <lpc/pcon.h>
-#include <lpc/wdt.h>
-
 #include <core/irq.h>
 #include <core/timer.h>
 #include <core/clock.h>
 #include <core/memory.h>
+#include <core/board.h>
 
 #include <posix/control.h>
 
@@ -35,7 +33,7 @@ void system_init(void)
 	clock_select();
 	timer_select();
 
-	wdt_init(BOOL_TRUE);
+//	wdt_init(BOOL_TRUE);
 
 	memory_init();
 
@@ -58,7 +56,7 @@ nanosecs_t system_get_time (void)
 
 void system_kick(void)
 {
-	wdt_kick();
+	//wdt_kick();
 
 	if(timestamp_flag) {
 		nanosecs_t now = system_get_time();
@@ -78,7 +76,7 @@ void system_idle(void)
 {
 	nanosecs_t start, end, diff;
 	start = system_get_time();
-	pcon_idle();
+	board_idle();
 	end = system_get_time();
 	diff = end - start;
 	if(diff > idle_max) {
@@ -91,13 +89,13 @@ void system_idle(void)
 
 void system_reset(void)
 {
-	wdt_reset();
+	board_reset();
 	while(1) { }
 }
 
 void system_halt(void)
 {
-	pcon_power_down();
+	board_powerdown();
 	while(1) { }
 }
 

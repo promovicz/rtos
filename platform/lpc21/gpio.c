@@ -1,7 +1,7 @@
 
 #include "gpio.h"
 
-#include <lpc/pinsel.h>
+#include <platform/lpc21/pinsel.h>
 
 struct gpio_regs {
 	uint32_t PIN;

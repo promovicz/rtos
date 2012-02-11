@@ -4,8 +4,6 @@
 #include <core/clock.h>
 #include <core/system.h>
 
-#include <lpc/timer.h>
-
 #include <stdio.h>
 
 LLIST_HEAD(timer_queue);

@@ -56,23 +56,19 @@
 
 #include <board/logomatic/board.h>
 
-#include <lpc/vic.h>
-#include <lpc/pll.h>
-#include <lpc/ssp.h>
-#include <lpc/eint.h>
-#include <lpc/uart.h>
-#include <lpc/gpio.h>
-#include <lpc/timer.h>
-#include <lpc/pinsel.h>
-#include <lpc/spi.h>
-#include <lpc/wdt.h>
+#include <platform/lpc21/vic.h>
+#include <platform/lpc21/pll.h>
+#include <platform/lpc21/ssp.h>
+#include <platform/lpc21/eint.h>
+#include <platform/lpc21/uart.h>
+#include <platform/lpc21/gpio.h>
+#include <platform/lpc21/timer.h>
+#include <platform/lpc21/pinsel.h>
+#include <platform/lpc21/spi.h>
+#include <platform/lpc21/wdt.h>
 
 #include <posix/control.h>
 
-#include "type.h"
-#include "debug.h"
-#include "lpc214x.h"
-#include "vcom.h"
 #include "serial_fifo.h"
 
 #include <sensor/scp.h>
@@ -80,7 +76,6 @@
 
 #include <sys/mman.h>
 
-#include <usbapi.h>
 
 #define INTV_STOP     0
 #define	INTV_USB	  1
@@ -212,13 +207,6 @@ int main (void)
 	gpio_pin_set_direction(CSEL_SCP, BOOL_TRUE);
 
 	system_init();
-
-	vcom_init();
-
-	vic_configure(INTV_USB, INT_USB, &USBIntHandler);
-	vic_enable(INT_USB);
-
-	vcom_connect(BOOL_TRUE);
 
 	posix_console_enable();
 

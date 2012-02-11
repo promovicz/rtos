@@ -1,6 +1,6 @@
 
-#include <lpc/gpio.h>
-#include <lpc/wdt.h>
+#include <platform/lpc21/gpio.h>
+#include <platform/lpc21/wdt.h>
 
 #include <stdio.h>
 #include <unistd.h>

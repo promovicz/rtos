@@ -10,10 +10,10 @@
 #include <core/clock.h>
 #include <core/memory.h>
 
-#include <lpc/reset.h>
-#include <lpc/rtc.h>
-#include <lpc/wdt.h>
-#include <lpc/timer.h>
+#include <platform/lpc21/reset.h>
+#include <platform/lpc21/rtc.h>
+#include <platform/lpc21/wdt.h>
+#include <platform/lpc21/timer.h>
 
 const char const *resetnames[] = {
 	"powerup",

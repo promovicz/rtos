@@ -3,7 +3,7 @@
 
 #include <core/parse.h>
 
-#include <lpc/pll.h>
+#include <platform/lpc21/pll.h>
 
 #include <string.h>
 #include <stdlib.h>

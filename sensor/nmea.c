@@ -9,7 +9,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#include <lpc/rtc.h>
+#include <platform/lpc21/rtc.h>
 
 struct nmea nmea;
 

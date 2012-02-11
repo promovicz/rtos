@@ -3,8 +3,11 @@
 
 #include <ctype.h>
 #include <string.h>
+#include <stdio.h>
 
+#ifdef __arm__
 #include <libdisarm/disarm.h>
+#endif
 
 static void hexdump(const uint8_t *data, unsigned int len)
 {

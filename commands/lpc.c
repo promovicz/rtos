@@ -3,11 +3,11 @@
 
 #include <stdio.h>
 
-#include <lpc/vic.h>
-#include <lpc/pll.h>
-#include <lpc/ssp.h>
-#include <lpc/spi.h>
-#include <lpc/pinsel.h>
+#include <platform/lpc21/vic.h>
+#include <platform/lpc21/pll.h>
+#include <platform/lpc21/ssp.h>
+#include <platform/lpc21/spi.h>
+#include <platform/lpc21/pinsel.h>
 
 int command_lpc_pin(struct cli *c, int argc, char **argv)
 {

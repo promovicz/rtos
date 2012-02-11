@@ -3,21 +3,26 @@
 
 #include <core/timer.h>
 
-#include <lpc/scb.h>
-#include <lpc/vic.h>
-#include <lpc/pll.h>
-#include <lpc/mam.h>
-#include <lpc/vpb.h>
-#include <lpc/pin.h>
-#include <lpc/spi.h>
-#include <lpc/rtc.h>
-#include <lpc/ssp.h>
-#include <lpc/spi.h>
-#include <lpc/eint.h>
-#include <lpc/gpio.h>
-#include <lpc/uart.h>
-#include <lpc/timer.h>
-#include <lpc/pinsel.h>
+#include <platform/lpc21/scb.h>
+#include <platform/lpc21/vic.h>
+#include <platform/lpc21/pll.h>
+#include <platform/lpc21/mam.h>
+#include <platform/lpc21/vpb.h>
+#include <platform/lpc21/pin.h>
+#include <platform/lpc21/spi.h>
+#include <platform/lpc21/rtc.h>
+#include <platform/lpc21/ssp.h>
+#include <platform/lpc21/spi.h>
+#include <platform/lpc21/wdt.h>
+#include <platform/lpc21/eint.h>
+#include <platform/lpc21/gpio.h>
+#include <platform/lpc21/pcon.h>
+#include <platform/lpc21/uart.h>
+#include <platform/lpc21/timer.h>
+#include <platform/lpc21/pinsel.h>
+#include <platform/lpc21/vcom.h>
+
+#include <usbapi.h>
 
 /* Clocking */
 static void clock_init(void)
@@ -219,6 +224,13 @@ void heartbeat_function (always_unused struct timer *t, nanosecs_t now)
 
 DEFINE_PERIODIC_TIMER(heartbeat, heartbeat_function, 0.5 * NANOSECS_SEC);
 
+/* USB interrupt */
+static interrupt_handler void usb_irq(void)
+{
+	USBHwISR();
+	vic_ack();
+}
+
 
 /* Board initialization */
 void board_early_init(void)
@@ -237,18 +249,41 @@ void board_early_init(void)
 	stop_init();
 }
 
+void board_idle(void)
+{
+	pcon_idle();
+}
+
+void board_reset(void)
+{
+	wdt_reset();
+}
+
+void board_powerdown(void)
+{
+	pcon_power_down();
+}
+
 void board_init(void)
 {
 	/* start the periodic heartbeat timer */
 	START_PERIODIC_TIMER(heartbeat);
+
 	/* initialize UARTs */
 	uarts_init();
-	/* SPI interfaces */
-	ssp_init();
-	ssp_clock(400000);
-	ssp_enable(BOOL_TRUE);
+
+	/* SPI interface */
 	pin_set_function(PIN17, PIN_FUNCTION_SSP_SCK);
 	pin_set_function(PIN18, PIN_FUNCTION_SSP_MISO);
 	pin_set_function(PIN19, PIN_FUNCTION_SSP_MOSI);
-	//pin_set_function(PIN17, PIN_FUNCTION_SSP_);
+	ssp_init();
+	ssp_clock(400000);
+	ssp_enable(BOOL_TRUE);
+
+	/* USB console */
+	vcom_init();
+	vic_configure(INTV_USB, INT_USB, &usb_irq);
+	vic_enable(INT_USB);
+	vcom_connect(BOOL_TRUE);
+
 }

@@ -3,7 +3,7 @@
 
 #include <posix/control.h>
 
-#include "vcom.h"
+#include <platform/lpc21/vcom.h>
 
 
 bool_t console_enabled;

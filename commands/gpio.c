@@ -3,8 +3,8 @@
 
 #include <stdio.h>
 
-#include <lpc/gpio.h>
-#include <lpc/pinsel.h>
+#include <platform/lpc21/gpio.h>
+#include <platform/lpc21/pinsel.h>
 
 static void gpio_status(int pin)
 {

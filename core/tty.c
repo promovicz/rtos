@@ -9,8 +9,6 @@
 #include <unistd.h>
 #include <ctype.h>
 
-#include "vcom.h"
-
 #define CTRL(x)	(x&037)
 #define ESCAPE (0x1b)
 #define DELETE (0x7f)
