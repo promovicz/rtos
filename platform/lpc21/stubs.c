@@ -15,36 +15,36 @@ void stub_undef (void) __attribute__ ((interrupt("UNDEF")));
 
 void stub_irq (void) {
 	printf("UNEXPECTED IRQ\n");
-	irq_enable();
+	irqs_enable();
 	abort();
 }
 
 void stub_fiq (void)  {
 	printf("UNEXPECTED FIQ\n");
-	irq_enable();
+	irqs_enable();
 	abort();
 }
 
 void stub_swi (void)  {
 	printf("UNEXPECTED SWI\n");
-	irq_enable();
+	irqs_enable();
 	abort();
 }
 
 void stub_dabort (void) {
 	printf("DATA ABORT\n");
-	irq_enable();
+	irqs_enable();
 	abort();
 }
 
 void stub_pabort (void) {
 	printf("PROGRAM ABORT\n");
-	irq_enable();
+	irqs_enable();
 	abort();
 }
 
 void stub_undef (void) {
 	printf("UNDEFINED INSTRUCTION\n");
-	irq_enable();
+	irqs_enable();
 	abort();
 }

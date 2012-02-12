@@ -37,7 +37,7 @@ void system_init(void)
 
 	memory_init();
 
-	irq_enable();
+	irqs_enable();
 
 	board_init();
 

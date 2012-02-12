@@ -61,10 +61,10 @@ void clock_select(void)
 
 nanosecs_t clock_get_time (struct clock_device *dev)
 {
-	uint32_t m;
+	irqs_t m;
 	nanosecs_t value, offset, result;
 
-	m = irq_disable();
+	m = irqs_disable();
 
 	value = dev->read(dev);
 
@@ -86,7 +86,7 @@ nanosecs_t clock_get_time (struct clock_device *dev)
 	/* and remember previous systime */
 	dev->previous_system_time = result;
 
-	irq_restore(m);
+	irqs_restore(m);
 
 	return result;
 }

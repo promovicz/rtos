@@ -377,13 +377,13 @@ int uart_tx_fifo(uart_t uart, const void *buf, size_t nbytes)
 	bool_t starting, success;
 	size_t done, donedirect;
 	int avail;
-	uint32_t m;
+	irqs_t m;
 	uint8_t c;
 	uint8_t ier;
 
 	done = donedirect = 0;
 
-	m = irq_disable();
+	m = irqs_disable();
 
 	starting = readb(UART_REG(uart, LSR)) & LSR_TEMT;
 
@@ -415,7 +415,7 @@ int uart_tx_fifo(uart_t uart, const void *buf, size_t nbytes)
 
 	u->txcount += done;
 
-	irq_restore(m);
+	irqs_restore(m);
 
 	return done;
 }
@@ -455,9 +455,9 @@ int uart_rx_fifo(uart_t uart, void *buf, size_t nbytes)
 	uint8_t *cbuf = (uint8_t *)buf;
 	int avail;
 	size_t done;
-	uint32_t m;
+	irqs_t m;
 
-	m = irq_disable();
+	m = irqs_disable();
 
 	avail = fifo_avail(&u->rxfifo);
 	if(avail > u->rxmaxfill) {
@@ -473,7 +473,7 @@ int uart_rx_fifo(uart_t uart, void *buf, size_t nbytes)
 
 	u->rxcount += done;
 
-	irq_restore(m);
+	irqs_restore(m);
 
 	return done;
 }
