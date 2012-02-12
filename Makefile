@@ -44,16 +44,16 @@ endif
 
 #### EMULATOR ####
 
-BOARD_emulator_PLATFORM = emulator
-BOARD_emulator_OBJECTS = \
+BOARD_emulator_PLATFORM=emulator
+BOARD_emulator_OBJECTS=\
 	platform/emulator/board.o
 
-PLATFORM_emulator_CROSS =
+PLATFORM_emulator_CROSS=
 
 #### BOARD logomatic ####
 
-BOARD_logomatic_PLATFORM = lpc2148
-BOARD_logomatic_OBJECTS = \
+BOARD_logomatic_PLATFORM=lpc2148
+BOARD_logomatic_OBJECTS=\
 	board/logomatic/board.o \
 	board/logomatic/microsd.o
 
@@ -85,6 +85,7 @@ PLATFORM_lpc21_OBJECTS=\
 	platform/lpc21/vcom.o
 
 PLATFORM_lpc2148_CROSS=arm-elf-
+PLATFORM_lpc2148_DEFINES=-DMCU_LPC2148
 PLATFORM_lpc2148_LIBRARIES=\
 	$(PLATFORM_lpc21_LIBRARIES)
 PLATFORM_lpc2148_OBJECTS=\
@@ -169,6 +170,7 @@ lpcusb.a:
 CFLAGS_WARNINGS=-Wall -Wextra -Wshadow -Wpointer-arith -Wno-cast-align -Wimplicit -Wno-unused -Wredundant-decls -Wnested-externs -Wbad-function-cast -Wsign-compare -Waggregate-return -Wno-format-extra-args
 
 ifneq ($(BOARD),emulator)
+
 LDSCRIPT=board/$(BOARD)/$(ENV).lds
 LDSFLAG=-T $(SOURCE)/$(LDSCRIPT)
 CRT=board/$(BOARD)/$(ENV).o
@@ -183,7 +185,9 @@ ASFLAGS=-D__ASSEMBLY__ $(DEFINE) $(INCLUDEFLAGS) $(CFLAGS_TARGET)
 LDFLAGS=-static -static-libgcc -nostartfiles -nostdlib -nodefaultlibs -Wl,--gc-sections -Wl,--cref
 
 INCLUDEFLAGS=-I$(SOURCE)/include -I$(SOURCE)/pkg/lpcusb/target -I$(SOURCE)/pkg/dietlibc/include -I$(SOURCE)/pkg/libdisarm/src -I$(SOURCE)
-DEFINE=-DLPC214x -DNDEBUG -DLPC_MEMMAP=MEM_MAP_USER_RAM
+DEFINE=-DLPC214x -DNDEBUG -DLPC_MEMMAP=MEM_MAP_USER_RAM \
+	$(PLATFORM_$(PLATFORM)_DEFINES) \
+	$(BOARD_$(BOARD)_DEFINES)
 
 else
 
