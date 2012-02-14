@@ -1,5 +1,5 @@
 
-#include <platform/lpc21/mcu.h>
+#include <platform/lpc21/mcu-lpc2148.h>
 
 char *vic_int_names[VIC_INT_COUNT] = {
 	"WDT",

@@ -2,8 +2,21 @@
 #include <core/board.h>
 #include <core/device.h>
 
+#include <sched.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
+
+
+
+void board_early_init(void)
+{
+}
+
+void board_init(void)
+{
+	puts("Initializing board...");
+}
 
 void board_idle(void)
 {
@@ -12,17 +25,13 @@ void board_idle(void)
 
 void board_reset(void)
 {
-	emulator_puts("Resetting.");
+	puts("Resetting.");
 	exit(0);
 }
 
 void board_powerdown(void)
 {
-	emulator_puts("Powering down.");
+	puts("Powering down.");
 	exit(0);
 }
 
-void board_init(void)
-{
-	emulator_puts("Initializing board...");
-}

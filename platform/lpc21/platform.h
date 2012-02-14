@@ -1,0 +1,4 @@
+#ifndef LPC21_PLATFORM_H
+#define LPC21_PLATFORM_H
+
+#endif /* !LPC21_PLATFORM_H */

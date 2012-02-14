@@ -35,9 +35,9 @@ RRFAT_OBJ=fat/fat16.o fat/partition.o fat/rootdir.o fat/sd_raw.o
 POSIX_OBJ=posix/process.o posix/epoll.o posix/file_console.o posix/signal.o posix/control.o
 POSIX_SYS_OBJ=posix/sys_errno.o posix/sys_errlist.o posix/sys_file.o posix/sys_sleep.o posix/sys_mcontext.o posix/sys_ucontext.o posix/sys_sysconf.o posix/sys_mmap.o posix/sys_munmap.o posix/sys_mremap.o posix/sys_getpagesize.o
 
-RTOS_OBJECTS=$(CORE_OBJ) $(CLI_OBJ) $(SENSOR_OBJ) $(POSIX_OBJ) $(RRFAT_OBJ)
+RTOS_OBJECTS=$(CORE_OBJ) $(CLI_OBJ) $(SENSOR_OBJ) $(RRFAT_OBJ)
 ifneq ($(BOARD),emulator)
-RTOS_OBJECTS+=$(DISARM_OBJ) $(POSIX_SYS_OBJ)
+RTOS_OBJECTS+=$(DISARM_OBJ) $(POSIX_OBJ) $(POSIX_SYS_OBJ)
 RTOS_LIBRARIES=dietlibc.a
 endif
 
@@ -46,9 +46,11 @@ endif
 
 BOARD_emulator_PLATFORM=emulator
 BOARD_emulator_OBJECTS=\
-	platform/emulator/board.o
+	platform/emulator/board.o \
+	platform/emulator/irq.o
 
 PLATFORM_emulator_CROSS=
+PLATFORM_emulator_DEFINES=-DPLATFORM_EMULATOR
 
 #### BOARD logomatic ####
 
@@ -85,7 +87,7 @@ PLATFORM_lpc21_OBJECTS=\
 	platform/lpc21/vcom.o
 
 PLATFORM_lpc2148_CROSS=arm-elf-
-PLATFORM_lpc2148_DEFINES=-DMCU_LPC2148
+PLATFORM_lpc2148_DEFINES=-DPLATFORM_LPC21 -DMCU_LPC2148
 PLATFORM_lpc2148_LIBRARIES=\
 	$(PLATFORM_lpc21_LIBRARIES)
 PLATFORM_lpc2148_OBJECTS=\
@@ -191,12 +193,12 @@ DEFINE=-DLPC214x -DNDEBUG -DLPC_MEMMAP=MEM_MAP_USER_RAM \
 
 else
 
-INCLUDEFLAGS=-I$(SOURCE)/include -I$(SOURCE)
+INCLUDEFLAGS=-I$(SOURCE)
 
 CFLAGS_CONFIG=-gdwarf-2 -Os -ffunction-sections
 
 CFLAGS=$(CFLAGS_CONFIG) $(CFLAGS_WARNINGS) $(INCLUDEFLAGS)
-LDFLAGS=-state -static-libgcc
+LDFLAGS=-static -static-libgcc
 
 endif
 

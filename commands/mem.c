@@ -49,6 +49,7 @@ static void hexdump(const uint8_t *data, unsigned int len)
 
 static void disassemble(const uint32_t *base, unsigned int len)
 {
+#ifdef __arm__
 	da_addr_t addr = ((da_addr_t)base);
 	unsigned int n;
 
@@ -68,6 +69,9 @@ static void disassemble(const uint32_t *base, unsigned int len)
 
 		addr += sizeof(da_word_t);
 	}
+#else
+	printf("Disassembler not available.\n");
+#endif
 }
 
 struct mem_region {

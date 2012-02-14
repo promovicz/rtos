@@ -1,8 +1,6 @@
 #ifndef VIC_H
 #define VIC_H
 
-#include <core/types.h>
-
 #include <platform/lpc21/mcu.h>
 
 typedef void (*vic_handler_t) (void);
