@@ -3,6 +3,8 @@
 
 #include <core/common.h>
 
+#include <core/tty.h>
+
 struct cli;
 
 typedef int (*command_handler_t) (struct cli *c, int argc, char **argv);
@@ -28,10 +30,13 @@ struct command_table {
 
 
 struct cli {
+	struct tty *tty;
 	struct command_table *commands;
 };
 
 extern struct command_table cli_system_commands;
+
+int cli_init(struct cli *c, struct tty *tty);
 
 int cli_help(struct cli *c, int argc, char **argv);
 int cli_execute(struct cli *c, int argc, char **argv);

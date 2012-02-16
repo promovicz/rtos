@@ -22,7 +22,7 @@ enum {
 void
 tty_write(struct tty *t, const char *buf, size_t len)
 {
-	write(1, buf, len); // XXX loop
+	write(t->t_ofd, buf, len);
 }
 
 void
@@ -50,8 +50,10 @@ tty_setprompt(struct tty *t, char *p)
 }
 
 void
-tty_init(struct tty *t)
+tty_init(struct tty *t, int ifd, int ofd)
 {
+	t->t_ifd = ifd;
+	t->t_ofd = ofd;
 	tty_setprompt(t, "> ");
 	tty_reset(t);
 }
@@ -150,7 +152,7 @@ tty_remove_at(struct tty *t, off_t p)
 
 void
 dotokenize(struct tty *t, const char *cmd,
-		   void (*handler)(struct tty *t, int argc, char **argv))
+		   void (*handler)(struct tty *t, void *cookie, int argc, char **argv))
 {
 	char *tok[512];
 	char buf[512];
@@ -176,17 +178,17 @@ dotokenize(struct tty *t, const char *cmd,
 		}
 	}
 
-	handler(t, toknum, tok);
+	handler(t, t->t_cookie, toknum, tok);
 }
 
 void
-docmd(struct tty *t, int argc, char **argv)
+docmd(struct tty *t, void *cookie, int argc, char **argv)
 {
 	tty_writechr(t, '\n');
 	fflush(stdout);
 
 	if(t->t_command_handler) {
-		t->t_command_handler(t, argc, argv);
+		t->t_command_handler(t, t->t_cookie, argc, argv);
 	} else {
 		tty_writestr(t, "No command handler!\n");
 	}
@@ -195,13 +197,13 @@ docmd(struct tty *t, int argc, char **argv)
 }
 
 void
-dohelp(struct tty *t, int argc, char **argv)
+dohelp(struct tty *t, void *cookie, int argc, char **argv)
 {
 	tty_writechr(t, '\n');
 	fflush(stdout);
 
 	if(t->t_command_help_handler) {
-		t->t_command_help_handler(t, argc, argv);
+		t->t_command_help_handler(t, t->t_cookie, argc, argv);
 	} else {
 		tty_writestr(t, "No help handler!\n");
 	}
@@ -336,14 +338,30 @@ tty_feed(struct tty *t, int c)
 }
 
 void
+tty_process(struct tty *t)
+{
+	int i;
+	int res;
+	char buf[16];
+
+	res = read(t->t_ifd, &buf, sizeof(buf));
+	if(res > 0) {
+		for(i = 0; i < res; i++) {
+			tty_feed(t, buf[i]);
+		}
+	}
+}
+
+void
 tty_finish(struct tty *t)
 {
 	tty_writestr(t, "\r\n");
 }
 
 void
-tty_command_handler(struct tty *t, tty_command_handler_t handler, tty_command_handler_t help)
+tty_command_handler(struct tty *t, tty_command_handler_t handler, tty_command_handler_t help, void *cookie)
 {
 	t->t_command_handler = handler;
 	t->t_command_help_handler = help;
+	t->t_cookie = cookie;
 }

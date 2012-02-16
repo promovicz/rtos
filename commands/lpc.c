@@ -40,7 +40,7 @@ int command_lpc_spi(struct cli *t, int argc, char **argv)
 		if(!strcmp("speak", argv[0])) {
 			if(argc > 1) {
 				printf("exchanging %d words:\n", argc - 1);
-				csel_mmc(1);
+				//csel_mmc(1);
 				for(i = 1; i < argc; i++) {
 					if(scan_byte(argv[i], &tb)) {
 						rb = spi_transfer(tb);
@@ -50,7 +50,7 @@ int command_lpc_spi(struct cli *t, int argc, char **argv)
 						break;
 					}
 				}
-				csel_mmc(0);
+				//csel_mmc(0);
 			}
 		} else if (!strcmp("trace", argv[0])) {
 			if(argc > 1) {
@@ -75,7 +75,7 @@ int command_lpc_ssp(struct cli *t, int argc, char **argv)
 		if(!strcmp("speak", argv[0])) {
 			if(argc > 1) {
 				printf("exchanging %d words:\n", argc - 1);
-				csel_scp(1);
+				//csel_scp(1);
 				for(i = 1; i < argc; i++) {
 					if(scan_byte(argv[i], &tb)) {
 						rb = ssp_transfer(tb);
@@ -85,7 +85,7 @@ int command_lpc_ssp(struct cli *t, int argc, char **argv)
 						break;
 					}
 				}
-				csel_scp(0);
+				//csel_scp(0);
 			}
 		} else if (!strcmp("trace", argv[0])) {
 			if(argc > 1) {

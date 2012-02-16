@@ -7,9 +7,4 @@
 
 void posix_init(void);
 
-void posix_console_init(void);
-void posix_console_enable(void);
-
-int uart_open(int uart);
-
 #endif /* !POSIX_CONTROL_H */

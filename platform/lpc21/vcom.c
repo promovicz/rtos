@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <core/defines.h>
+#include <core/common.h>
+#include <core/device.h>
 
 #include "debug.h"
 #include "usbapi.h"
@@ -314,10 +315,16 @@ static void USBDevIntHandler(U8 bDevStatus)
 	}
 }
 
-int vcom_tx_fifo(const void *buf, size_t nbytes)
+bool_t connected;
+
+static ssize_t vcom_write(struct file *f, const void *buf, size_t nbytes)
 {
 	uint8_t c;
 	size_t done;
+
+	if(!connected) {
+		return nbytes;
+	}
 
 	for(done = 0; done < nbytes; done++) {
 		c = ((uint8_t *)buf)[done];
@@ -331,11 +338,14 @@ int vcom_tx_fifo(const void *buf, size_t nbytes)
 	return done;
 }
 
-
-int vcom_rx_fifo(void *buf, size_t nbytes)
+static ssize_t vcom_read(struct file *f, void *buf, size_t nbytes)
 {
 	uint8_t *cbuf = (uint8_t *)buf;
 	size_t done;
+
+	if(!connected) {
+		return nbytes;
+	}
 
 	for(done = 0; done < nbytes; done++) {
 		if(!fifo_get(&rxfifo, &cbuf[done])) {
@@ -345,6 +355,48 @@ int vcom_rx_fifo(void *buf, size_t nbytes)
 
 	return done;
 }
+
+static int vcom_open(struct file *file)
+{
+	struct device *dev = file->f_device;
+
+	dev->uses++;
+
+	return 0;
+}
+
+static int vcom_close(struct file *file)
+{
+	struct device *dev = file->f_device;
+
+	dev->uses--;
+
+	return 0;
+}
+
+static void vcom_device_report(struct device *dev)
+{
+}
+
+struct file_operations vcom_operations = {
+	.fop_open = &vcom_open,
+	.fop_write = &vcom_write,
+	.fop_read = &vcom_read,
+	.fop_close = &vcom_close,
+};
+
+struct vcom {
+	struct device dev;
+};
+
+struct vcom the_vcom = {
+	.dev = {
+		.name = "vcom",
+		.class = DEVICE_CLASS_STREAM,
+		.fops = &vcom_operations,
+		.report_cb = &vcom_device_report 
+	}
+};
 
 void vcom_init(void)
 {
@@ -372,9 +424,14 @@ void vcom_init(void)
 	fifo_init(&rxfifo, "vcom.rx", VCOM_FIFO_SIZE);
 	fBulkInBusy = FALSE;
 	fChainDone = TRUE;
+
+	connected = FALSE;
+
+	device_add(&the_vcom.dev);
 }
 
 void vcom_connect(bool_t connect)
 {
+	connected = connect;
 	USBHwConnect(connect?TRUE:FALSE);
 }

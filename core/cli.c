@@ -87,6 +87,28 @@ static void printtable(struct command_table *t, int level)
 	}
 }
 
+void command_handler(struct tty *t, void *cookie, int argc, char **argv)
+{
+	struct cli *c = (struct cli *)cookie;
+	cli_execute(c, argc, argv);
+}
+
+void help_handler(struct tty *t, void *cookie, int argc, char **argv)
+{
+	struct cli *c = (struct cli *)cookie;
+	cli_help(c, argc, argv);
+}
+
+int cli_init(struct cli *c, struct tty *tty)
+{
+	c->tty = tty;
+	c->commands = &cli_system_commands;
+
+	tty_command_handler(tty, &command_handler, &help_handler, c);
+
+	return 0;
+}
+
 int cli_help(struct cli *c, int argc, char **argv)
 {
 	int i;

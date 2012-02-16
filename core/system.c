@@ -41,7 +41,7 @@ void system_init(void)
 
 	board_init();
 
-	posix_init();
+	file_table_init();
 
 	START_PERIODIC_TIMER(timestamp);
 }

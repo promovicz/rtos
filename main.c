@@ -120,19 +120,6 @@ struct tty tser;
 
 struct cli c;
 
-void command_handler(struct tty *t, int argc, char **argv)
-{
-	led_stat2(0);
-
-	cli_execute(&c, argc, argv);
-}
-
-void help_handler(struct tty *t, int argc, char **argv)
-{
-	led_stat2(0);
-
-	cli_help(&c, argc, argv);
-}
 
 int u0 = -1, u1 = -1;
 
@@ -201,17 +188,14 @@ void nmea_proc_init (void)
 
 int main (void)
 {
-	c.commands = &cli_system_commands;
-
-	gpio_pin_set(CSEL_SCP, 1);
-	gpio_pin_set_direction(CSEL_SCP, BOOL_TRUE);
-
 	system_init();
 
-	posix_console_enable();
+	device_open("vcom", O_RDONLY);
+	device_open("vcom", O_WRONLY);
+	device_open("vcom", O_WRONLY);
 
 	tty_init(&tser);
-	tty_command_handler(&tser, &command_handler, &help_handler);
+	cli_init(&c, &tser);
 
 	u0 = device_open("uart0", O_RDWR);
 	u1 = device_open("uart1", O_RDWR);

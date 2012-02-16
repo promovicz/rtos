@@ -32,7 +32,7 @@ SENSOR_OBJ=sensor/scp.o sensor/nmea.o
 DISARM_OBJ=pkg/libdisarm/src/libdisarm/args.o pkg/libdisarm/src/libdisarm/print.o pkg/libdisarm/src/libdisarm/parser.o
 RRFAT_OBJ=fat/fat16.o fat/partition.o fat/rootdir.o fat/sd_raw.o
 
-POSIX_OBJ=posix/process.o posix/epoll.o posix/file_console.o posix/signal.o posix/control.o
+POSIX_OBJ=posix/process.o posix/epoll.o posix/signal.o posix/control.o
 POSIX_SYS_OBJ=posix/sys_errno.o posix/sys_errlist.o posix/sys_file.o posix/sys_sleep.o posix/sys_mcontext.o posix/sys_ucontext.o posix/sys_sysconf.o posix/sys_mmap.o posix/sys_munmap.o posix/sys_mremap.o posix/sys_getpagesize.o
 
 RTOS_OBJECTS=$(CORE_OBJ) $(CLI_OBJ) $(SENSOR_OBJ) $(RRFAT_OBJ)
@@ -97,7 +97,7 @@ PLATFORM_lpc2148_OBJECTS=\
 #### ####
 
 APP_cli_OBJECTS=\
-	main.o
+	app/cli.o
 
 #### ESSENTIAL DIRECTORIES ####
 
